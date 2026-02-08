@@ -8,10 +8,10 @@
     >
       <div class="errorChannelsSummary">
         <h3 class="errorChannelsTitle">
-          {{ $t("Subscriptions.Error Channels") }} ({{ errorChannels.length }})
+          {{ $t('Subscriptions.Error Channels With Count', { count: errorChannels.length }) }}
         </h3>
         <FtIconButton
-          :title="$t('Global.More Options')"
+          :title="$t('Video.More Options')"
           :icon="['fas', 'chevron-down']"
           theme="base-no-default"
           :use-shadow="false"

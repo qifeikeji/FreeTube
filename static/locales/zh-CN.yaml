@@ -94,6 +94,7 @@ Subscriptions:
   This profile has a large number of subscriptions. Forcing RSS to avoid rate limiting: 这个配置文件有大量订阅。 强制RSS已防止速率限制
   Load More Videos: 加载更多视频
   Error Channels: 有错误的频道
+  Error Channels With Count: 有错误的频道（{count}）
   Disabled Automatic Fetching: 你仅用了自动订阅获取。刷新订阅在此处看到它们。
   Empty Channels: 你订阅的频道当前没有任何视频。
   Subscriptions Tabs: 订阅标签页
@@ -934,7 +935,7 @@ Profile:
   ? This is your primary profile.  Are you sure you want to delete the selected channels?  The same channels will be deleted in any profile they are found in.
   : 这是您的主配置文件。 您确定您想删除选择的频道？ 相同的频道中任何找到的配置文件会被删除。
   Top Nav Profile Buttons: 顶部配置文件按钮
-  Select which profiles are hidden from the top button row. This does not affect the dropdown menu.: 选择哪些配置文件要在顶部按钮行中隐藏；这不会影响右侧下拉菜单。
+  Top Nav Profile Buttons Description: 选择哪些配置文件要在顶部按钮行中隐藏；这不会影响右侧下拉菜单。
   No channel(s) have been selected: 无频道已选择
   Select None: 全不选
   Select All: 全选

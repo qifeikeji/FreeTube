@@ -3,7 +3,7 @@
     <FtCard class="card">
       <h2>{{ $t('Profile.Top Nav Profile Buttons') }}</h2>
       <p class="message">
-        {{ $t('Profile.Select which profiles are hidden from the top button row. This does not affect the dropdown menu.') }}
+        {{ $t('Profile.Top Nav Profile Buttons Description') }}
       </p>
       <div class="topNavProfileButtonsSettings">
         <div
