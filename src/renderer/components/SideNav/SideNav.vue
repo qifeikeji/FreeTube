@@ -8,6 +8,7 @@
       class="inner"
       :class="applyHiddenLabels"
     >
+      <FtSideNavSearch v-if="isOpen" class="mobileHidden" />
       <router-link
         class="navOption topNavOption mobileShow "
         role="button"
@@ -240,6 +241,7 @@ import { useI18n } from '../../composables/use-i18n-polyfill'
 
 import FtFlexBox from '../ft-flex-box/ft-flex-box.vue'
 import SideNavMoreOptions from '../SideNavMoreOptions/SideNavMoreOptions.vue'
+import FtSideNavSearch from '../FtSideNavSearch/FtSideNavSearch.vue'
 
 import store from '../../store/index'
 

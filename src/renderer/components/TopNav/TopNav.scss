@@ -23,7 +23,7 @@
 
   @media only screen and (width >= 961px) {
     display: grid;
-    grid-template-columns: 1fr 440px 1fr;
+    grid-template-columns: auto 1fr auto;
   }
 
   @include top-nav-is-colored {
@@ -202,25 +202,12 @@
 
 .middle {
   flex: 1;
-  max-inline-size: 440px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-inline: 10px;
 
-  .searchContainer {
-    align-items: center;
-    display: flex;
-
-    @media only screen and (width <= 680px) {
-      background-color: var(--side-nav-color);
-      inset-inline: 0;
-      position: fixed;
-      inset-block-start: 60px;
-
-      @include top-nav-is-colored {
-        background-color: var(--primary-color-hover);
-      }
-    }
-
-    .searchInput {
-      flex: 1;
-    }
+  :deep(.profileButtons) {
+    justify-content: center;
   }
 }

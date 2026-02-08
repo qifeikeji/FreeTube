@@ -90,3 +90,35 @@ Height adjust for profile list so it won't cover navbar.  */
   inset-block-start: 10px;
   inset-inline-end: 5px;
 }
+
+.profileButtons {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 5px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  max-inline-size: 100%;
+  padding-block: 0;
+  padding-inline: 5px;
+}
+
+.profileButton {
+  border: 1px solid var(--primary-color);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--primary-text-color);
+  cursor: pointer;
+  line-height: 1;
+  padding: 8px 10px;
+  white-space: nowrap;
+}
+
+.profileButton:hover {
+  background-color: var(--side-nav-hover-color);
+  color: var(--side-nav-hover-text-color);
+}
+
+.profileButton.active {
+  background-color: var(--primary-color);
+  color: var(--text-with-main-color);
+}
