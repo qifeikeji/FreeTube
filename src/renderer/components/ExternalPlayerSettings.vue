@@ -93,6 +93,7 @@ import FtInputTags from './FtInputTags/FtInputTags.vue'
 
 import store from '../store/index'
 import { MAIN_PROFILE_ID } from '../../constants'
+import { deepCopy } from '../helpers/utils'
 
 const { t } = useI18n()
 
@@ -119,12 +120,18 @@ const selectedProfile = computed(() => {
 const globalExternalPlayerDefaults = computed(() => {
   // fall back values from the global settings for profiles without overrides
   const customArgsString = store.state.settings.externalPlayerCustomArgs ?? '[]'
+  let customArgs = []
+  try {
+    customArgs = typeof customArgsString === 'string' ? JSON.parse(customArgsString) : []
+  } catch {
+    customArgs = []
+  }
   return {
     player: store.state.settings.externalPlayer ?? '',
     executable: store.state.settings.externalPlayerExecutable ?? '',
     ignoreWarnings: store.state.settings.externalPlayerIgnoreWarnings ?? false,
     ignoreDefaultArgs: store.state.settings.externalPlayerIgnoreDefaultArgs ?? false,
-    customArgs: typeof customArgsString === 'string' ? JSON.parse(customArgsString) : [],
+    customArgs,
   }
 })
 
@@ -180,6 +187,16 @@ const externalPlayerCustomArgsTooltip = computed(() => {
   return tooltip
 })
 
+// Ensure the selected profile has its own external player settings, so tabs are independent.
+watch(selectedProfile, (profile) => {
+  if (!profile?._id) { return }
+  if (profile.externalPlayerSettings != null) { return }
+
+  const profileCopy = deepCopy(profile)
+  profileCopy.externalPlayerSettings = deepCopy(globalExternalPlayerDefaults.value)
+  store.dispatch('updateProfile', profileCopy)
+}, { immediate: true })
+
 /**
  * @param {string} value
  */
@@ -230,13 +247,12 @@ function updateSelectedProfileExternalPlayerSettings(patch) {
   if (!profile?._id) { return }
 
   const existing = profile.externalPlayerSettings ?? {}
-  store.dispatch('updateProfile', {
-    ...profile,
-    externalPlayerSettings: {
-      ...existing,
-      ...patch,
-    }
-  })
+  const profileCopy = deepCopy(profile)
+  profileCopy.externalPlayerSettings = {
+    ...deepCopy(existing),
+    ...patch,
+  }
+  store.dispatch('updateProfile', profileCopy)
 }
 
 /**
