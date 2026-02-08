@@ -32,10 +32,10 @@
   color: inherit;
 }
 
-.errorChannelsToggle:hover .errorChannelsTitle {
-  text-decoration: underline;
-}
-
 .errorChannelsTitle {
   margin-block: 0;
+}
+
+.errorChannelsToggle:hover .errorChannelsTitle {
+  text-decoration: underline;
 }
