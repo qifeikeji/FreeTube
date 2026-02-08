@@ -402,11 +402,14 @@ onBeforeUnmount(() => {
 
 .sideNavSearch.compact :deep(.ft-input-component) {
   min-block-size: 34px;
+  inline-size: 500px;
 }
 
 .sideNavSearch.compact :deep(.ft-input) {
+  margin-block-end: 0;
+  block-size: 38px;
   padding-block: 6px;
-  padding-inline: 10px;
+  padding-inline: 12px;
   font-size: 14px;
 }
 
