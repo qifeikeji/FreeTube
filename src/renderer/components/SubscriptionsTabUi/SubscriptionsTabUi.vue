@@ -6,16 +6,20 @@
     <div
       v-if="!isLoading && errorChannels.length !== 0"
     >
-      <h3> {{ $t("Subscriptions.Error Channels") }}</h3>
-      <FtFlexBox>
-        <FtChannelBubble
-          v-for="channel in errorChannels"
-          :key="channel.id"
-          :channel-name="channel.name"
-          :channel-id="channel.id"
-          :channel-thumbnail="channel.thumbnail"
+      <div class="errorChannelsSummary">
+        <h3 class="errorChannelsTitle">
+          {{ $t("Subscriptions.Error Channels") }} ({{ errorChannels.length }})
+        </h3>
+        <FtIconButton
+          :title="$t('Global.More Options')"
+          :icon="['fas', 'chevron-down']"
+          theme="base-no-default"
+          :use-shadow="false"
+          dropdown-position-x="left"
+          :dropdown-options="errorChannelDropdownOptions"
+          @click="handleErrorChannelDropdownClick"
         />
-      </FtFlexBox>
+      </div>
     </div>
     <FtFlexBox
       v-if="!isLoading && activeVideoList.length === 0"
@@ -70,12 +74,13 @@
 
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
 
 import FtAutoLoadNextPageWrapper from '../FtAutoLoadNextPageWrapper.vue'
 import FtButton from '../FtButton/FtButton.vue'
-import FtChannelBubble from '../FtChannelBubble/FtChannelBubble.vue'
 import FtElementList from '../FtElementList/FtElementList.vue'
 import FtFlexBox from '../ft-flex-box/ft-flex-box.vue'
+import FtIconButton from '../FtIconButton/FtIconButton.vue'
 import FtLoader from '../FtLoader/FtLoader.vue'
 import FtRefreshWidget from '../FtRefreshWidget/FtRefreshWidget.vue'
 
@@ -120,6 +125,8 @@ const props = defineProps({
 
 const emit = defineEmits(['refresh'])
 
+const router = useRouter()
+
 const subscriptionLimit = sessionStorage.getItem('subscriptionLimit')
 
 const dataLimit = ref(subscriptionLimit !== null ? parseInt(subscriptionLimit) : props.initialDataLimit)
@@ -158,6 +165,21 @@ const filteredVideoList = computed(() => {
     return props.videoList
   }
 })
+
+const errorChannelDropdownOptions = computed(() => {
+  return props.errorChannels.map((channel) => ({
+    label: channel.name ?? channel.id,
+    value: channel.id,
+  }))
+})
+
+/**
+ * @param {string|null} channelId
+ */
+function handleErrorChannelDropdownClick(channelId) {
+  if (!channelId) { return }
+  router.push({ path: `/channel/${channelId}` })
+}
 
 function increaseLimit() {
   dataLimit.value += props.initialDataLimit

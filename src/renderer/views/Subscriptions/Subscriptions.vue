@@ -1,13 +1,6 @@
 <template>
   <div>
     <FtCard class="card">
-      <h2>
-        <FontAwesomeIcon
-          :icon="['fas', 'rss']"
-          class="subscriptionIcon"
-        />
-        {{ $t("Subscriptions.Subscriptions") }}
-      </h2>
       <FtFlexBox
         class="tabs"
         role="tablist"

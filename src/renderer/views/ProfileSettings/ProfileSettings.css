@@ -31,16 +31,18 @@ h2 {
 }
 
 .topNavProfileButtonsSettings {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 10px;
   margin-block-start: 10px;
+  align-items: start;
 }
 
 .topNavProfileButtonsSettingRow {
   display: flex;
   align-items: center;
   gap: 10px;
+  justify-content: flex-start;
 }
 
 .topNavProfileButtonsSettingCheckbox {
