@@ -78,5 +78,3 @@ function tabLabel(tab) {
   color: var(--text-with-main-color);
 }
 </style>
-
-
