@@ -214,10 +214,15 @@
   :deep(.profileButton) {
     border: 1px solid var(--primary-shadow-color);
     background-color: var(--side-nav-hover-color);
+    transition: box-shadow 0.15s ease-out, background-color 0.15s ease-out, transform 0.15s ease-out;
   }
 
   :deep(.profileButton:hover) {
     background-color: var(--side-nav-active-color);
+    box-shadow:
+      0 0 0 2px var(--primary-color),
+      0 6px 18px rgb(0 0 0 / 18%);
+    transform: translateY(-1px);
   }
 
   @include top-nav-is-colored {
@@ -225,10 +230,18 @@
       background-color: var(--primary-color-hover);
       border-color: rgb(0 0 0 / 20%);
       color: var(--text-with-main-color);
+      transition: box-shadow 0.15s ease-out, background-color 0.15s ease-out, transform 0.15s ease-out;
     }
 
     :deep(.profileButton.active) {
       background-color: var(--primary-color-active);
+    }
+
+    :deep(.profileButton:hover) {
+      box-shadow:
+        0 0 0 2px var(--text-with-main-color),
+        0 6px 18px rgb(0 0 0 / 18%);
+      transform: translateY(-1px);
     }
   }
 }

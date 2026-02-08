@@ -15,9 +15,10 @@
   --video-card-padding: 10px;
   --video-thumb-radius: calc(var(--video-card-radius) - 4px);
 
-  background-color: var(--card-bg-color);
+  background-color: var(--secondary-card-bg-color);
   border-radius: var(--video-card-radius);
   box-shadow: 0 0 0 1px var(--primary-shadow-color);
+  transition: box-shadow 0.15s ease-out, background-color 0.15s ease-out, transform 0.15s ease-out;
 
   // Override shared list-item padding to create a single rounded container
   padding: var(--video-card-padding);
@@ -26,7 +27,11 @@
 
   &:hover,
   &:focus-within {
-    box-shadow: 0 0 0 1px var(--side-nav-hover-color);
+    background-color: var(--card-bg-color);
+    box-shadow:
+      0 0 0 2px var(--primary-color),
+      0 6px 18px rgb(0 0 0 / 18%);
+    transform: translateY(-1px);
   }
 
   .videoThumbnail {
