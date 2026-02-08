@@ -97,8 +97,10 @@ Height adjust for profile list so it won't cover navbar.  */
   gap: 5px;
   overflow: auto hidden;
   max-inline-size: 100%;
-  padding-block: 0;
+  padding-block: 5px;
   padding-inline: 5px;
+  block-size: 36px;
+  align-items: center;
 }
 
 .profileButton {
