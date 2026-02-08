@@ -271,6 +271,7 @@ const defaultPlayback = computed(() => store.getters.getDefaultPlayback)
 function handleExternalPlayer() {
   if (process.env.IS_ELECTRON) {
     window.ftElectron.openInExternalPlayer({
+      profileId: store.getters.getActiveProfile?._id,
       playlistId: playlistId,
       playbackRate: defaultPlayback.value,
     })

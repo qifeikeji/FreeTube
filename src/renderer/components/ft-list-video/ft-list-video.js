@@ -600,6 +600,7 @@ export default defineComponent({
       this.$emit('pause-player')
 
       const payload = {
+        profileId: this.$store.getters.getActiveProfile?._id,
         videoId: this.id,
         playlistId: this.playlistIdFinal,
         startTime: this.watchProgress,

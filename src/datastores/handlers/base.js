@@ -133,6 +133,10 @@ class Profiles {
     return db.profiles.findAsync({})
   }
 
+  static _findOne(_id) {
+    return db.profiles.findOneAsync({ _id })
+  }
+
   static upsert(profile) {
     return db.profiles.updateAsync({ _id: profile._id }, profile, { upsert: true })
   }

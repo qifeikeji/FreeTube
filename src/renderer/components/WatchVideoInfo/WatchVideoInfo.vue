@@ -351,12 +351,14 @@ function handleExternalPlayer() {
   // Only play video in non playlist mode when user playlist detected
   if (props.inUserPlaylist) {
     payload = {
+      profileId: store.getters.getActiveProfile?._id,
       videoId: props.id,
       startTime: props.getTimestamp(),
       playbackRate: defaultPlayback.value,
     }
   } else {
     payload = {
+      profileId: store.getters.getActiveProfile?._id,
       videoId: props.id,
       playlistId: props.playlistId,
       startTime: props.getTimestamp(),

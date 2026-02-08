@@ -1,12 +1,13 @@
 import { spawn } from 'node:child_process'
 import { join } from 'node:path'
 import { readFile } from 'node:fs/promises'
-import { settings } from '../datastores/handlers/base'
+import { profiles, settings } from '../datastores/handlers/base'
 import { isFreeTubeUrl } from './utils'
 import { IpcChannels, UnsupportedPlayerActions } from '../constants'
 
 /**
  * @typedef ExternalPlayerPayload
+ * @property {string | undefined | null} [profileId]
  * @property {string | undefined | null} [videoId]
  * @property {string | undefined | null} [playlistId]
  * @property {number | undefined | null} [startTime]
@@ -52,8 +53,14 @@ export async function handleOpenInExternalPlayer(event, payload) {
     return
   }
 
+  const profileId = typeof payload.profileId === 'string' ? payload.profileId : null
+  const profile = profileId ? await profiles._findOne(profileId) : null
+  const profileExternalPlayerSettings = profile?.externalPlayerSettings ?? null
+
   /** @type {string} */
-  const externalPlayer = (await settings._findOne('externalPlayer'))?.value || ''
+  const externalPlayer = profileExternalPlayerSettings?.player ??
+    (await settings._findOne('externalPlayer'))?.value ||
+    ''
 
   // External player setting not set or set to "none"
   if (externalPlayer === '') {
@@ -75,15 +82,23 @@ export async function handleOpenInExternalPlayer(event, payload) {
   const unsupportedActions = []
 
   /** @type {boolean} */
-  const ignoreWarnings = (await settings._findOne('externalPlayerIgnoreWarnings'))?.value || false
+  const ignoreWarnings = profileExternalPlayerSettings?.ignoreWarnings ??
+    (await settings._findOne('externalPlayerIgnoreWarnings'))?.value ||
+    false
 
   /** @type {boolean} */
-  const ignoreDefaultArgs = (await settings._findOne('externalPlayerIgnoreDefaultArgs'))?.value || false
+  const ignoreDefaultArgs = profileExternalPlayerSettings?.ignoreDefaultArgs ??
+    (await settings._findOne('externalPlayerIgnoreDefaultArgs'))?.value ||
+    false
 
   /** @type {string[] | string} */
-  const customArgs = (await settings._findOne('externalPlayerCustomArgs'))?.value || '[]'
+  const customArgs = profileExternalPlayerSettings?.customArgs ??
+    (await settings._findOne('externalPlayerCustomArgs'))?.value ||
+    '[]'
 
-  if (typeof customArgs === 'string' && customArgs !== '[]') {
+  if (Array.isArray(customArgs) && customArgs.length > 0) {
+    args.push(...customArgs)
+  } else if (typeof customArgs === 'string' && customArgs !== '[]') {
     args.push(...JSON.parse(customArgs))
   } else if (!ignoreDefaultArgs && Array.isArray(cmdArgs.defaultCustomArguments)) {
     args.push(...cmdArgs.defaultCustomArguments)
@@ -180,7 +195,9 @@ export async function handleOpenInExternalPlayer(event, payload) {
   )
 
   /** @type {string} */
-  const externalPlayerExecutable = (await settings._findOne('externalPlayerExecutable'))?.value || ''
+  const externalPlayerExecutable = profileExternalPlayerSettings?.executable ??
+    (await settings._findOne('externalPlayerExecutable'))?.value ||
+    ''
 
   const executable = externalPlayerExecutable.length > 0 ? externalPlayerExecutable : cmdArgs.defaultExecutable
 

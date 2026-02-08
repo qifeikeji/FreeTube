@@ -422,6 +422,27 @@ const customState = {
 }
 
 const customGetters = {
+  // External Player settings: allow per-profile overrides.
+  // If the active profile doesn't have overrides, fall back to global settings values.
+  getExternalPlayer: (state, getters, rootState, rootGetters) => {
+    return rootGetters.getActiveProfile?.externalPlayerSettings?.player ?? state.externalPlayer
+  },
+  getExternalPlayerExecutable: (state, getters, rootState, rootGetters) => {
+    return rootGetters.getActiveProfile?.externalPlayerSettings?.executable ?? state.externalPlayerExecutable
+  },
+  getExternalPlayerIgnoreWarnings: (state, getters, rootState, rootGetters) => {
+    return rootGetters.getActiveProfile?.externalPlayerSettings?.ignoreWarnings ?? state.externalPlayerIgnoreWarnings
+  },
+  getExternalPlayerIgnoreDefaultArgs: (state, getters, rootState, rootGetters) => {
+    return rootGetters.getActiveProfile?.externalPlayerSettings?.ignoreDefaultArgs ?? state.externalPlayerIgnoreDefaultArgs
+  },
+  getExternalPlayerCustomArgs: (state, getters, rootState, rootGetters) => {
+    const customArgs = rootGetters.getActiveProfile?.externalPlayerSettings?.customArgs
+    if (Array.isArray(customArgs)) {
+      return JSON.stringify(customArgs)
+    }
+    return state.externalPlayerCustomArgs
+  },
 }
 
 const customMutations = {}

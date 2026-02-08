@@ -169,8 +169,19 @@ const actions = {
     }
   },
 
-  async createProfile({ commit }, profile) {
+  async createProfile({ commit, rootState }, profile) {
     try {
+      // Seed per-profile external player settings from current global defaults (if missing)
+      if (profile.externalPlayerSettings == null) {
+        const customArgsString = rootState.settings.externalPlayerCustomArgs ?? '[]'
+        profile.externalPlayerSettings = {
+          player: rootState.settings.externalPlayer ?? '',
+          executable: rootState.settings.externalPlayerExecutable ?? '',
+          ignoreWarnings: rootState.settings.externalPlayerIgnoreWarnings ?? false,
+          ignoreDefaultArgs: rootState.settings.externalPlayerIgnoreDefaultArgs ?? false,
+          customArgs: typeof customArgsString === 'string' ? JSON.parse(customArgsString) : [],
+        }
+      }
       const newProfile = await DBProfileHandlers.create(profile)
       commit('addProfileToList', newProfile)
     } catch (errMessage) {
