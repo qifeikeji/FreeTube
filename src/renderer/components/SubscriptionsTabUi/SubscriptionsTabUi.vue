@@ -85,7 +85,12 @@
       :title="title"
       @click="refresh"
     >
-      <SubscriptionsTabsInRefreshBar />
+      <template #left>
+        <SubscriptionsTabsInRefreshBar />
+      </template>
+      <template #center>
+        <FtSideNavSearch compact />
+      </template>
     </FtRefreshWidget>
   </div>
 </template>
@@ -103,6 +108,7 @@ import FtIconButton from '../FtIconButton/FtIconButton.vue'
 import FtLoader from '../FtLoader/FtLoader.vue'
 import FtRefreshWidget from '../FtRefreshWidget/FtRefreshWidget.vue'
 import SubscriptionsTabsInRefreshBar from './SubscriptionsTabsInRefreshBar.vue'
+import FtSideNavSearch from '../FtSideNavSearch/FtSideNavSearch.vue'
 
 import store from '../../store/index'
 

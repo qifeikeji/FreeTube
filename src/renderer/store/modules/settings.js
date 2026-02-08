@@ -182,6 +182,7 @@ const state = {
   showAddedExternalPlayerCustomArgs: true,
   // UI layout
   sideNavWidthPx: 300,
+  videoGridColumns: 0,
   expandSideBar: false,
   hideActiveSubscriptions: false,
   hideChannelCommunity: false,

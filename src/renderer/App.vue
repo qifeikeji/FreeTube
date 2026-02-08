@@ -150,12 +150,21 @@ const hideLabelsSideBar = computed(() => store.getters.getHideLabelsSideBar)
 
 /** @type {import('vue').ComputedRef<number>} */
 const sideNavWidthPx = computed(() => store.getters.getSideNavWidthPx)
+/** @type {import('vue').ComputedRef<number>} */
+const videoGridColumns = computed(() => store.getters.getVideoGridColumns)
 
 const appStyle = computed(() => {
   const width = Number(sideNavWidthPx.value)
   const safeWidth = Number.isFinite(width) ? Math.min(Math.max(width, 180), 800) : 300
+
+  const cols = Math.round(Number(videoGridColumns.value))
+  const safeCols = Number.isFinite(cols) ? Math.min(Math.max(cols, 0), 12) : 0
+  const gridTemplateColumns = safeCols >= 1
+    ? `repeat(${safeCols}, minmax(0, 1fr))`
+    : 'repeat(auto-fill, minmax(262px, 1fr))'
   return {
     '--side-nav-open-width': `${safeWidth}px`,
+    '--video-grid-template-columns': gridTemplateColumns,
   }
 })
 

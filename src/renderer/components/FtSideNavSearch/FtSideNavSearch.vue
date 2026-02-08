@@ -2,6 +2,7 @@
   <div
     v-if="!hideSearchBar"
     class="sideNavSearch"
+    :class="{ compact }"
   >
     <FtInput
       ref="searchInput"
@@ -46,6 +47,13 @@ import { MOBILE_WIDTH_THRESHOLD, SEARCH_RESULTS_DISPLAY_LIMIT } from '../../../c
 import { debounce, openInternalPath } from '../../helpers/utils'
 import { clearLocalSearchSuggestionsSession, getLocalSearchSuggestions } from '../../helpers/api/local'
 import { getInvidiousSearchSuggestions } from '../../helpers/api/invidious'
+
+defineProps({
+  compact: {
+    type: Boolean,
+    default: false,
+  },
+})
 
 const { t } = useI18n()
 
@@ -384,6 +392,27 @@ onBeforeUnmount(() => {
   align-items: center;
   gap: 8px;
   padding: 10px;
+}
+
+.sideNavSearch.compact {
+  gap: 6px;
+  padding: 0;
+  max-inline-size: min(720px, 100%);
+}
+
+.sideNavSearch.compact :deep(.ft-input-component) {
+  min-block-size: 34px;
+}
+
+.sideNavSearch.compact :deep(.ft-input) {
+  padding-block: 6px;
+  padding-inline: 10px;
+  font-size: 14px;
+}
+
+.sideNavSearch.compact .navFilterButton {
+  padding: 6px;
+  font-size: 16px;
 }
 
 .searchInput {

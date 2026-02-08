@@ -82,6 +82,17 @@
         :icon="listType === 'grid' ? ['fas', 'grip'] : ['fas', 'list']"
         @change="updateListType"
       />
+      <FtInput
+        :placeholder="t('Settings.General Settings.Video Grid Columns')"
+        :show-action-button="false"
+        :show-label="true"
+        input-type="number"
+        :min="0"
+        :max="12"
+        :value="videoGridColumnsString"
+        :tooltip="t('Tooltips.General Settings.Video Grid Columns')"
+        @input="handleVideoGridColumnsInput"
+      />
       <FtSelect
         :placeholder="t('Settings.General Settings.Thumbnail Preference.Thumbnail Preference')"
         :value="thumbnailPreference"
@@ -222,6 +233,24 @@ function handleSideNavWidthPxInput(value) {
   if (!Number.isFinite(parsed)) { return }
   const clamped = Math.min(Math.max(parsed, 180), 800)
   sideNavWidthDebouncedUpdate(clamped)
+}
+
+/** @type {import('vue').ComputedRef<number>} */
+const videoGridColumns = computed(() => store.getters.getVideoGridColumns)
+const videoGridColumnsString = computed(() => String(videoGridColumns.value ?? 0))
+
+const videoGridColumnsDebouncedUpdate = debounce((value) => {
+  store.dispatch('updateVideoGridColumns', value)
+}, 250)
+
+/**
+ * @param {string} value
+ */
+function handleVideoGridColumnsInput(value) {
+  const parsed = Math.round(Number(value))
+  if (!Number.isFinite(parsed)) { return }
+  const clamped = Math.min(Math.max(parsed, 0), 12)
+  videoGridColumnsDebouncedUpdate(clamped)
 }
 
 /** @type {import('vue').ComputedRef<boolean>} */

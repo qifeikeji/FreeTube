@@ -305,6 +305,7 @@ Settings:
       Hidden: Hidden
       Blur: Blur
     Side Nav Width (px): Side nav width (px)
+    Video Grid Columns: Video grid columns
     Current Invidious Instance: Current Invidious Instance
     The currently set default instance is {instance}: The currently set default instance is {instance}
     No default instance has been set: No default instance has been set
@@ -1057,6 +1058,7 @@ Tooltips:
       By default FreeTube will open the clicked link in your default browser.
     Open Deep Links In New Window: URLs passed to FreeTube, such as by redirect
       browser extensions or command line arguments, are opened in a new window.
+    Video Grid Columns: Set to 0 for automatic columns. Otherwise uses a fixed number of columns for grid view.
   Player Settings:
     Proxy Videos Through Invidious: Will connect to Invidious to serve videos instead
       of making a direct connection to YouTube.

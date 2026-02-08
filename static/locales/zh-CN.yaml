@@ -227,6 +227,7 @@ Settings:
       Hidden: 隐藏缩略图
       Blur: 模糊
     Side Nav Width (px): 左侧栏宽度(px)
+    Video Grid Columns: 视频网格列数
     Region for Trending: '热门区域'
         #! List countries
     Check for Updates: 检查更新
@@ -973,6 +974,7 @@ Tooltips:
     Region for Trending: 热门区域让您挑选您想要显示哪个国家的热门视频。
     External Link Handling: "选择单击一个无法在 FreeTube 中打开的链接时触发的默认操作。\n默认情况下，FreeTube 将在您的默认浏览器中打开所点击链接。\n"
     Open Deep Links In New Window: 在新窗口由浏览器的重定向扩展或命令行变量传递到 FreeTube 的 URL。
+    Video Grid Columns: 设为 0 表示自动列数；否则网格视图使用固定列数。
   External Player Settings:
     External Player: 选择一个外部播放器将在缩略图上显示一个图标，用于在外部播放器中打开视频(播放列表，如果支持)。警告，Invidious 设置不影响外部播放器。
     Custom External Player Executable: 默认情况下，FreeTube 假设选择的外部播放器可以通过 PATH 环境变量找到。如果需要，可以在这里设置自定义路径。
