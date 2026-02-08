@@ -930,6 +930,7 @@ Profile:
   Are you sure you want to delete the selected channels?  This will not delete the channel from any other profile.: 您确定您想删除选择的频道？ 这不会从其他配置文件中删除频道。
   Add Selected To Profile: 添加选择的到配置文件
   Delete Selected: 删除选择的
+  Hide from top profile buttons: 在顶部配置文件按钮中隐藏此配置文件
   '{number} selected': '{number}选择的'
   ? This is your primary profile.  Are you sure you want to delete the selected channels?  The same channels will be deleted in any profile they are found in.
   : 这是您的主配置文件。 您确定您想删除选择的频道？ 相同的频道中任何找到的配置文件会被删除。

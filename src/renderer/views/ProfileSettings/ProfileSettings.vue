@@ -75,6 +75,7 @@ import { MAIN_PROFILE_ID } from '../../../constants'
  * @property {string} subscriptions[].id
  * @property {string|undefined} subscriptions[].name
  * @property {string|undefined} subscriptions[].thumbnail
+ * @property {boolean} hideFromTopNavButtons
  */
 
 const isNewProfileOpen = ref(false)
@@ -105,7 +106,8 @@ function openSettingsForNewProfile() {
     name: '',
     bgColor: getRandomColor().value,
     textColor: calculateColorLuminance(getRandomColor().value),
-    subscriptions: []
+    subscriptions: [],
+    hideFromTopNavButtons: false,
   }
 
   openSettingsProfileId.value = ''

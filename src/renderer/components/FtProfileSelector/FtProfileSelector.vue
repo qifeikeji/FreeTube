@@ -5,7 +5,7 @@
     role="toolbar"
   >
     <button
-      v-for="profile in profileList"
+      v-for="profile in profileListForButtons"
       :key="profile._id"
       class="profileButton"
       type="button"
@@ -144,6 +144,11 @@ let mouseDownOnIcon = false
 const profileList = computed(() => store.getters.getProfileList)
 /** @type {import('vue').ComputedRef<Profile>} */
 const activeProfile = computed(() => store.getters.getActiveProfile)
+
+/** @type {import('vue').ComputedRef<Profile[]>} */
+const profileListForButtons = computed(() => {
+  return profileList.value.filter((profile) => !profile.hideFromTopNavButtons)
+})
 
 const activeProfileInitial = computed(() => {
   return activeProfile.value?.name
