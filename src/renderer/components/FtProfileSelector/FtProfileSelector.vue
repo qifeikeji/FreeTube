@@ -147,7 +147,8 @@ const activeProfile = computed(() => store.getters.getActiveProfile)
 
 /** @type {import('vue').ComputedRef<Profile[]>} */
 const profileListForButtons = computed(() => {
-  return profileList.value.filter((profile) => !profile.hideFromTopNavButtons)
+  const hiddenIds = store.getters.getHiddenTopNavProfileButtonIds ?? []
+  return profileList.value.filter((profile) => !hiddenIds.includes(profile._id))
 })
 
 const activeProfileInitial = computed(() => {

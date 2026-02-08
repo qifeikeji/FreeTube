@@ -1,6 +1,35 @@
 <template>
   <div>
     <FtCard class="card">
+      <h2>{{ $t('Profile.Top Nav Profile Buttons') }}</h2>
+      <p class="message">
+        {{ $t('Profile.Select which profiles are hidden from the top button row. This does not affect the dropdown menu.') }}
+      </p>
+      <div class="topNavProfileButtonsSettings">
+        <div
+          v-for="profile in profileList"
+          :key="profile._id"
+          class="topNavProfileButtonsSettingRow"
+        >
+          <input
+            :id="'hideTopNavProfileButton-' + profile._id"
+            class="topNavProfileButtonsSettingCheckbox"
+            type="checkbox"
+            :checked="hiddenTopNavProfileButtonIds.includes(profile._id)"
+            @change="toggleHiddenTopNavProfileButton(profile._id)"
+          >
+          <button
+            class="topNavProfileButtonsSettingButton"
+            type="button"
+            :class="{ hidden: hiddenTopNavProfileButtonIds.includes(profile._id) }"
+            @click="toggleHiddenTopNavProfileButton(profile._id)"
+          >
+            <span dir="auto">{{ translateProfileName(profile) }}</span>
+          </button>
+        </div>
+      </div>
+    </FtCard>
+    <FtCard class="card">
       <h2>{{ $t("Profile.Profile Manager") }}</h2>
       <FtFlexBox
         class="profileList"
@@ -51,6 +80,7 @@
 
 <script setup>
 import { computed, ref, shallowRef, watch } from 'vue'
+import { useI18n } from '../../composables/use-i18n-polyfill'
 
 import FtCard from '../../components/ft-card/ft-card.vue'
 import FtFlexBox from '../../components/ft-flex-box/ft-flex-box.vue'
@@ -64,6 +94,8 @@ import store from '../../store/index'
 
 import { calculateColorLuminance, getRandomColor } from '../../helpers/colors'
 import { MAIN_PROFILE_ID } from '../../../constants'
+
+const { t } = useI18n()
 
 /**
  * @typedef {object} Profile
@@ -91,6 +123,31 @@ const profileList = computed(() => {
   return store.getters.getProfileList
 })
 
+const hiddenTopNavProfileButtonIds = computed(() => {
+  return store.getters.getHiddenTopNavProfileButtonIds ?? []
+})
+
+/**
+ * @param {string} profileId
+ */
+function toggleHiddenTopNavProfileButton(profileId) {
+  const current = hiddenTopNavProfileButtonIds.value
+  const set = new Set(current)
+  if (set.has(profileId)) {
+    set.delete(profileId)
+  } else {
+    set.add(profileId)
+  }
+  store.dispatch('updateHiddenTopNavProfileButtonIds', [...set])
+}
+
+/**
+ * @param {Profile} profile
+ */
+function translateProfileName(profile) {
+  return profile._id === MAIN_PROFILE_ID ? t('Profile.All Channels') : profile.name
+}
+
 watch(profileList, () => {
   openSettingsProfile.value = getProfileById(openSettingsProfileId.value)
 }, { deep: true })
@@ -106,8 +163,7 @@ function openSettingsForNewProfile() {
     name: '',
     bgColor: getRandomColor().value,
     textColor: calculateColorLuminance(getRandomColor().value),
-    subscriptions: [],
-    hideFromTopNavButtons: false,
+    subscriptions: []
   }
 
   openSettingsProfileId.value = ''

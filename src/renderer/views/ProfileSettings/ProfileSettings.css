@@ -30,6 +30,46 @@ h2 {
   margin-inline: auto;
 }
 
+.topNavProfileButtonsSettings {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-block-start: 10px;
+}
+
+.topNavProfileButtonsSettingRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.topNavProfileButtonsSettingCheckbox {
+  inline-size: 18px;
+  block-size: 18px;
+  accent-color: var(--primary-color);
+}
+
+.topNavProfileButtonsSettingButton {
+  border: 1px solid var(--primary-shadow-color);
+  border-radius: 8px;
+  background-color: var(--side-nav-hover-color);
+  color: var(--primary-text-color);
+  cursor: pointer;
+  line-height: 1;
+  padding-block: 8px;
+  padding-inline: 10px;
+  white-space: nowrap;
+}
+
+.topNavProfileButtonsSettingButton.hidden {
+  opacity: 0.6;
+}
+
+.topNavProfileButtonsSettingButton:hover {
+  background-color: var(--side-nav-active-color);
+  color: var(--side-nav-active-text-color);
+}
+
 @media only screen and (width <= 680px) {
   .card {
     inline-size: 90%;

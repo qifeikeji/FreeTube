@@ -303,6 +303,9 @@ const state = {
   quickBookmarkTargetPlaylistId: 'favorites',
   generalAutoLoadMorePaginatedItemsEnabled: false,
   hideToTrayOnMinimize: false,
+  // Profile buttons shown in the top navigation bar (display-mode="buttons")
+  // Array of profile IDs that should be hidden from the top button row.
+  hiddenTopNavProfileButtonIds: [],
 
   // The settings below have side effects
   currentLocale: 'system',
