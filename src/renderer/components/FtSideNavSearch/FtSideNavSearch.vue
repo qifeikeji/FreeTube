@@ -41,7 +41,7 @@ import FtInput from '../FtInput/FtInput.vue'
 
 import store from '../../store/index'
 
-import { KeyboardShortcuts, MOBILE_WIDTH_THRESHOLD, SEARCH_RESULTS_DISPLAY_LIMIT } from '../../../constants'
+import { MOBILE_WIDTH_THRESHOLD, SEARCH_RESULTS_DISPLAY_LIMIT } from '../../../constants'
 import { debounce, openInternalPath } from '../../helpers/utils'
 import { clearLocalSearchSuggestionsSession, getLocalSearchSuggestions } from '../../helpers/api/local'
 import { getInvidiousSearchSuggestions } from '../../helpers/api/invidious'
@@ -417,5 +417,4 @@ onBeforeUnmount(() => {
   color: var(--primary-color);
 }
 </style>
-
 

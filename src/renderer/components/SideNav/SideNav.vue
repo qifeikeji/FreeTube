@@ -8,7 +8,10 @@
       class="inner"
       :class="applyHiddenLabels"
     >
-      <FtSideNavSearch v-if="isOpen" class="mobileHidden" />
+      <FtSideNavSearch
+        v-if="isOpen"
+        class="mobileHidden"
+      />
       <router-link
         class="navOption topNavOption mobileShow "
         role="button"

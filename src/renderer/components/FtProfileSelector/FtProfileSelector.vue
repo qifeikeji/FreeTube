@@ -1,5 +1,9 @@
 <template>
-  <div v-if="displayMode === 'buttons'" class="profileButtons" role="toolbar">
+  <div
+    v-if="displayMode === 'buttons'"
+    class="profileButtons"
+    role="toolbar"
+  >
     <button
       v-for="profile in profileList"
       :key="profile._id"
@@ -110,7 +114,7 @@ import { showToast } from '../../helpers/utils'
 import { MAIN_PROFILE_ID } from '../../../constants'
 import { getFirstCharacter } from '../../helpers/strings'
 
-const props = defineProps({
+defineProps({
   displayMode: {
     type: String,
     default: 'dropdown',
