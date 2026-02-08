@@ -192,8 +192,7 @@ export async function handleOpenInExternalPlayer(event, payload) {
 
   /** @type {string} */
   const externalPlayerExecutable = profileExternalPlayerSettings?.executable ??
-    (await settings._findOne('externalPlayerExecutable'))?.value ||
-    ''
+    ((await settings._findOne('externalPlayerExecutable'))?.value || '')
 
   const executable = externalPlayerExecutable.length > 0 ? externalPlayerExecutable : cmdArgs.defaultExecutable
 
