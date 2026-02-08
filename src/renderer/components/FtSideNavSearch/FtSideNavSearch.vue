@@ -417,4 +417,3 @@ onBeforeUnmount(() => {
   color: var(--primary-color);
 }
 </style>
-
