@@ -71,9 +71,12 @@ jobs:
         sudo apt update
         sudo apt -y install libarchive-tools
 
-    - name: Build x64 with Node.js ${{ matrix.node-version}}
+    - name: Build AppImage x64 with Node.js ${{ matrix.node-version}}
       shell: bash
-      run: yarn run build
+      run: |
+        yarn run patch-shaka
+        yarn run pack
+        npx --no-install electron-builder --config _scripts/ebuilder.config.mjs --linux AppImage --x64 --publish never
 
     - name: Convert X64 AppImage to static runtime
       shell: bash
@@ -90,38 +93,8 @@ jobs:
           -n ./squashfs-root ./"$appimage"
         rm -rf ./squashfs-root ./appimagetool.AppImage
 
-    - name: Upload Linux .zip x64 Artifact
-      uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f #v6.0.0
-      with:
-        name: freetube-${{ steps.versionNumber.outputs.version }}-linux-x64-portable.zip
-        path: build/freetube-${{ steps.versionNumber.outputs.version }}.zip
-
-    - name: Upload Linux .7z x64 Artifact
-      uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f #v6.0.0
-      with:
-        name: freetube-${{ steps.versionNumber.outputs.version }}-linux-x64-portable.7z
-        path: build/freetube-${{ steps.versionNumber.outputs.version }}.7z
-
-    - name: Upload .deb x64 Artifact
-      uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f #v6.0.0
-      with:
-        name: freetube_${{ steps.versionNumber.outputs.version }}_amd64.deb
-        path: build/freetube_${{ steps.versionNumber.outputs.version }}_amd64.deb
-
     - name: Upload AppImage x64 Artifact
       uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f #v6.0.0
       with:
         name: freetube-${{ steps.versionNumber.outputs.version }}-amd64.AppImage
         path: build/FreeTube-${{ steps.versionNumber.outputs.version }}.AppImage
-
-    - name: Upload .rpm x64 Artifact
-      uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f #v6.0.0
-      with:
-        name: freetube-${{ steps.versionNumber.outputs.version }}.amd64.rpm
-        path: build/freetube-${{ steps.versionNumber.outputs.version }}.x86_64.rpm
-
-    - name: Upload Pacman .pacman x64 Artifact
-      uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f #v6.0.0
-      with:
-        name: freetube-${{ steps.versionNumber.outputs.version }}-amd64.pacman
-        path: build/freetube-${{ steps.versionNumber.outputs.version }}.pacman
