@@ -12,8 +12,8 @@
           :id="hideFromTopButtonsId"
           class="hideFromTopButtonsCheckbox"
           type="checkbox"
-          :checked="hideFromTopNavButtons"
-          @change="setHideFromTopNavButtons($event.target.checked)"
+          v-model="hideFromTopNavButtonsLocal"
+          @change="handleHideFromTopNavButtonsChange"
         >
         <label :for="hideFromTopButtonsId">
           {{ $t('Profile.Hide from top profile buttons') }}
@@ -101,9 +101,11 @@ const props = defineProps({
   }
 })
 
-const hideFromTopNavButtons = computed(() => {
-  return props.profile.hideFromTopNavButtons ?? false
-})
+const hideFromTopNavButtonsLocal = ref(false)
+
+watch(() => props.profile.hideFromTopNavButtons, (value) => {
+  hideFromTopNavButtonsLocal.value = value ?? false
+}, { immediate: true })
 
 /**
  * @param {boolean} value
@@ -113,6 +115,10 @@ function setHideFromTopNavButtons(value) {
     ...props.profile,
     hideFromTopNavButtons: value,
   })
+}
+
+function handleHideFromTopNavButtonsChange() {
+  setHideFromTopNavButtons(hideFromTopNavButtonsLocal.value)
 }
 
 /** @type {import('vue').ComputedRef<'local' | 'invidious'>} */
