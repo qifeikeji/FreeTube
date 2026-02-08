@@ -82,18 +82,15 @@ export async function handleOpenInExternalPlayer(event, payload) {
 
   /** @type {boolean} */
   const ignoreWarnings = profileExternalPlayerSettings?.ignoreWarnings ??
-    (await settings._findOne('externalPlayerIgnoreWarnings'))?.value ||
-    false
+    ((await settings._findOne('externalPlayerIgnoreWarnings'))?.value || false)
 
   /** @type {boolean} */
   const ignoreDefaultArgs = profileExternalPlayerSettings?.ignoreDefaultArgs ??
-    (await settings._findOne('externalPlayerIgnoreDefaultArgs'))?.value ||
-    false
+    ((await settings._findOne('externalPlayerIgnoreDefaultArgs'))?.value || false)
 
   /** @type {string[] | string} */
   const customArgs = profileExternalPlayerSettings?.customArgs ??
-    (await settings._findOne('externalPlayerCustomArgs'))?.value ||
-    '[]'
+    ((await settings._findOne('externalPlayerCustomArgs'))?.value || '[]')
 
   if (Array.isArray(customArgs) && customArgs.length > 0) {
     args.push(...customArgs)
