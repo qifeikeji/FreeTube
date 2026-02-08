@@ -59,8 +59,7 @@ export async function handleOpenInExternalPlayer(event, payload) {
 
   /** @type {string} */
   const externalPlayer = profileExternalPlayerSettings?.player ??
-    (await settings._findOne('externalPlayer'))?.value ||
-    ''
+    ((await settings._findOne('externalPlayer'))?.value || '')
 
   // External player setting not set or set to "none"
   if (externalPlayer === '') {
