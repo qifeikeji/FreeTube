@@ -95,8 +95,7 @@ Height adjust for profile list so it won't cover navbar.  */
   display: flex;
   flex-wrap: nowrap;
   gap: 5px;
-  overflow-x: auto;
-  overflow-y: hidden;
+  overflow: auto hidden;
   max-inline-size: 100%;
   padding-block: 0;
   padding-inline: 5px;
@@ -109,7 +108,8 @@ Height adjust for profile list so it won't cover navbar.  */
   color: var(--primary-text-color);
   cursor: pointer;
   line-height: 1;
-  padding: 8px 10px;
+  padding-block: 8px;
+  padding-inline: 10px;
   white-space: nowrap;
 }
 
