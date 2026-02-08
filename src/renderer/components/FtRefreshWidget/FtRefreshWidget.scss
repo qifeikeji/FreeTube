@@ -41,6 +41,18 @@
   font-size: 16px;
 }
 
+.lastRefreshTimestamp.fresh {
+  color: #2e7d32;
+}
+
+.lastRefreshTimestamp.stale {
+  color: #f9a825;
+}
+
+.lastRefreshTimestamp.old {
+  color: #c62828;
+}
+
 @media only screen and (width <= 680px) {
   .floatingRefreshSection,
   .floatingRefreshSection.sideNavOpen,

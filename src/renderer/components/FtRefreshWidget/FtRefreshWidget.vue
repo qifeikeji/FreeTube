@@ -7,6 +7,7 @@
       <p
         v-if="lastRefreshTimestamp"
         class="lastRefreshTimestamp"
+        :class="lastRefreshSeverity"
       >
         {{ t('Feed.Feed Last Updated', { feedName: title, date: lastRefreshTimestamp }) }}
       </p>
@@ -44,6 +45,10 @@ const props = defineProps({
     type: String,
     default: ''
   },
+  lastRefreshAgeMs: {
+    type: Number,
+    default: null,
+  },
   title: {
     type: String,
     required: true
@@ -57,6 +62,24 @@ const refreshFeedButtonTitle = computed(() => {
     t('Feed.Refresh Feed', { subscriptionName: props.title }),
     KeyboardShortcuts.APP.SITUATIONAL.REFRESH
   )
+})
+
+const lastRefreshSeverity = computed(() => {
+  const age = props.lastRefreshAgeMs
+  if (typeof age !== 'number' || !Number.isFinite(age) || age < 0) {
+    return null
+  }
+
+  const oneHour = 60 * 60 * 1000
+  const fiveHours = 5 * oneHour
+
+  if (age < oneHour) {
+    return 'fresh'
+  }
+  if (age < fiveHours) {
+    return 'stale'
+  }
+  return 'old'
 })
 
 const emit = defineEmits(['click'])

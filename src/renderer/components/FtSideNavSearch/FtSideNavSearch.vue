@@ -413,6 +413,17 @@ onBeforeUnmount(() => {
   font-size: 14px;
 }
 
+/* Vertically center the clear (X) button inside the compact search input */
+.sideNavSearch.compact :deep(.clearInputTextButton) {
+  inset-block-start: 50%;
+  transform: translateY(-50%);
+  padding: 6px;
+}
+
+.sideNavSearch.compact :deep(.search .clearInputTextButton) {
+  inset-block-start: 50%;
+}
+
 .sideNavSearch.compact .navFilterButton {
   padding: 6px;
   font-size: 16px;

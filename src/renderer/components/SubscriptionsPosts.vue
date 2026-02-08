@@ -7,6 +7,7 @@
     :is-community="true"
     :initial-data-limit="20"
     :last-refresh-timestamp="lastPostsRefreshTimestamp"
+    :last-refresh-age-ms="lastPostsRefreshAgeMs"
     :title="t('Global.Posts')"
     @refresh="loadPostsForSubscriptionsFromRemote"
   />
@@ -98,6 +99,28 @@ const lastPostsRefreshTimestamp = computed(() => {
   })
 
   return getRelativeTimeFromDate(minTimestamp.getTime(), true)
+})
+
+const lastPostsRefreshAgeMs = computed(() => {
+  if (lastRemoteRefreshSuccessTimestamp.value) {
+    return Date.now() - lastRemoteRefreshSuccessTimestamp.value
+  }
+
+  if (
+    !postCacheForAllActiveProfileChannelsPresent.value ||
+    cacheEntriesForAllActiveProfileChannels.value.length === 0
+  ) {
+    return null
+  }
+
+  let minTimestamp = null
+  cacheEntriesForAllActiveProfileChannels.value.forEach((cacheEntry) => {
+    if (!minTimestamp || cacheEntry.timestamp.getTime() < minTimestamp.getTime()) {
+      minTimestamp = cacheEntry.timestamp
+    }
+  })
+
+  return minTimestamp ? (Date.now() - minTimestamp.getTime()) : null
 })
 
 watch(activeSubscriptionList, () => {

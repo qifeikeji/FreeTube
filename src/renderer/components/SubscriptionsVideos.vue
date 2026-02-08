@@ -4,6 +4,7 @@
     :video-list="videoList"
     :error-channels="errorChannels"
     :last-refresh-timestamp="lastVideoRefreshTimestamp"
+    :last-refresh-age-ms="lastVideoRefreshAgeMs"
     :attempted-fetch="attemptedFetch"
     :title="t('Global.Videos')"
     @refresh="loadVideosForSubscriptionsFromRemote"
@@ -107,6 +108,28 @@ const lastVideoRefreshTimestamp = computed(() => {
     }
   })
   return getRelativeTimeFromDate(minTimestamp.getTime(), true)
+})
+
+const lastVideoRefreshAgeMs = computed(() => {
+  if (lastRemoteRefreshSuccessTimestamp.value) {
+    return Date.now() - lastRemoteRefreshSuccessTimestamp.value
+  }
+
+  if (
+    !videoCacheForAllActiveProfileChannelsPresent.value ||
+    cacheEntriesForAllActiveProfileChannels.value.length === 0
+  ) {
+    return null
+  }
+
+  let minTimestamp = null
+  cacheEntriesForAllActiveProfileChannels.value.forEach((cacheEntry) => {
+    if (!minTimestamp || cacheEntry.timestamp.getTime() < minTimestamp.getTime()) {
+      minTimestamp = cacheEntry.timestamp
+    }
+  })
+
+  return minTimestamp ? (Date.now() - minTimestamp.getTime()) : null
 })
 
 watch(activeSubscriptionList, () => {
