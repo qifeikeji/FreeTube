@@ -226,6 +226,7 @@ Settings:
       End: '结尾'
       Hidden: 隐藏缩略图
       Blur: 模糊
+    Side Nav Width (px): 左侧栏宽度(px)
     Region for Trending: '热门区域'
         #! List countries
     Check for Updates: 检查更新

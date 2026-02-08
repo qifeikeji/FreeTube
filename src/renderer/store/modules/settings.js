@@ -180,6 +180,8 @@ const state = {
   externalPlayerIgnoreDefaultArgs: false,
   externalPlayerCustomArgs: '[]',
   showAddedExternalPlayerCustomArgs: true,
+  // UI layout
+  sideNavWidthPx: 300,
   expandSideBar: false,
   hideActiveSubscriptions: false,
   hideChannelCommunity: false,

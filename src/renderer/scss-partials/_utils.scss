@@ -25,7 +25,7 @@
   z-index: 3;
 
   @include is-side-nav-open {
-    inline-size: calc(100% - 300px);
+    inline-size: calc(100% - var(--side-nav-open-width, 300px));
   }
 
   @include are-side-bar-labels-hidden {

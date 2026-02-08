@@ -91,6 +91,16 @@
         :icon="['fas', 'images']"
         @change="handleThumbnailPreferenceChange"
       />
+      <FtInput
+        :placeholder="t('Settings.General Settings.Side Nav Width (px)')"
+        :show-action-button="false"
+        :show-label="true"
+        input-type="number"
+        :min="180"
+        :max="800"
+        :value="sideNavWidthPxString"
+        @input="handleSideNavWidthPxInput"
+      />
       <FtSelect
         :placeholder="t('Settings.General Settings.Locale Preference')"
         :value="currentLocale"
@@ -195,6 +205,24 @@ const IS_MAC = process.platform === 'darwin'
 
 const { t } = useI18n()
 const router = useRouter()
+
+/** @type {import('vue').ComputedRef<number>} */
+const sideNavWidthPx = computed(() => store.getters.getSideNavWidthPx)
+const sideNavWidthPxString = computed(() => String(sideNavWidthPx.value ?? 300))
+
+const sideNavWidthDebouncedUpdate = debounce((value) => {
+  store.dispatch('updateSideNavWidthPx', value)
+}, 250)
+
+/**
+ * @param {string} value
+ */
+function handleSideNavWidthPxInput(value) {
+  const parsed = Math.round(Number(value))
+  if (!Number.isFinite(parsed)) { return }
+  const clamped = Math.min(Math.max(parsed, 180), 800)
+  sideNavWidthDebouncedUpdate(clamped)
+}
 
 /** @type {import('vue').ComputedRef<boolean>} */
 const checkForUpdates = computed(() => store.getters.getCheckForUpdates)

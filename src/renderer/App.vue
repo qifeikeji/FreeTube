@@ -2,6 +2,7 @@
   <div
     v-if="dataReady"
     class="app"
+    :style="appStyle"
     :class="{
       hideOutlines: outlinesHidden,
       isLocaleRightToLeft: isLocaleRightToLeft,
@@ -146,6 +147,17 @@ const isSideNavOpen = computed(() => store.getters.getIsSideNavOpen)
 
 /** @type {import('vue').ComputedRef<boolean>} */
 const hideLabelsSideBar = computed(() => store.getters.getHideLabelsSideBar)
+
+/** @type {import('vue').ComputedRef<number>} */
+const sideNavWidthPx = computed(() => store.getters.getSideNavWidthPx)
+
+const appStyle = computed(() => {
+  const width = Number(sideNavWidthPx.value)
+  const safeWidth = Number.isFinite(width) ? Math.min(Math.max(width, 180), 800) : 300
+  return {
+    '--side-nav-open-width': `${safeWidth}px`,
+  }
+})
 
 /** @type {import('vue').ComputedRef<boolean>} */
 const isAnyPromptOpen = computed(() => store.getters.isAnyPromptOpen)

@@ -1,7 +1,7 @@
 .sideNav {
   display: block;
   block-size: calc(100vh - 60px);
-  inline-size: 300px;
+  inline-size: var(--side-nav-open-width, 300px);
   overflow-x: hidden;
   position: sticky;
   inset-inline-start: 0;
@@ -17,7 +17,7 @@
 
 .inner {
   block-size: 100%;
-  inline-size: 300px;
+  inline-size: var(--side-nav-open-width, 300px);
   overflow: hidden auto;
 }
 
