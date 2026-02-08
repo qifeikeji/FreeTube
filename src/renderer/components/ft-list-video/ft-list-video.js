@@ -555,6 +555,7 @@ export default defineComponent({
       ) {
         event?.preventDefault?.()
         event?.stopPropagation?.()
+        event?.stopImmediatePropagation?.()
         this.handleExternalPlayer()
       }
     },
