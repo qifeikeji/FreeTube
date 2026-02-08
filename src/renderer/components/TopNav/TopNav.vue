@@ -72,7 +72,7 @@
     <div class="middle">
       <FtProfileSelector display-mode="buttons" />
     </div>
-    <div class="side profiles" />
+    <FtProfileSelector class="side profiles" />
   </nav>
 </template>
 

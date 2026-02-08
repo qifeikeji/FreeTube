@@ -210,4 +210,25 @@
   :deep(.profileButtons) {
     justify-content: center;
   }
+
+  :deep(.profileButton) {
+    border: 1px solid var(--primary-shadow-color);
+    background-color: var(--side-nav-hover-color);
+  }
+
+  :deep(.profileButton:hover) {
+    background-color: var(--side-nav-active-color);
+  }
+
+  @include top-nav-is-colored {
+    :deep(.profileButton) {
+      background-color: var(--primary-color-hover);
+      border-color: rgb(0 0 0 / 20%);
+      color: var(--text-with-main-color);
+    }
+
+    :deep(.profileButton.active) {
+      background-color: var(--primary-color-active);
+    }
+  }
 }
