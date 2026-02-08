@@ -1,92 +1,6 @@
 <template>
   <div>
     <FtCard class="card">
-      <FtFlexBox
-        class="tabs"
-        role="tablist"
-        :aria-label="$t('Subscriptions.Subscriptions Tabs')"
-      >
-        <!-- eslint-disable-next-line vuejs-accessibility/interactive-supports-focus -->
-        <div
-          v-if="!hideSubscriptionsVideos"
-          ref="videosTab"
-          class="tab"
-          role="tab"
-          :aria-selected="currentTab === 'videos'"
-          aria-controls="subscriptionsPanel"
-          :tabindex="currentTab === 'videos' ? 0 : -1"
-          :class="{ selectedTab: currentTab === 'videos' }"
-          @click="changeTab('videos')"
-          @keydown.space.enter.prevent="changeTab('videos')"
-          @keydown.left.right="focusTab($event, 'videos')"
-        >
-          <FontAwesomeIcon
-            :icon="['fa', 'video']"
-            class="subscriptionIcon"
-          />
-          {{ $t("Global.Videos") }}
-        </div>
-        <!-- eslint-disable-next-line vuejs-accessibility/interactive-supports-focus -->
-        <div
-          v-if="!hideSubscriptionsShorts"
-          ref="shortsTab"
-          class="tab"
-          role="tab"
-          :aria-selected="currentTab === 'shorts'"
-          aria-controls="subscriptionsPanel"
-          :tabindex="currentTab === 'shorts' ? 0 : -1"
-          :class="{ selectedTab: currentTab === 'shorts' }"
-          @click="changeTab('shorts')"
-          @keydown.space.enter.prevent="changeTab('shorts')"
-          @keydown.left.right="focusTab($event, 'shorts')"
-        >
-          <FontAwesomeIcon
-            :icon="['fa', 'clapperboard']"
-            class="subscriptionIcon"
-          />
-          {{ $t("Global.Shorts") }}
-        </div>
-        <!-- eslint-disable-next-line vuejs-accessibility/interactive-supports-focus -->
-        <div
-          v-if="!hideSubscriptionsLive"
-          ref="liveTab"
-          class="tab"
-          role="tab"
-          :aria-selected="currentTab === 'live'"
-          aria-controls="subscriptionsPanel"
-          :tabindex="currentTab === 'live' ? 0 : -1"
-          :class="{ selectedTab: currentTab === 'live' }"
-          @click="changeTab('live')"
-          @keydown.space.enter.prevent="changeTab('live')"
-          @keydown.left.right="focusTab($event, 'live')"
-        >
-          <FontAwesomeIcon
-            :icon="['fa', 'tower-broadcast']"
-            class="subscriptionIcon"
-          />
-          {{ $t("Global.Live") }}
-        </div>
-        <!-- eslint-disable-next-line vuejs-accessibility/interactive-supports-focus -->
-        <div
-          v-if="visibleTabs.includes('community')"
-          ref="communityTab"
-          class="tab"
-          role="tab"
-          :aria-selected="currentTab === 'community'"
-          aria-controls="subscriptionsPanel"
-          :tabindex="currentTab === 'community' ? 0 : -1"
-          :class="{ selectedTab: currentTab === 'community' }"
-          @click="changeTab('community')"
-          @keydown.space.enter.prevent="changeTab('community')"
-          @keydown.left.right="focusTab($event, 'community')"
-        >
-          <FontAwesomeIcon
-            :icon="['fa', 'message']"
-            class="subscriptionIcon"
-          />
-          {{ $t("Global.Posts") }}
-        </div>
-      </FtFlexBox>
       <SubscriptionsVideos
         v-if="currentTab === 'videos'"
         id="subscriptionsPanel"
@@ -118,17 +32,16 @@
 </template>
 
 <script setup>
-import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
-import { computed, ref, useTemplateRef, watch } from 'vue'
+import { computed, provide, ref, watch } from 'vue'
 
 import FtCard from '../../components/ft-card/ft-card.vue'
-import FtFlexBox from '../../components/ft-flex-box/ft-flex-box.vue'
 import SubscriptionsVideos from '../../components/SubscriptionsVideos.vue'
 import SubscriptionsLive from '../../components/SubscriptionsLive.vue'
 import SubscriptionsShorts from '../../components/SubscriptionsShorts.vue'
 import SubscriptionsPosts from '../../components/SubscriptionsPosts.vue'
 
 import store from '../../store/index'
+import { SUBSCRIPTIONS_TABS_CTX } from './subscriptions-tabs-context'
 
 /** @type {import('vue').ComputedRef<boolean>} */
 const hideSubscriptionsVideos = computed(() => {
@@ -196,6 +109,12 @@ const visibleTabs = computed(() => {
   return tabs
 })
 
+provide(SUBSCRIPTIONS_TABS_CTX, {
+  currentTab,
+  visibleTabs,
+  changeTab,
+})
+
 watch(visibleTabs, (value) => {
   if (value.length === 0) {
     currentTab.value = null
@@ -230,61 +149,6 @@ function changeTab(tab) {
     // First visible tab or no tab
     currentTab.value = visibleTabs.value.length > 0 ? visibleTabs.value[0] : null
   }
-}
-
-const videosTab = useTemplateRef('videosTab')
-const liveTab = useTemplateRef('liveTab')
-const shortsTab = useTemplateRef('shortsTab')
-const communityTab = useTemplateRef('communityTab')
-
-/**
- * @param {KeyboardEvent} event
- * @param {'videos' | 'shorts' | 'live' | 'community'} focusedTab
- */
-function focusTab(event, focusedTab) {
-  if (event.altKey) {
-    return
-  }
-
-  event.preventDefault()
-
-  const visibleTabsCached = visibleTabs.value
-
-  if (visibleTabsCached.length === 1) {
-    store.commit('setOutlinesHidden', false)
-    return
-  }
-
-  let index = visibleTabsCached.indexOf(focusedTab)
-
-  if (event.key === 'ArrowLeft') {
-    index--
-  } else {
-    index++
-  }
-
-  if (index < 0) {
-    index = visibleTabsCached.length - 1
-  } else if (index > visibleTabsCached.length - 1) {
-    index = 0
-  }
-
-  switch (visibleTabsCached[index]) {
-    case 'videos':
-      videosTab.value?.focus()
-      break
-    case 'live':
-      liveTab.value?.focus()
-      break
-    case 'shorts':
-      shortsTab.value?.focus()
-      break
-    case 'community':
-      communityTab.value?.focus()
-      break
-  }
-
-  store.commit('setOutlinesHidden', false)
 }
 </script>
 
