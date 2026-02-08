@@ -7,9 +7,16 @@
       v-if="!isLoading && errorChannels.length !== 0"
     >
       <div class="errorChannelsSummary">
-        <h3 class="errorChannelsTitle">
-          {{ $t('Subscriptions.Error Channels With Count', { count: errorChannels.length }) }}
-        </h3>
+        <button
+          class="errorChannelsToggle"
+          type="button"
+          :aria-expanded="errorChannelsExpanded"
+          @click="toggleErrorChannelsExpanded"
+        >
+          <h3 class="errorChannelsTitle">
+            {{ $t('Subscriptions.Error Channels With Count', { count: errorChannels.length }) }}
+          </h3>
+        </button>
         <FtIconButton
           :title="$t('Video.More Options')"
           :icon="['fas', 'chevron-down']"
@@ -20,6 +27,15 @@
           @click="handleErrorChannelDropdownClick"
         />
       </div>
+      <FtFlexBox v-if="errorChannelsExpanded">
+        <FtChannelBubble
+          v-for="channel in errorChannels"
+          :key="channel.id"
+          :channel-name="channel.name"
+          :channel-id="channel.id"
+          :channel-thumbnail="channel.thumbnail"
+        />
+      </FtFlexBox>
     </div>
     <FtFlexBox
       v-if="!isLoading && activeVideoList.length === 0"
@@ -78,6 +94,7 @@ import { useRouter } from 'vue-router'
 
 import FtAutoLoadNextPageWrapper from '../FtAutoLoadNextPageWrapper.vue'
 import FtButton from '../FtButton/FtButton.vue'
+import FtChannelBubble from '../FtChannelBubble/FtChannelBubble.vue'
 import FtElementList from '../FtElementList/FtElementList.vue'
 import FtFlexBox from '../ft-flex-box/ft-flex-box.vue'
 import FtIconButton from '../FtIconButton/FtIconButton.vue'
@@ -126,6 +143,12 @@ const props = defineProps({
 const emit = defineEmits(['refresh'])
 
 const router = useRouter()
+
+const errorChannelsExpanded = ref(false)
+
+function toggleErrorChannelsExpanded() {
+  errorChannelsExpanded.value = !errorChannelsExpanded.value
+}
 
 const subscriptionLimit = sessionStorage.getItem('subscriptionLimit')
 

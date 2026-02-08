@@ -23,6 +23,19 @@
   margin-inline: 0;
 }
 
+.errorChannelsToggle {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+  cursor: pointer;
+  color: inherit;
+}
+
+.errorChannelsToggle:hover .errorChannelsTitle {
+  text-decoration: underline;
+}
+
 .errorChannelsTitle {
   margin-block: 0;
 }
