@@ -9,14 +9,17 @@
   border-inline-start: 2px solid var(--primary-shadow-color);
   display: flex;
   align-items: center;
-  gap: 5px;
-  justify-content: flex-end;
+  gap: 10px;
+  justify-content: space-between;
 
   @include utils.fixed-top-bar;
 }
 
-.floatingRefreshSection:has(.lastRefreshTimestamp + .refreshButton) {
-  justify-content: space-between;
+.left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-inline-size: 0;
 }
 
 .lastRefreshTimestamp {

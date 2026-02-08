@@ -2,12 +2,15 @@
   <div
     class="floatingRefreshSection"
   >
-    <p
-      v-if="lastRefreshTimestamp"
-      class="lastRefreshTimestamp"
-    >
-      {{ t('Feed.Feed Last Updated', { feedName: title, date: lastRefreshTimestamp }) }}
-    </p>
+    <div class="left">
+      <slot />
+      <p
+        v-if="lastRefreshTimestamp"
+        class="lastRefreshTimestamp"
+      >
+        {{ t('Feed.Feed Last Updated', { feedName: title, date: lastRefreshTimestamp }) }}
+      </p>
+    </div>
     <FtIconButton
       :disabled="disableRefresh"
       :icon="['fas', 'sync']"

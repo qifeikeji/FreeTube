@@ -84,7 +84,9 @@
       :last-refresh-timestamp="lastRefreshTimestamp"
       :title="title"
       @click="refresh"
-    />
+    >
+      <SubscriptionsTabsInRefreshBar />
+    </FtRefreshWidget>
   </div>
 </template>
 
@@ -100,6 +102,7 @@ import FtFlexBox from '../ft-flex-box/ft-flex-box.vue'
 import FtIconButton from '../FtIconButton/FtIconButton.vue'
 import FtLoader from '../FtLoader/FtLoader.vue'
 import FtRefreshWidget from '../FtRefreshWidget/FtRefreshWidget.vue'
+import SubscriptionsTabsInRefreshBar from './SubscriptionsTabsInRefreshBar.vue'
 
 import store from '../../store/index'
 

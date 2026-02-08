@@ -15,7 +15,8 @@
   --video-card-padding: 10px;
   --video-thumb-radius: calc(var(--video-card-radius) - 4px);
 
-  background-color: var(--secondary-card-bg-color);
+  // Slightly darker than parent background (works better in dark/system theme)
+  background-color: rgb(0 0 0 / 10%);
   border-radius: var(--video-card-radius);
   box-shadow: 0 0 0 1px var(--primary-shadow-color);
   transition: box-shadow 0.15s ease-out, background-color 0.15s ease-out, transform 0.15s ease-out;
