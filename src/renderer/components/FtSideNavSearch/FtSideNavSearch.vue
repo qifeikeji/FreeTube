@@ -33,6 +33,7 @@
 </template>
 
 <script setup>
+/* eslint-disable @stylistic/eol-last */
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import { computed, onBeforeUnmount, onMounted, ref, shallowRef, useTemplateRef } from 'vue'
 import { useI18n } from '../../composables/use-i18n-polyfill'
