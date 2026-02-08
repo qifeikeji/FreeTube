@@ -135,7 +135,6 @@ import { getFirstCharacter } from '../../helpers/strings'
  * @property {string} subscriptions[].id
  * @property {string|undefined} subscriptions[].name
  * @property {string|undefined} subscriptions[].thumbnail
- * @property {boolean} hideFromTopNavButtons
  */
 
 const { locale, t } = useI18n()
@@ -206,8 +205,7 @@ function saveProfile() {
     name: profileName.value,
     bgColor: profileBgColor.value,
     textColor: profileTextColor.value,
-    subscriptions: deepCopy(props.profile.subscriptions),
-    hideFromTopNavButtons: props.profile.hideFromTopNavButtons ?? false,
+    subscriptions: deepCopy(props.profile.subscriptions)
   }
 
   if (!props.isNew) {

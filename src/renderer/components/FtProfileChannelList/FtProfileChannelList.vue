@@ -7,18 +7,6 @@
       <p class="selectedCount">
         {{ selectedText }}
       </p>
-      <div class="hideFromTopButtonsOption">
-        <input
-          :id="hideFromTopButtonsId"
-          class="hideFromTopButtonsCheckbox"
-          type="checkbox"
-          v-model="hideFromTopNavButtonsLocal"
-          @change="handleHideFromTopNavButtonsChange"
-        >
-        <label :for="hideFromTopButtonsId">
-          {{ $t('Profile.Hide from top profile buttons') }}
-        </label>
-      </div>
       <FtFlexBox>
         <FtChannelBubble
           v-for="channel in subscriptions"
@@ -60,7 +48,7 @@
 </template>
 
 <script setup>
-import { computed, ref, useId, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useI18n } from '../../composables/use-i18n-polyfill'
 
 import FtCard from '../ft-card/ft-card.vue'
@@ -88,8 +76,6 @@ import { youtubeImageUrlToInvidious } from '../../helpers/api/invidious'
 
 const { locale, t } = useI18n()
 
-const hideFromTopButtonsId = useId()
-
 const props = defineProps({
   profile: {
     type: Object,
@@ -100,26 +86,6 @@ const props = defineProps({
     required: true
   }
 })
-
-const hideFromTopNavButtonsLocal = ref(false)
-
-watch(() => props.profile.hideFromTopNavButtons, (value) => {
-  hideFromTopNavButtonsLocal.value = value ?? false
-}, { immediate: true })
-
-/**
- * @param {boolean} value
- */
-function setHideFromTopNavButtons(value) {
-  store.dispatch('updateProfile', {
-    ...props.profile,
-    hideFromTopNavButtons: value,
-  })
-}
-
-function handleHideFromTopNavButtonsChange() {
-  setHideFromTopNavButtons(hideFromTopNavButtonsLocal.value)
-}
 
 /** @type {import('vue').ComputedRef<'local' | 'invidious'>} */
 const backendPreference = computed(() => {

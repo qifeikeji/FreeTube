@@ -9,8 +9,7 @@ const state = {
     name: 'All Channels',
     bgColor: '#000000',
     textColor: '#FFFFFF',
-    subscriptions: [],
-    hideFromTopNavButtons: false,
+    subscriptions: []
   }],
   activeProfile: MAIN_PROFILE_ID
 }
@@ -68,8 +67,7 @@ const actions = {
         name: defaultName,
         bgColor: randomColor,
         textColor: textColor,
-        subscriptions: [],
-        hideFromTopNavButtons: false,
+        subscriptions: []
       }
 
       try {
@@ -85,7 +83,6 @@ const actions = {
     // We want the primary profile to always be first
     // So sort with that then sort alphabetically by profile name
     profiles = profiles.sort(profileSort)
-      .map((profile) => ({ hideFromTopNavButtons: false, ...profile }))
 
     if (state.profileList.length < profiles.length) {
       const profile = profiles.find((profile) => {
