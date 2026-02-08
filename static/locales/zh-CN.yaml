@@ -582,6 +582,7 @@ Settings:
   External Player Settings:
     Custom External Player Arguments: 定制外部播放器的参数
     Custom External Player Executable: 自定义外部播放器的可执行文件
+    Open Videos In External Player On Click: 点击视频时用外部播放器打开
     Ignore Unsupported Action Warnings: 忽略不支持的行为的警告
     External Player: 外部播放器
     External Player Settings: 外部播放器

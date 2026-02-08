@@ -180,6 +180,7 @@ const actions = {
           ignoreWarnings: rootState.settings.externalPlayerIgnoreWarnings ?? false,
           ignoreDefaultArgs: rootState.settings.externalPlayerIgnoreDefaultArgs ?? false,
           customArgs: typeof customArgsString === 'string' ? JSON.parse(customArgsString) : [],
+          openVideosOnClick: false,
         }
       }
       const newProfile = await DBProfileHandlers.create(profile)

@@ -35,6 +35,13 @@
     </FtFlexBox>
     <FtFlexBox>
       <FtToggleSwitch
+        :label="$t('Settings.External Player Settings.Open Videos In External Player On Click')"
+        :default-value="openVideosOnClick"
+        :disabled="externalPlayer === ''"
+        :compact="true"
+        @change="updateOpenVideosOnClick"
+      />
+      <FtToggleSwitch
         :label="$t('Settings.External Player Settings.Ignore Unsupported Action Warnings')"
         :default-value="externalPlayerIgnoreWarnings"
         :disabled="externalPlayer === ''"
@@ -132,6 +139,7 @@ const globalExternalPlayerDefaults = computed(() => {
     ignoreWarnings: store.state.settings.externalPlayerIgnoreWarnings ?? false,
     ignoreDefaultArgs: store.state.settings.externalPlayerIgnoreDefaultArgs ?? false,
     customArgs,
+    openVideosOnClick: false,
   }
 })
 
@@ -187,6 +195,9 @@ const externalPlayerCustomArgsTooltip = computed(() => {
   return tooltip
 })
 
+/** @type {import('vue').ComputedRef<boolean>} */
+const openVideosOnClick = computed(() => getSelectedExternalPlayerSettings().openVideosOnClick ?? false)
+
 // Ensure the selected profile has its own external player settings, so tabs are independent.
 watch(selectedProfile, (profile) => {
   if (!profile?._id) { return }
@@ -230,6 +241,13 @@ function updateExternalPlayerExecutable(value) {
  */
 function handleExternalPlayerCustomArgs(args) {
   updateSelectedProfileExternalPlayerSettings({ customArgs: args })
+}
+
+/**
+ * @param {boolean} value
+ */
+function updateOpenVideosOnClick(value) {
+  updateSelectedProfileExternalPlayerSettings({ openVideosOnClick: value })
 }
 
 /** @type {import('vue').ComputedRef<boolean>} */

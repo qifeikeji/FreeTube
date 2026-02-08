@@ -443,6 +443,9 @@ const customGetters = {
     }
     return state.externalPlayerCustomArgs
   },
+  getExternalPlayerOpenVideosOnClick: (state, getters, rootState, rootGetters) => {
+    return rootGetters.getActiveProfile?.externalPlayerSettings?.openVideosOnClick ?? false
+  },
 }
 
 const customMutations = {}
