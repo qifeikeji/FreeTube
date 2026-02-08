@@ -1,5 +1,47 @@
 @use '../../scss-partials/ft-list-item';
 
+.ft-list-video.grid {
+  // Video card container (thumbnail + title + meta)
+  --videoCardRadius: 14px;
+  --videoCardPadding: 10px;
+  --videoThumbRadius: calc(var(--videoCardRadius) - 4px);
+
+  background-color: var(--card-bg-color);
+  border-radius: var(--videoCardRadius);
+  box-shadow: 0 0 0 1px var(--primary-shadow-color);
+
+  // Override shared list-item padding to create a single rounded container
+  padding: var(--videoCardPadding);
+  // Keep the "extra bottom space" from the original grid layout
+  padding-block-end: calc(var(--videoCardPadding) + 10px);
+
+  &:hover,
+  &:focus-within {
+    box-shadow: 0 0 0 1px var(--side-nav-hover-color);
+  }
+
+  .videoThumbnail {
+    margin-block-end: 10px;
+
+    .thumbnailLink {
+      border-radius: var(--videoThumbRadius);
+    }
+
+    .thumbnailImage {
+      border-radius: var(--videoThumbRadius);
+    }
+  }
+
+  // Clamp title to 2 lines
+  .h3Title {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+    line-height: 1.25;
+  }
+}
+
 .thumbnailLink:hover {
   outline: 3px solid var(--side-nav-hover-color);
 }
