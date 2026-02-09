@@ -61,6 +61,9 @@ export async function handleOpenInExternalPlayer(event, payload) {
   const externalPlayer = profileExternalPlayerSettings?.player ??
     ((await settings._findOne('externalPlayer'))?.value || '')
 
+  /** @type {string} */
+  const templatePlayer = profileExternalPlayerSettings?.templatePlayer ?? externalPlayer
+
   // External player setting not set or set to "none"
   if (externalPlayer === '') {
     return
@@ -70,7 +73,7 @@ export async function handleOpenInExternalPlayer(event, payload) {
     await loadExternalPlayerData()
   }
 
-  const cmdArgs = externalPlayerCmdArgs.get(externalPlayer)
+  const cmdArgs = externalPlayerCmdArgs.get(templatePlayer)
 
   if (cmdArgs === undefined) {
     return
@@ -197,6 +200,10 @@ export async function handleOpenInExternalPlayer(event, payload) {
   const executable = externalPlayerExecutable.length > 0 ? externalPlayerExecutable : cmdArgs.defaultExecutable
 
   const child = spawn(executable, args, { detached: true, stdio: 'ignore' })
+  // Prevent Electron from crashing on spawn failures (e.g. ENOENT / EACCES)
+  child.on('error', (err) => {
+    console.error('[externalPlayer] failed to spawn', { executable, err })
+  })
   child.unref()
 }
 

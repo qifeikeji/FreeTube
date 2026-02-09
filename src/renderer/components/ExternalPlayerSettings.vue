@@ -104,7 +104,7 @@ import { deepCopy } from '../helpers/utils'
 
 const { t } = useI18n()
 
-/** @typedef {{ _id: string, name: string, externalPlayerSettings?: { player?: string, executable?: string, ignoreWarnings?: boolean, ignoreDefaultArgs?: boolean, customArgs?: string[] } }} Profile */
+/** @typedef {{ _id: string, name: string, externalPlayerSettings?: { player?: string, templatePlayer?: string, executable?: string, ignoreWarnings?: boolean, ignoreDefaultArgs?: boolean, customArgs?: string[] } }} Profile */
 
 /** @type {import('vue').ComputedRef<Profile[]>} */
 const profileList = computed(() => store.getters.getProfileList)
@@ -133,8 +133,12 @@ const globalExternalPlayerDefaults = computed(() => {
   } catch {
     customArgs = []
   }
+  const player = store.state.settings.externalPlayer ?? ''
   return {
-    player: store.state.settings.externalPlayer ?? '',
+    // `player` is the selected / displayed name (can be custom)
+    player,
+    // `templatePlayer` controls which argument template to use (mpv/vlc/etc)
+    templatePlayer: player,
     executable: store.state.settings.externalPlayerExecutable ?? '',
     ignoreWarnings: store.state.settings.externalPlayerIgnoreWarnings ?? false,
     ignoreDefaultArgs: store.state.settings.externalPlayerIgnoreDefaultArgs ?? false,
@@ -155,17 +159,41 @@ function getSelectedExternalPlayerSettings() {
 /** @type {import('vue').ComputedRef<string>} */
 const externalPlayer = computed(() => getSelectedExternalPlayerSettings().player)
 
+/** @type {import('vue').ComputedRef<string>} */
+const externalPlayerTemplate = computed(() => {
+  const settings = getSelectedExternalPlayerSettings()
+  return settings.templatePlayer ?? settings.player
+})
+
 /** @type {import('vue').ComputedRef<string[]>} */
 const externalPlayerNames = computed(() => {
-  return store.getters.getExternalPlayerNames.map((name) => {
+  const baseNames = store.getters.getExternalPlayerNames.map((name) => {
     return name === 'None'
       ? t('Settings.External Player Settings.Players.None.Name')
       : name
   })
+
+  const baseValues = store.getters.getExternalPlayerValues
+  const current = externalPlayer.value
+
+  // If the current player is a custom name (not present in the shipped list),
+  // dynamically add it so the select can display it.
+  if (current && Array.isArray(baseValues) && !baseValues.includes(current)) {
+    return [...baseNames, current]
+  }
+
+  return baseNames
 })
 
 /** @type {import('vue').ComputedRef<string[]>} */
-const externalPlayerValues = computed(() => store.getters.getExternalPlayerValues)
+const externalPlayerValues = computed(() => {
+  const baseValues = store.getters.getExternalPlayerValues
+  const current = externalPlayer.value
+  if (current && Array.isArray(baseValues) && !baseValues.includes(current)) {
+    return [...baseValues, current]
+  }
+  return baseValues
+})
 
 /** @type {import('vue').ComputedRef<string>} */
 const externalPlayerExecutable = computed(() => getSelectedExternalPlayerSettings().executable)
@@ -182,7 +210,7 @@ const externalPlayerCustomArgs = computed(() => getSelectedExternalPlayerSetting
 const externalPlayerCustomArgsTooltip = computed(() => {
   const tooltip = t('Tooltips.External Player Settings.Custom External Player Arguments')
 
-  const cmdArgs = store.getters.getExternalPlayerCmdArguments[externalPlayer.value]
+  const cmdArgs = store.getters.getExternalPlayerCmdArguments[externalPlayerTemplate.value]
   if (cmdArgs && typeof cmdArgs.defaultCustomArguments === 'string' && cmdArgs.defaultCustomArguments !== '') {
     const defaultArgs = t(
       'Tooltips.External Player Settings.DefaultCustomArgumentsTemplate',
@@ -212,7 +240,13 @@ watch(selectedProfile, (profile) => {
  * @param {string} value
  */
 function updateExternalPlayer(value) {
-  updateSelectedProfileExternalPlayerSettings({ player: value })
+  // When selecting a known player from the dropdown, also set the template to that player.
+  // Custom names are created via the executable input.
+  if (value === '') {
+    updateSelectedProfileExternalPlayerSettings({ player: '', templatePlayer: '', executable: '' })
+    return
+  }
+  updateSelectedProfileExternalPlayerSettings({ player: value, templatePlayer: value })
 }
 
 /**
@@ -233,7 +267,39 @@ function updateExternalPlayerIgnoreDefaultArgs(value) {
  * @param {string} value
  */
 function updateExternalPlayerExecutable(value) {
-  updateSelectedProfileExternalPlayerSettings({ executable: value })
+  const executable = typeof value === 'string' ? value : ''
+  const knownValues = store.getters.getExternalPlayerValues
+
+  // If the user clears the executable and the current player is a custom entry,
+  // revert the displayed player back to the template.
+  if (executable.trim() === '') {
+    /** @type {Partial<NonNullable<Profile['externalPlayerSettings']>>} */
+    const patch = { executable: '' }
+    if (externalPlayer.value && Array.isArray(knownValues) && !knownValues.includes(externalPlayer.value)) {
+      const template = externalPlayerTemplate.value
+      if (template) {
+        patch.player = template
+      }
+    }
+    updateSelectedProfileExternalPlayerSettings(patch)
+    return
+  }
+
+  // Example: /app/bin/sunflower-mpv-123 -> sunflower-mpv-123
+  const rawBasename = executable.trim().split(/[\\/]/).pop() ?? ''
+  const basename = rawBasename.replace(/\.exe$/i, '')
+
+  /** @type {Partial<NonNullable<Profile['externalPlayerSettings']>>} */
+  const patch = { executable }
+
+  if (basename) {
+    // Always switch the displayed player name to the basename (arbitrary custom names allowed),
+    // while keeping the argument template pinned to the previously selected template.
+    patch.player = basename
+    patch.templatePlayer = externalPlayerTemplate.value ?? ''
+  }
+
+  updateSelectedProfileExternalPlayerSettings(patch)
 }
 
 /**

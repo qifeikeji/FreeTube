@@ -174,8 +174,12 @@ const actions = {
       // Seed per-profile external player settings from current global defaults (if missing)
       if (profile.externalPlayerSettings == null) {
         const customArgsString = rootState.settings.externalPlayerCustomArgs ?? '[]'
+        const defaultPlayer = rootState.settings.externalPlayer ?? ''
         profile.externalPlayerSettings = {
-          player: rootState.settings.externalPlayer ?? '',
+          // `player` is the selected / displayed name (can be custom, derived from executable basename)
+          player: defaultPlayer,
+          // `templatePlayer` controls which argument template to use (mpv/vlc/etc)
+          templatePlayer: defaultPlayer,
           executable: rootState.settings.externalPlayerExecutable ?? '',
           ignoreWarnings: rootState.settings.externalPlayerIgnoreWarnings ?? false,
           ignoreDefaultArgs: rootState.settings.externalPlayerIgnoreDefaultArgs ?? false,
