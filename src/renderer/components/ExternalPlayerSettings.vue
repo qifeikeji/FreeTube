@@ -286,7 +286,7 @@ function updateExternalPlayerExecutable(value) {
   }
 
   // Example: /app/bin/sunflower-mpv-123 -> sunflower-mpv-123
-  const rawBasename = executable.trim().split(/[\\/]/).pop() ?? ''
+  const rawBasename = executable.trim().split(/[/\\]/).pop() ?? ''
   const basename = rawBasename.replace(/\.exe$/i, '')
 
   /** @type {Partial<NonNullable<Profile['externalPlayerSettings']>>} */
