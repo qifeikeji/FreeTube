@@ -215,45 +215,51 @@ async function loadPostsForSubscriptionsFromRemote() {
   const subscriptionUpdates = []
 
   const postListFromRemote = (await Promise.all(channelsToLoadFromRemote.map(async (channel) => {
-    let posts = []
-    if (!process.env.SUPPORTS_LOCAL_API || backendPreference.value === 'invidious') {
-      posts = await getChannelPostsInvidious(channel)
-    } else {
-      posts = await getChannelPostsLocal(channel)
-    }
+    try {
+      let posts = []
+      if (!process.env.SUPPORTS_LOCAL_API || backendPreference.value === 'invidious') {
+        posts = await getChannelPostsInvidious(channel)
+      } else {
+        posts = await getChannelPostsLocal(channel)
+      }
 
-    channelCount++
-    const percentageComplete = (channelCount / channelsToLoadFromRemote.length) * 100
-    store.commit('setProgressBarPercentage', percentageComplete)
+      store.dispatch('updateSubscriptionPostsCacheByChannel', {
+        channelId: channel.id,
+        posts
+      })
 
-    store.dispatch('updateSubscriptionPostsCacheByChannel', {
-      channelId: channel.id,
-      posts
-    })
+      if (posts.length > 0) {
+        const post = posts.find(post => post.authorId === channel.id)
 
-    if (posts.length > 0) {
-      const post = posts.find(post => post.authorId === channel.id)
+        if (post) {
+          const name = post.author
+          let thumbnailUrl = post.authorThumbnails?.[0]?.url
 
-      if (post) {
-        const name = post.author
-        let thumbnailUrl = post.authorThumbnails?.[0]?.url
+          if (name || thumbnailUrl) {
+            if (thumbnailUrl?.startsWith('//')) {
+              thumbnailUrl = 'https:' + thumbnailUrl
+            }
 
-        if (name || thumbnailUrl) {
-          if (thumbnailUrl?.startsWith('//')) {
-            thumbnailUrl = 'https:' + thumbnailUrl
+            subscriptionUpdates.push({
+              channelId: channel.id,
+              channelName: name,
+              channelThumbnailUrl: thumbnailUrl
+            })
           }
-
-          subscriptionUpdates.push({
-            channelId: channel.id,
-            channelName: name,
-            channelThumbnailUrl: thumbnailUrl
-          })
         }
       }
-    }
 
-    posts = posts.filter(post => !forbiddenTitles.value.some(text => post.author.toLowerCase().includes(text)))
-    return posts
+      posts = posts.filter(post => !forbiddenTitles.value.some(text => post.author.toLowerCase().includes(text)))
+      return posts
+    } catch (err) {
+      console.error('[SubscriptionsPosts] Failed to load subscription channel', channel, err)
+      errorChannels.value.push(channel)
+      return []
+    } finally {
+      channelCount++
+      const percentageComplete = (channelCount / channelsToLoadFromRemote.length) * 100
+      store.commit('setProgressBarPercentage', percentageComplete)
+    }
   }))).flat()
 
   postListFromRemote.sort((a, b) => {

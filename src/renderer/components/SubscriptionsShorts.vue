@@ -210,34 +210,40 @@ async function loadVideosForSubscriptionsFromRemote() {
   const subscriptionUpdates = []
 
   const videoListFromRemote = (await Promise.all(channelsToLoadFromRemote.map(async (channel) => {
-    let videos = []
-    let name
+    try {
+      let videos = []
+      let name
 
-    if (!process.env.SUPPORTS_LOCAL_API || backendPreference.value === 'invidious') {
-      ({ videos, name } = await getChannelShortsInvidious(channel))
-    } else {
-      ({ videos, name } = await getChannelShortsLocal(channel))
+      if (!process.env.SUPPORTS_LOCAL_API || backendPreference.value === 'invidious') {
+        ({ videos, name } = await getChannelShortsInvidious(channel))
+      } else {
+        ({ videos, name } = await getChannelShortsLocal(channel))
+      }
+
+      if (videos != null) {
+        store.dispatch('updateSubscriptionShortsCacheByChannel', {
+          channelId: channel.id,
+          videos: videos
+        })
+      }
+
+      if (name) {
+        subscriptionUpdates.push({
+          channelId: channel.id,
+          channelName: name
+        })
+      }
+
+      return videos ?? []
+    } catch (err) {
+      console.error('[SubscriptionsShorts] Failed to load subscription channel', channel, err)
+      errorChannels.value.push(channel)
+      return []
+    } finally {
+      channelCount++
+      const percentageComplete = (channelCount / channelsToLoadFromRemote.length) * 100
+      store.commit('setProgressBarPercentage', percentageComplete)
     }
-
-    channelCount++
-    const percentageComplete = (channelCount / channelsToLoadFromRemote.length) * 100
-    store.commit('setProgressBarPercentage', percentageComplete)
-
-    if (videos != null) {
-      store.dispatch('updateSubscriptionShortsCacheByChannel', {
-        channelId: channel.id,
-        videos: videos
-      })
-    }
-
-    if (name) {
-      subscriptionUpdates.push({
-        channelId: channel.id,
-        channelName: name
-      })
-    }
-
-    return videos ?? []
   }))).flat()
 
   videoList.value = updateVideoListAfterProcessing(videoListFromRemote)

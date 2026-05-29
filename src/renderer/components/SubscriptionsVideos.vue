@@ -224,43 +224,49 @@ async function loadVideosForSubscriptionsFromRemote() {
   const subscriptionUpdates = []
 
   const videoListFromRemote = (await Promise.all(channelsToLoadFromRemote.map(async (channel) => {
-    let videos = []
-    let name, thumbnailUrl
+    try {
+      let videos = []
+      let name, thumbnailUrl
 
-    if (!process.env.SUPPORTS_LOCAL_API || backendPreference.value === 'invidious') {
-      if (useRss) {
-        ({ videos, name, thumbnailUrl } = await getChannelVideosInvidiousRSS(channel))
+      if (!process.env.SUPPORTS_LOCAL_API || backendPreference.value === 'invidious') {
+        if (useRss) {
+          ({ videos, name, thumbnailUrl } = await getChannelVideosInvidiousRSS(channel))
+        } else {
+          ({ videos, name, thumbnailUrl } = await getChannelVideosInvidiousScraper(channel))
+        }
       } else {
-        ({ videos, name, thumbnailUrl } = await getChannelVideosInvidiousScraper(channel))
+        if (useRss) {
+          ({ videos, name, thumbnailUrl } = await getChannelVideosLocalRSS(channel))
+        } else {
+          ({ videos, name, thumbnailUrl } = await getChannelVideosLocalScraper(channel))
+        }
       }
-    } else {
-      if (useRss) {
-        ({ videos, name, thumbnailUrl } = await getChannelVideosLocalRSS(channel))
-      } else {
-        ({ videos, name, thumbnailUrl } = await getChannelVideosLocalScraper(channel))
+
+      if (videos != null) {
+        store.dispatch('updateSubscriptionVideosCacheByChannel', {
+          channelId: channel.id,
+          videos: videos
+        })
       }
+
+      if (name || thumbnailUrl) {
+        subscriptionUpdates.push({
+          channelId: channel.id,
+          channelName: name,
+          channelThumbnailUrl: thumbnailUrl
+        })
+      }
+
+      return videos ?? []
+    } catch (err) {
+      console.error('[SubscriptionsVideos] Failed to load subscription channel', channel, err)
+      errorChannels.value.push(channel)
+      return []
+    } finally {
+      channelCount++
+      const percentageComplete = (channelCount / channelsToLoadFromRemote.length) * 100
+      store.commit('setProgressBarPercentage', percentageComplete)
     }
-
-    channelCount++
-    const percentageComplete = (channelCount / channelsToLoadFromRemote.length) * 100
-    store.commit('setProgressBarPercentage', percentageComplete)
-
-    if (videos != null) {
-      store.dispatch('updateSubscriptionVideosCacheByChannel', {
-        channelId: channel.id,
-        videos: videos
-      })
-    }
-
-    if (name || thumbnailUrl) {
-      subscriptionUpdates.push({
-        channelId: channel.id,
-        channelName: name,
-        channelThumbnailUrl: thumbnailUrl
-      })
-    }
-
-    return videos ?? []
   }))).flat()
 
   videoList.value = updateVideoListAfterProcessing(videoListFromRemote)
