@@ -21,34 +21,6 @@ const TRACKING_PARAM_NAMES = [
   'utm_content',
 ]
 
-const LOCAL_API_LOG_PREFIX = '[FreeTube Local API]'
-
-/**
- * @param {string} context
- * @param {unknown} error
- * @param {Record<string, unknown>} details
- */
-function logLocalApiError(context, error, details = {}) {
-  console.error(`${LOCAL_API_LOG_PREFIX} ${context}`, {
-    errorName: error?.name,
-    message: error?.message,
-    stack: error?.stack,
-    ...details
-  })
-}
-
-/**
- * @param {import('youtubei.js').Helpers.YTNode} node
- */
-function getNodeDebugDetails(node) {
-  return {
-    nodeType: node?.type,
-    contentType: node?.content_type,
-    constructorName: node?.constructor?.name,
-    node
-  }
-}
-
 if (process.env.SUPPORTS_LOCAL_API) {
   Platform.shim.eval = (data, env) => {
     return new Promise((resolve, reject) => {
@@ -430,18 +402,6 @@ export async function getLocalSearchContinuation(continuationData) {
  * }>}
  */
 export async function getLocalVideoInfo(id) {
-  try {
-    return await getLocalVideoInfoInternal(id)
-  } catch (error) {
-    logLocalApiError('getLocalVideoInfo failed', error, { videoId: id })
-    throw error
-  }
-}
-
-/**
- * @param {string} id
- */
-async function getLocalVideoInfoInternal(id) {
   let responseTime = Date.now()
   let totalAdTimeMilliseconds = 0
 
@@ -1130,16 +1090,7 @@ export function parseLocalChannelVideos(videos, channelId, channelName) {
     if (video.is(YTNodes.Video) && video.badges.some(badge => badge.style === 'BADGE_STYLE_TYPE_MEMBERS_ONLY')) {
       continue
     }
-
-    try {
-      parsedVideos.push(parseLocalListVideo(video, channelId, channelName))
-    } catch (error) {
-      logLocalApiError('Failed to parse channel video item', error, {
-        channelId,
-        channelName,
-        ...getNodeDebugDetails(video)
-      })
-    }
+    parsedVideos.push(parseLocalListVideo(video, channelId, channelName))
   }
 
   return parsedVideos
@@ -1186,20 +1137,7 @@ export function parseShort(short, channelId, channelName) {
  * @param {string} [channelName]
  */
 export function parseLocalChannelShorts(shorts, channelId, channelName) {
-  return shorts
-    .map((short) => {
-      try {
-        return parseShort(short, channelId, channelName)
-      } catch (error) {
-        logLocalApiError('Failed to parse channel short item', error, {
-          channelId,
-          channelName,
-          ...getNodeDebugDetails(short)
-        })
-        return null
-      }
-    })
-    .filter(short => short)
+  return shorts.map(short => parseShort(short, channelId, channelName))
 }
 
 /**
@@ -1700,20 +1638,6 @@ function parseLockupView(lockupView, channelId = undefined, channelName = undefi
  * @param {string} [channelName]
  */
 function parseListItem(item, channelId, channelName) {
-  try {
-    return parseListItemUnsafe(item, channelId, channelName)
-  } catch (error) {
-    logLocalApiError('Failed to parse list item', error, getNodeDebugDetails(item))
-    return null
-  }
-}
-
-/**
- * @param {import('youtubei.js').Helpers.YTNode} item
- * @param {string} [channelId]
- * @param {string} [channelName]
- */
-function parseListItemUnsafe(item, channelId, channelName) {
   switch (item.type) {
     case 'Movie':
     case 'Video':
