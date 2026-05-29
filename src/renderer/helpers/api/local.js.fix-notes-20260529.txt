@@ -1,0 +1,18 @@
+local.js local API compatibility patch - 2026-05-29
+
+Backup:
+- Original file backed up as local.js.bak-20260529-1450
+
+Changes:
+- Kept the project on the existing youtubei.js 16.x path. This file was not replaced wholesale with the newer upstream local.js.
+- Made Platform.shim.eval accept both the old youtubei.js 16 style `(data, env)` call and the newer `(data)` style call.
+- Preserved the old youtubei.js 16 n/sig decipher return object behavior when `env.n` or `env.sig` is provided.
+- Escaped n/sig values with JSON.stringify before embedding them into the iframe eval code.
+- Wrapped the WEB_EMBEDDED age-restriction fallback in try/catch. If the fallback fails because YouTube changed a response or rejects the client, FreeTube keeps the original video response instead of letting the local API path throw and blank the UI.
+- Added diagnostic logging around getLocalVideoInfo. If video info loading fails, the console prints the video id, error name, message, and stack.
+- Added diagnostic logging around local list item parsing. If a single YouTube.js node cannot be converted into FreeTube's local result format, the console prints the node type, content type, constructor name, and original node object.
+- Channel video and channel shorts parsing now skip individual malformed items after logging them, instead of letting one bad node fail the whole list.
+
+Not changed:
+- Did not remove formatHasVoiceBoostTag, because Watch.js imports it.
+- Did not replace search filter mapping or LockupView parsing with the newer file wholesale, because those changes may depend on a newer youtubei.js parser API.
