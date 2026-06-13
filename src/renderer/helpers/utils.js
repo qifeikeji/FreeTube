@@ -1114,3 +1114,56 @@ export function throttle(func, wait) {
     }
   }
 }
+
+/** Age in ms below which a feed refresh label is shown as recent (green). */
+export const FEED_REFRESH_LABEL_RECENT_MS = 30 * 60 * 1000
+
+/** Age in ms above which a feed refresh label is shown as stale (red). */
+export const FEED_REFRESH_LABEL_STALE_MS = 3 * 60 * 60 * 1000
+
+/**
+ * @param {number | null | undefined} lastRefreshAtMs
+ * @returns {'recent' | 'stale' | null}
+ */
+export function getFeedRefreshLabelTone(lastRefreshAtMs) {
+  if (lastRefreshAtMs == null || !Number.isFinite(lastRefreshAtMs)) {
+    return null
+  }
+
+  const ageMs = Date.now() - lastRefreshAtMs
+  if (ageMs <= FEED_REFRESH_LABEL_RECENT_MS) {
+    return 'recent'
+  }
+  if (ageMs >= FEED_REFRESH_LABEL_STALE_MS) {
+    return 'stale'
+  }
+  return null
+}
+
+/**
+ * @param {{ timestamp?: Date }[]} cacheEntries
+ * @param {number | null | undefined} remoteSuccessAtMs
+ * @returns {number | null}
+ */
+export function getOldestSubscriptionCacheRefreshAtMs(cacheEntries, remoteSuccessAtMs) {
+  if (remoteSuccessAtMs != null) {
+    return remoteSuccessAtMs
+  }
+
+  if (!cacheEntries?.length) {
+    return null
+  }
+
+  let minMs = null
+  for (const cacheEntry of cacheEntries) {
+    const ms = cacheEntry.timestamp?.getTime()
+    if (ms == null || !Number.isFinite(ms)) {
+      continue
+    }
+    if (minMs == null || ms < minMs) {
+      minMs = ms
+    }
+  }
+
+  return minMs
+}

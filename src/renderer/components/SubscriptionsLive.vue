@@ -5,6 +5,7 @@
     :error-channels="errorChannels"
     :attempted-fetch="attemptedFetch"
     :last-refresh-timestamp="lastLiveRefreshTimestamp"
+    :last-refresh-at-ms="lastLiveRefreshAtMs"
     :title="t('Global.Live')"
     @refresh="loadVideosForSubscriptionsFromRemote"
   />
@@ -22,6 +23,7 @@ import {
   getChannelPlaylistId,
   copyToClipboard,
   getRelativeTimeFromDate,
+  getOldestSubscriptionCacheRefreshAtMs,
   showToast
 } from '../helpers/utils'
 import { getInvidiousChannelLive, invidiousFetch } from '../helpers/api/invidious'
@@ -87,27 +89,27 @@ const videoCacheForAllActiveProfileChannelsPresent = computed(() => {
   })
 })
 
-const lastLiveRefreshTimestamp = computed(() => {
-  // Cache is not ready when data is just loaded from remote
-  if (lastRemoteRefreshSuccessTimestamp.value) {
-    return getRelativeTimeFromDate(lastRemoteRefreshSuccessTimestamp.value, true)
+const lastLiveRefreshAtMs = computed(() => {
+  if (lastRemoteRefreshSuccessTimestamp.value != null) {
+    return lastRemoteRefreshSuccessTimestamp.value
   }
 
   if (
     !videoCacheForAllActiveProfileChannelsPresent.value ||
     cacheEntriesForAllActiveProfileChannels.value.length === 0
   ) {
-    return ''
+    return null
   }
 
-  let minTimestamp = null
-  cacheEntriesForAllActiveProfileChannels.value.forEach((cacheEntry) => {
-    if (!minTimestamp || cacheEntry.timestamp.getTime() < minTimestamp.getTime()) {
-      minTimestamp = cacheEntry.timestamp
-    }
-  })
+  return getOldestSubscriptionCacheRefreshAtMs(cacheEntriesForAllActiveProfileChannels.value, null)
+})
 
-  return getRelativeTimeFromDate(minTimestamp.getTime(), true)
+const lastLiveRefreshTimestamp = computed(() => {
+  const at = lastLiveRefreshAtMs.value
+  if (at == null) {
+    return ''
+  }
+  return getRelativeTimeFromDate(at, true)
 })
 
 watch(activeSubscriptionList, () => {

@@ -384,22 +384,27 @@ onBeforeUnmount(() => {
 .sideNavSearch.compact {
   gap: 6px;
   padding: 0;
-  max-inline-size: min(720px, 100%);
+  inline-size: 100%;
+  max-inline-size: 100%;
+  align-items: center;
 }
 
 .sideNavSearch.compact :deep(.ft-input-component) {
-  min-block-size: 34px;
+  min-block-size: 32px;
 }
 
 .sideNavSearch.compact :deep(.ft-input) {
-  padding-block: 6px;
+  padding-block: 5px;
   padding-inline: 10px;
   font-size: 14px;
+  line-height: 1.2;
 }
 
 .sideNavSearch.compact .navFilterButton {
   padding: 6px;
   font-size: 16px;
+  line-height: 1;
+  align-self: center;
 }
 
 .searchInput {

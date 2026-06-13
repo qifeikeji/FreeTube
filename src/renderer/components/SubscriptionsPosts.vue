@@ -7,6 +7,7 @@
     :is-community="true"
     :initial-data-limit="20"
     :last-refresh-timestamp="lastPostsRefreshTimestamp"
+    :last-refresh-at-ms="lastPostsRefreshAtMs"
     :title="t('Global.Posts')"
     @refresh="loadPostsForSubscriptionsFromRemote"
   />
@@ -20,7 +21,7 @@ import SubscriptionsTabUi from './SubscriptionsTabUi/SubscriptionsTabUi.vue'
 
 import store from '../store/index'
 
-import { copyToClipboard, getRelativeTimeFromDate, showToast } from '../helpers/utils'
+import { copyToClipboard, getRelativeTimeFromDate, getOldestSubscriptionCacheRefreshAtMs, showToast } from '../helpers/utils'
 import { getLocalChannelCommunity } from '../helpers/api/local'
 import { invidiousGetCommunityPosts } from '../helpers/api/invidious'
 
@@ -77,27 +78,27 @@ const postCacheForAllActiveProfileChannelsPresent = computed(() => {
   })
 })
 
-const lastPostsRefreshTimestamp = computed(() => {
-  // Cache is not ready when data is just loaded from remote
-  if (lastRemoteRefreshSuccessTimestamp.value) {
-    return getRelativeTimeFromDate(lastRemoteRefreshSuccessTimestamp.value, true)
+const lastPostsRefreshAtMs = computed(() => {
+  if (lastRemoteRefreshSuccessTimestamp.value != null) {
+    return lastRemoteRefreshSuccessTimestamp.value
   }
 
   if (
     !postCacheForAllActiveProfileChannelsPresent.value ||
     cacheEntriesForAllActiveProfileChannels.value.length === 0
   ) {
-    return ''
+    return null
   }
 
-  let minTimestamp = null
-  cacheEntriesForAllActiveProfileChannels.value.forEach((cacheEntry) => {
-    if (!minTimestamp || cacheEntry.timestamp.getTime() < minTimestamp.getTime()) {
-      minTimestamp = cacheEntry.timestamp
-    }
-  })
+  return getOldestSubscriptionCacheRefreshAtMs(cacheEntriesForAllActiveProfileChannels.value, null)
+})
 
-  return getRelativeTimeFromDate(minTimestamp.getTime(), true)
+const lastPostsRefreshTimestamp = computed(() => {
+  const at = lastPostsRefreshAtMs.value
+  if (at == null) {
+    return ''
+  }
+  return getRelativeTimeFromDate(at, true)
 })
 
 watch(activeSubscriptionList, () => {

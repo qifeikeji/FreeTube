@@ -48,8 +48,9 @@ function tabLabel(tab) {
 .subscriptionsTabsInRefreshBar {
   display: flex;
   gap: 6px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
+  flex-shrink: 0;
 }
 
 .subscriptionsTabButton {
@@ -62,6 +63,10 @@ function tabLabel(tab) {
   padding-block: 6px;
   padding-inline: 10px;
   white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 32px;
+  box-sizing: border-box;
   transition: box-shadow 0.15s ease-out, background-color 0.15s ease-out, transform 0.15s ease-out;
 }
 

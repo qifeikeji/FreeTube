@@ -82,6 +82,7 @@
     <FtRefreshWidget
       :disable-refresh="isLoading || !activeProfileHasSubscriptions"
       :last-refresh-timestamp="lastRefreshTimestamp"
+      :last-refresh-at-ms="lastRefreshAtMs"
       :title="title"
       @click="refresh"
     >
@@ -142,6 +143,10 @@ const props = defineProps({
   lastRefreshTimestamp: {
     type: String,
     required: true
+  },
+  lastRefreshAtMs: {
+    type: Number,
+    default: null
   },
   title: {
     type: String,

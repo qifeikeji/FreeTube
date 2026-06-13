@@ -7,33 +7,69 @@
   box-shadow: 0 2px 1px 0 var(--primary-shadow-color);
   background-color: var(--card-bg-color);
   border-inline-start: 2px solid var(--primary-shadow-color);
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  column-gap: 10px;
   align-items: center;
-  gap: 10px;
-  justify-content: space-between;
 
   @include utils.fixed-top-bar;
 }
 
 .left {
-  display: flex;
-  align-items: center;
-  gap: 10px;
   min-inline-size: 0;
 }
 
-.center {
-  flex: 1;
+.leftMainRow {
   display: flex;
-  justify-content: center;
+  flex-wrap: nowrap;
   align-items: center;
+  gap: 8px;
   min-inline-size: 0;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-inline-size: 0;
+
+  :deep(.sideNavSearch.compact) {
+    inline-size: 100%;
+    max-inline-size: 100%;
+  }
+}
+
+.right {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-inline-size: 0;
+
+  .refreshButton {
+    flex-shrink: 0;
+  }
 }
 
 .lastRefreshTimestamp {
   margin-block: 0;
-  text-align: center;
-  font-size: 16px;
+  text-align: start;
+  font-size: 14px;
+  line-height: 1.2;
+  min-inline-size: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex-shrink: 1;
+
+  &.recent {
+    color: #2ea043;
+  }
+
+  &.stale {
+    color: #cf222e;
+  }
 }
 
 @media only screen and (width <= 680px) {

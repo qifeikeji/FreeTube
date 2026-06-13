@@ -3,26 +3,31 @@
     class="floatingRefreshSection"
   >
     <div class="left">
-      <slot name="left" />
-      <p
-        v-if="lastRefreshTimestamp"
-        class="lastRefreshTimestamp"
-      >
-        {{ t('Feed.Feed Last Updated', { feedName: title, date: lastRefreshTimestamp }) }}
-      </p>
+      <div class="leftMainRow">
+        <slot name="left" />
+        <p
+          v-if="lastRefreshTimestamp"
+          class="lastRefreshTimestamp"
+          :class="lastRefreshTimestampTone"
+        >
+          {{ t('Feed.Feed Last Updated', { feedName: title, date: lastRefreshTimestamp }) }}
+        </p>
+      </div>
     </div>
     <div class="center">
       <slot name="center" />
     </div>
-    <FtIconButton
-      :disabled="disableRefresh"
-      :icon="['fas', 'sync']"
-      class="refreshButton"
-      :title="refreshFeedButtonTitle"
-      :size="12"
-      theme="primary"
-      @click="click"
-    />
+    <div class="right">
+      <FtIconButton
+        :disabled="disableRefresh"
+        :icon="['fas', 'sync']"
+        class="refreshButton"
+        :title="refreshFeedButtonTitle"
+        :size="12"
+        theme="primary"
+        @click="click"
+      />
+    </div>
   </div>
 </template>
 
@@ -33,7 +38,7 @@ import { useI18n } from '../../composables/use-i18n-polyfill'
 import FtIconButton from '../FtIconButton/FtIconButton.vue'
 
 import { KeyboardShortcuts } from '../../../constants'
-import { addKeyboardShortcutToActionTitle } from '../../helpers/utils'
+import { addKeyboardShortcutToActionTitle, getFeedRefreshLabelTone } from '../../helpers/utils'
 
 const props = defineProps({
   disableRefresh: {
@@ -43,6 +48,10 @@ const props = defineProps({
   lastRefreshTimestamp: {
     type: String,
     default: ''
+  },
+  lastRefreshAtMs: {
+    type: Number,
+    default: null
   },
   title: {
     type: String,
@@ -57,6 +66,10 @@ const refreshFeedButtonTitle = computed(() => {
     t('Feed.Refresh Feed', { subscriptionName: props.title }),
     KeyboardShortcuts.APP.SITUATIONAL.REFRESH
   )
+})
+
+const lastRefreshTimestampTone = computed(() => {
+  return getFeedRefreshLabelTone(props.lastRefreshAtMs)
 })
 
 const emit = defineEmits(['click'])

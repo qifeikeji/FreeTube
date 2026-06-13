@@ -4,6 +4,7 @@
     :video-list="videoList"
     :error-channels="errorChannels"
     :last-refresh-timestamp="lastVideoRefreshTimestamp"
+    :last-refresh-at-ms="lastVideoRefreshAtMs"
     :attempted-fetch="attemptedFetch"
     :title="t('Global.Videos')"
     @refresh="loadVideosForSubscriptionsFromRemote"
@@ -21,6 +22,7 @@ import store from '../store/index'
 import {
   copyToClipboard,
   getRelativeTimeFromDate,
+  getOldestSubscriptionCacheRefreshAtMs,
   showToast,
   getChannelPlaylistId
 } from '../helpers/utils'
@@ -87,26 +89,27 @@ const videoCacheForAllActiveProfileChannelsPresent = computed(() => {
   })
 })
 
-const lastVideoRefreshTimestamp = computed(() => {
-  // Cache is not ready when data is just loaded from remote
-  if (lastRemoteRefreshSuccessTimestamp.value) {
-    return getRelativeTimeFromDate(lastRemoteRefreshSuccessTimestamp.value, true)
+const lastVideoRefreshAtMs = computed(() => {
+  if (lastRemoteRefreshSuccessTimestamp.value != null) {
+    return lastRemoteRefreshSuccessTimestamp.value
   }
 
   if (
     !videoCacheForAllActiveProfileChannelsPresent.value ||
-     cacheEntriesForAllActiveProfileChannels.value.length === 0
+    cacheEntriesForAllActiveProfileChannels.value.length === 0
   ) {
-    return ''
+    return null
   }
 
-  let minTimestamp = null
-  cacheEntriesForAllActiveProfileChannels.value.forEach((cacheEntry) => {
-    if (!minTimestamp || cacheEntry.timestamp.getTime() < minTimestamp.getTime()) {
-      minTimestamp = cacheEntry.timestamp
-    }
-  })
-  return getRelativeTimeFromDate(minTimestamp.getTime(), true)
+  return getOldestSubscriptionCacheRefreshAtMs(cacheEntriesForAllActiveProfileChannels.value, null)
+})
+
+const lastVideoRefreshTimestamp = computed(() => {
+  const at = lastVideoRefreshAtMs.value
+  if (at == null) {
+    return ''
+  }
+  return getRelativeTimeFromDate(at, true)
 })
 
 watch(activeSubscriptionList, () => {
