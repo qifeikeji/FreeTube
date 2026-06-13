@@ -125,7 +125,7 @@ const selectedProfile = computed(() => {
 
 const globalExternalPlayerDefaults = computed(() => {
   const customArgsString = store.state.settings.externalPlayerCustomArgs ?? '[]'
-  let customArgs = []
+  let customArgs
   try {
     customArgs = typeof customArgsString === 'string' ? JSON.parse(customArgsString) : []
   } catch {
