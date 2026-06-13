@@ -110,7 +110,8 @@ Height adjust for profile list so it won't cover navbar.  */
   color: var(--primary-text-color);
   cursor: pointer;
   line-height: 1;
-  padding: 8px 10px;
+  padding-block: 8px;
+  padding-inline: 10px;
   white-space: nowrap;
 }
 

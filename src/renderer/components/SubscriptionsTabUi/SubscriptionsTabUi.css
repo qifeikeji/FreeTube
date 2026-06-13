@@ -19,19 +19,20 @@
 }
 
 .errorChannelsToggle {
-  border: none;
+  border-width: 0;
   background: transparent;
   color: inherit;
   cursor: pointer;
-  padding: 0;
-}
-
-.errorChannelsToggle:hover .errorChannelsTitle {
-  text-decoration: underline;
+  padding-block: 0;
+  padding-inline: 0;
 }
 
 .errorChannelsTitle {
   margin-block: 0;
+}
+
+.errorChannelsToggle:hover .errorChannelsTitle {
+  text-decoration: underline;
 }
 
 @media only screen and (width <= 680px) {

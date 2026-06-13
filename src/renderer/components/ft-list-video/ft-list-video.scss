@@ -4,6 +4,11 @@
   outline: 3px solid var(--side-nav-hover-color);
 }
 
+.thumbnailImage {
+  // Makes img element sized correctly before image loading starts
+  aspect-ratio: 16/9 auto;
+}
+
 .ft-list-video.grid {
   --video-card-radius: 14px;
   --video-card-padding: 10px;
@@ -13,7 +18,6 @@
   border-radius: var(--video-card-radius);
   box-shadow: 0 0 0 1px var(--primary-shadow-color);
   transition: box-shadow 0.15s ease-out, background-color 0.15s ease-out, transform 0.15s ease-out;
-
   padding: var(--video-card-padding);
   padding-block-end: calc(var(--video-card-padding) + 10px);
 
@@ -67,11 +71,6 @@
   .draggable:not(.draggable:only-child) .grabBar {
     display: revert;
   }
-}
-
-.thumbnailImage {
-  // Makes img element sized correctly before image loading starts
-  aspect-ratio: 16/9 auto;
 }
 
 .videoTagLine {
