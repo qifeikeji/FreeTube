@@ -91,6 +91,7 @@ Subscriptions:
   This profile has a large number of subscriptions. Forcing RSS to avoid rate limiting: 这个配置文件有大量订阅。 强制RSS已防止速率限制
   Load More Videos: 加载更多视频
   Error Channels: 有错误的频道
+  Error Channels With Count: 有错误的频道（{count}）
   Disabled Automatic Fetching: 你仅用了自动订阅获取。刷新订阅在此处看到它们。
   Empty Channels: 你订阅的频道当前没有任何视频。
   Subscriptions Tabs: 订阅标签页
@@ -222,6 +223,8 @@ Settings:
       End: '结尾'
       Hidden: 隐藏缩略图
       Blur: 模糊
+    Side Nav Width (px): 左侧栏宽度(px)
+    Video Grid Columns: 视频网格列数
     Region for Trending: '热门区域'
         #! List countries
     Check for Updates: 检查更新
@@ -580,6 +583,7 @@ Settings:
     'DeArrow Thumbnail Generator API Url (Default is https://dearrow-thumb.ajay.app)': DeArrow 缩略图生成器 API Url （默认值 https://dearrow-thumb.ajay.app）
   External Player Settings:
     Custom External Player Arguments: 定制外部播放器的参数
+    Open Videos In External Player On Click: 点击视频时用外部播放器打开
     Custom External Player Executable: 自定义外部播放器的可执行文件
     Ignore Unsupported Action Warnings: 忽略不支持的行为的警告
     External Player: 外部播放器
@@ -588,6 +592,7 @@ Settings:
       None:
         Name: 无
     Ignore Default Arguments: 忽略默认变量
+    Open Videos In External Player On Click: 点击视频时用外部播放器打开
   Parental Control Settings:
     Parental Control Settings: 家长控制
     Show Family Friendly Only: 仅显示“家庭友好”视频
@@ -922,6 +927,8 @@ Profile:
   Edit Profile: 编辑配置文件
   Create New Profile: 建立新配置文件
   Profile Manager: 配置文件管理器
+  Top Nav Profile Buttons: 顶部配置文件按钮
+  Top Nav Profile Buttons Description: 选择哪些配置文件要在顶部按钮行中隐藏；这不会影响右侧下拉菜单。
   Custom Color: 自定义颜色
   Color Picker: 选色器
   All Channels: 所有频道
@@ -966,6 +973,7 @@ Tooltips:
     Region for Trending: 热门区域让您挑选您想要显示哪个国家的热门视频。
     External Link Handling: "选择单击一个无法在 FreeTube 中打开的链接时触发的默认操作。\n默认情况下，FreeTube 将在您的默认浏览器中打开所点击链接。\n"
     Open Deep Links In New Window: 在新窗口由浏览器的重定向扩展或命令行变量传递到 FreeTube 的 URL。
+    Video Grid Columns: 设为 0 表示自动列数；否则网格视图使用固定列数。
   External Player Settings:
     External Player: 选择一个外部播放器将在缩略图上显示一个图标，用于在外部播放器中打开视频(播放列表，如果支持)。警告，Invidious 设置不影响外部播放器。
     Custom External Player Executable: 默认情况下，FreeTube 假设选择的外部播放器可以通过 PATH 环境变量找到。如果需要，可以在这里设置自定义路径。

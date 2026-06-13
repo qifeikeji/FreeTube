@@ -25,7 +25,7 @@
         class="thumbnailLink"
         tabindex="-1"
         :to="watchVideoRouterLink"
-        @click="handleWatchPageLinkClick"
+        @click.capture="handleWatchPageLinkClick($event)"
       >
         <img
           :src="thumbnail"
@@ -133,7 +133,7 @@
       <router-link
         class="title"
         :to="watchVideoRouterLink"
-        @click="handleWatchPageLinkClick"
+        @click.capture="handleWatchPageLinkClick($event)"
       >
         <h3
           class="h3Title"

@@ -76,6 +76,17 @@
         :icon="listType === 'grid' ? ['fas', 'grip'] : ['fas', 'list']"
         @change="updateListType"
       />
+      <FtInput
+        :placeholder="t('Settings.General Settings.Video Grid Columns')"
+        :show-action-button="false"
+        :show-label="true"
+        input-type="number"
+        :min="0"
+        :max="12"
+        :value="videoGridColumnsString"
+        :tooltip="t('Tooltips.General Settings.Video Grid Columns')"
+        @input="handleVideoGridColumnsInput"
+      />
       <FtSelect
         :placeholder="t('Settings.General Settings.Thumbnail Preference.Thumbnail Preference')"
         :value="thumbnailPreference"
@@ -84,6 +95,16 @@
         :tooltip="t('Tooltips.General Settings.Thumbnail Preference')"
         :icon="['fas', 'images']"
         @change="handleThumbnailPreferenceChange"
+      />
+      <FtInput
+        :placeholder="t('Settings.General Settings.Side Nav Width (px)')"
+        :show-action-button="false"
+        :show-label="true"
+        input-type="number"
+        :min="180"
+        :max="800"
+        :value="sideNavWidthPxString"
+        @input="handleSideNavWidthPxInput"
       />
       <FtSelect
         :placeholder="t('Settings.General Settings.Locale Preference')"
@@ -189,6 +210,42 @@ const IS_MAC = process.platform === 'darwin'
 
 const { t } = useI18n()
 const router = useRouter()
+
+/** @type {import('vue').ComputedRef<number>} */
+const sideNavWidthPx = computed(() => store.getters.getSideNavWidthPx)
+const sideNavWidthPxString = computed(() => String(sideNavWidthPx.value ?? 300))
+
+const sideNavWidthDebouncedUpdate = debounce((value) => {
+  store.dispatch('updateSideNavWidthPx', value)
+}, 250)
+
+/**
+ * @param {string} value
+ */
+function handleSideNavWidthPxInput(value) {
+  const parsed = Math.round(Number(value))
+  if (!Number.isFinite(parsed)) { return }
+  const clamped = Math.min(Math.max(parsed, 180), 800)
+  sideNavWidthDebouncedUpdate(clamped)
+}
+
+/** @type {import('vue').ComputedRef<number>} */
+const videoGridColumns = computed(() => store.getters.getVideoGridColumns)
+const videoGridColumnsString = computed(() => String(videoGridColumns.value ?? 0))
+
+const videoGridColumnsDebouncedUpdate = debounce((value) => {
+  store.dispatch('updateVideoGridColumns', value)
+}, 250)
+
+/**
+ * @param {string} value
+ */
+function handleVideoGridColumnsInput(value) {
+  const parsed = Math.round(Number(value))
+  if (!Number.isFinite(parsed)) { return }
+  const clamped = Math.min(Math.max(parsed, 0), 12)
+  videoGridColumnsDebouncedUpdate(clamped)
+}
 
 /** @type {import('vue').ComputedRef<boolean>} */
 const checkForUpdates = computed(() => store.getters.getCheckForUpdates)

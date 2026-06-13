@@ -179,6 +179,9 @@ const state = {
   externalPlayerIgnoreDefaultArgs: false,
   externalPlayerCustomArgs: '[]',
   showAddedExternalPlayerCustomArgs: true,
+  // UI layout
+  sideNavWidthPx: 300,
+  videoGridColumns: 0,
   expandSideBar: false,
   hideActiveSubscriptions: false,
   hideChannelCommunity: false,
@@ -302,6 +305,8 @@ const state = {
   quickBookmarkTargetPlaylistId: 'favorites',
   generalAutoLoadMorePaginatedItemsEnabled: false,
   hideToTrayOnMinimize: false,
+  // Profile buttons shown in the top navigation bar (display-mode="buttons")
+  hiddenTopNavProfileButtonIds: [],
 
   // The settings below have side effects
   currentLocale: 'system',
@@ -418,6 +423,28 @@ const customState = {
 }
 
 const customGetters = {
+  getExternalPlayer: (state, getters, rootState, rootGetters) => {
+    return rootGetters.getActiveProfile?.externalPlayerSettings?.player ?? state.externalPlayer
+  },
+  getExternalPlayerExecutable: (state, getters, rootState, rootGetters) => {
+    return rootGetters.getActiveProfile?.externalPlayerSettings?.executable ?? state.externalPlayerExecutable
+  },
+  getExternalPlayerIgnoreWarnings: (state, getters, rootState, rootGetters) => {
+    return rootGetters.getActiveProfile?.externalPlayerSettings?.ignoreWarnings ?? state.externalPlayerIgnoreWarnings
+  },
+  getExternalPlayerIgnoreDefaultArgs: (state, getters, rootState, rootGetters) => {
+    return rootGetters.getActiveProfile?.externalPlayerSettings?.ignoreDefaultArgs ?? state.externalPlayerIgnoreDefaultArgs
+  },
+  getExternalPlayerCustomArgs: (state, getters, rootState, rootGetters) => {
+    const customArgs = rootGetters.getActiveProfile?.externalPlayerSettings?.customArgs
+    if (Array.isArray(customArgs)) {
+      return JSON.stringify(customArgs)
+    }
+    return state.externalPlayerCustomArgs
+  },
+  getExternalPlayerOpenVideosOnClick: (state, getters, rootState, rootGetters) => {
+    return rootGetters.getActiveProfile?.externalPlayerSettings?.openVideosOnClick ?? false
+  },
 }
 
 const customMutations = {}

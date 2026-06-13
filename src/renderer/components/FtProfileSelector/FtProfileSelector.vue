@@ -1,5 +1,19 @@
 <template>
-  <div>
+  <div v-if="displayMode === 'buttons'" class="profileButtons" role="toolbar">
+    <button
+      v-for="profile in profileListForButtons"
+      :key="profile._id"
+      class="profileButton"
+      type="button"
+      :class="{ active: isActiveProfile(profile) }"
+      :title="translateProfileName(profile)"
+      @click="setActiveProfileById(profile._id)"
+    >
+      <span dir="auto">{{ translateProfileName(profile) }}</span>
+    </button>
+  </div>
+
+  <div v-else>
     <div
       ref="iconButton"
       class="colorOption"
@@ -96,6 +110,13 @@ import { showToast } from '../../helpers/utils'
 import { MAIN_PROFILE_ID } from '../../../constants'
 import { getFirstCharacter } from '../../helpers/strings'
 
+const props = defineProps({
+  displayMode: {
+    type: String,
+    default: 'dropdown',
+  },
+})
+
 /**
  * @typedef {object} Profile
  * @property {string} _id
@@ -119,6 +140,12 @@ let mouseDownOnIcon = false
 const profileList = computed(() => store.getters.getProfileList)
 /** @type {import('vue').ComputedRef<Profile>} */
 const activeProfile = computed(() => store.getters.getActiveProfile)
+
+/** @type {import('vue').ComputedRef<Profile[]>} */
+const profileListForButtons = computed(() => {
+  const hiddenIds = store.getters.getHiddenTopNavProfileButtonIds ?? []
+  return profileList.value.filter((profile) => !hiddenIds.includes(profile._id))
+})
 
 const activeProfileInitial = computed(() => {
   return activeProfile.value?.name
@@ -189,25 +216,29 @@ function handleProfileListEscape() {
 }
 
 /**
+ * @param {string} profileId
+ */
+function setActiveProfileById(profileId) {
+  if (activeProfile.value._id !== profileId) {
+    const targetProfile = profileList.value.find((x) => x._id === profileId)
+
+    if (targetProfile) {
+      store.commit('setActiveProfile', profileId)
+      showToast(t('Profile.{profile} is now the active profile', { profile: translateProfileName(targetProfile) }))
+    }
+  }
+
+  profileListShown.value = false
+}
+
+/**
  * @param {MouseEvent | KeyboardEvent} event
  */
 function setActiveProfile(event) {
   /** @type {string} */
   const profileId = event.currentTarget.dataset.profileId
 
-  if (activeProfile.value._id !== profileId) {
-    const targetProfile = profileList.value.find((x) => {
-      return x._id === profileId
-    })
-
-    if (targetProfile) {
-      store.commit('setActiveProfile', profileId)
-
-      showToast(t('Profile.{profile} is now the active profile', { profile: translateProfileName(targetProfile) }))
-    }
-  }
-
-  profileListShown.value = false
+  setActiveProfileById(profileId)
 }
 
 /**

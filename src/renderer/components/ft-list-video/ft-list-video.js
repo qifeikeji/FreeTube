@@ -409,6 +409,9 @@ export default defineComponent({
     externalPlayer: function () {
       return this.$store.getters.getExternalPlayer
     },
+    externalPlayerOpenVideosOnClick: function () {
+      return this.$store.getters.getExternalPlayerOpenVideosOnClick
+    },
 
     externalPlayerIsDefaultViewingMode: function () {
       return process.env.IS_ELECTRON && this.externalPlayer !== '' && this.$store.getters.getDefaultViewingMode === 'external_player'
@@ -589,8 +592,20 @@ export default defineComponent({
     }
   },
   methods: {
-    handleWatchPageLinkClick: function() {
+    handleWatchPageLinkClick: function(event) {
       if (this.externalPlayerIsDefaultViewingMode) {
+        this.handleExternalPlayer()
+        return
+      }
+
+      if (
+        process.env.IS_ELECTRON &&
+        this.externalPlayer !== '' &&
+        this.externalPlayerOpenVideosOnClick
+      ) {
+        event?.preventDefault?.()
+        event?.stopPropagation?.()
+        event?.stopImmediatePropagation?.()
         this.handleExternalPlayer()
       }
     },
@@ -650,6 +665,7 @@ export default defineComponent({
       this.$emit('pause-player')
 
       const payload = {
+        profileId: this.$store.getters.getActiveProfile?._id,
         videoId: this.id,
         playlistId: this.playlistIdFinal,
         startTime: this.watchProgress,

@@ -6,8 +6,28 @@
     <div
       v-if="!isLoading && errorChannels.length !== 0"
     >
-      <h3> {{ $t("Subscriptions.Error Channels") }}</h3>
-      <FtFlexBox>
+      <div class="errorChannelsSummary">
+        <button
+          class="errorChannelsToggle"
+          type="button"
+          :aria-expanded="errorChannelsExpanded"
+          @click="toggleErrorChannelsExpanded"
+        >
+          <h3 class="errorChannelsTitle">
+            {{ $t('Subscriptions.Error Channels With Count', { count: errorChannels.length }) }}
+          </h3>
+        </button>
+        <FtIconButton
+          :title="$t('Video.More Options')"
+          :icon="['fas', 'chevron-down']"
+          theme="base-no-default"
+          :use-shadow="false"
+          dropdown-position-x="left"
+          :dropdown-options="errorChannelDropdownOptions"
+          @click="handleErrorChannelDropdownClick"
+        />
+      </div>
+      <FtFlexBox v-if="errorChannelsExpanded">
         <FtChannelBubble
           v-for="channel in errorChannels"
           :key="channel.id"
@@ -64,20 +84,31 @@
       :last-refresh-timestamp="lastRefreshTimestamp"
       :title="title"
       @click="refresh"
-    />
+    >
+      <template #left>
+        <SubscriptionsTabsInRefreshBar />
+      </template>
+      <template #center>
+        <FtSideNavSearch compact />
+      </template>
+    </FtRefreshWidget>
   </div>
 </template>
 
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
 
 import FtAutoLoadNextPageWrapper from '../FtAutoLoadNextPageWrapper.vue'
 import FtButton from '../FtButton/FtButton.vue'
 import FtChannelBubble from '../FtChannelBubble/FtChannelBubble.vue'
 import FtElementList from '../FtElementList/FtElementList.vue'
 import FtFlexBox from '../ft-flex-box/ft-flex-box.vue'
+import FtIconButton from '../FtIconButton/FtIconButton.vue'
 import FtLoader from '../FtLoader/FtLoader.vue'
 import FtRefreshWidget from '../FtRefreshWidget/FtRefreshWidget.vue'
+import SubscriptionsTabsInRefreshBar from './SubscriptionsTabsInRefreshBar.vue'
+import FtSideNavSearch from '../FtSideNavSearch/FtSideNavSearch.vue'
 
 import store from '../../store/index'
 
@@ -119,6 +150,14 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['refresh'])
+
+const router = useRouter()
+
+const errorChannelsExpanded = ref(false)
+
+function toggleErrorChannelsExpanded() {
+  errorChannelsExpanded.value = !errorChannelsExpanded.value
+}
 
 const subscriptionLimit = sessionStorage.getItem('subscriptionLimit')
 
@@ -195,6 +234,21 @@ const filteredVideoList = computed(() => {
 
   return videoList
 })
+
+const errorChannelDropdownOptions = computed(() => {
+  return props.errorChannels.map((channel) => ({
+    label: channel.name ?? channel.id,
+    value: channel.id,
+  }))
+})
+
+/**
+ * @param {string|null} channelId
+ */
+function handleErrorChannelDropdownClick(channelId) {
+  if (!channelId) { return }
+  router.push({ path: `/channel/${channelId}` })
+}
 
 function increaseLimit() {
   dataLimit.value += props.initialDataLimit

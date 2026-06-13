@@ -4,6 +4,49 @@
   outline: 3px solid var(--side-nav-hover-color);
 }
 
+.ft-list-video.grid {
+  --video-card-radius: 14px;
+  --video-card-padding: 10px;
+  --video-thumb-radius: calc(var(--video-card-radius) - 4px);
+
+  background-color: rgb(0 0 0 / 10%);
+  border-radius: var(--video-card-radius);
+  box-shadow: 0 0 0 1px var(--primary-shadow-color);
+  transition: box-shadow 0.15s ease-out, background-color 0.15s ease-out, transform 0.15s ease-out;
+
+  padding: var(--video-card-padding);
+  padding-block-end: calc(var(--video-card-padding) + 10px);
+
+  &:hover,
+  &:focus-within {
+    background-color: var(--card-bg-color);
+    box-shadow:
+      0 0 0 2px var(--primary-color),
+      0 6px 18px rgb(0 0 0 / 18%);
+    transform: translateY(-1px);
+  }
+
+  .videoThumbnail {
+    margin-block-end: 10px;
+
+    .thumbnailLink {
+      border-radius: var(--video-thumb-radius);
+    }
+
+    .thumbnailImage {
+      border-radius: var(--video-thumb-radius);
+    }
+  }
+
+  .h3Title {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+    line-height: 1.25;
+  }
+}
+
 .grabBar {
   color: var(--tertiary-text-color);
   cursor: grab;

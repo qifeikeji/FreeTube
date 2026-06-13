@@ -1,0 +1,4629 @@
+From 851c3a3c4b758e51fc0e13e3694db4b3c984a22d Mon Sep 17 00:00:00 2001
+From: sun <sun@manjaro.lan>
+Date: Sun, 8 Feb 2026 18:08:27 +0800
+Subject: [PATCH 01/33] lightweight-action
+
+---
+ .github/workflows/build.yml | 37 +++++--------------------------------
+ 1 file changed, 5 insertions(+), 32 deletions(-)
+
+diff --git a/.github/workflows/build.yml b/.github/workflows/build.yml
+index 6ba976e83ff3a..4231f60a5e1ac 100644
+--- a/.github/workflows/build.yml
++++ b/.github/workflows/build.yml
+@@ -71,9 +71,12 @@ jobs:
+         sudo apt update
+         sudo apt -y install libarchive-tools
+ 
+-    - name: Build x64 with Node.js ${{ matrix.node-version}}
++    - name: Build AppImage x64 with Node.js ${{ matrix.node-version}}
+       shell: bash
+-      run: yarn run build
++      run: |
++        yarn run patch-shaka
++        yarn run pack
++        npx --no-install electron-builder --config _scripts/ebuilder.config.mjs --linux AppImage --x64 --publish never
+ 
+     - name: Convert X64 AppImage to static runtime
+       shell: bash
+@@ -90,38 +93,8 @@ jobs:
+           -n ./squashfs-root ./"$appimage"
+         rm -rf ./squashfs-root ./appimagetool.AppImage
+ 
+-    - name: Upload Linux .zip x64 Artifact
+-      uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f #v6.0.0
+-      with:
+-        name: freetube-${{ steps.versionNumber.outputs.version }}-linux-x64-portable.zip
+-        path: build/freetube-${{ steps.versionNumber.outputs.version }}.zip
+-
+-    - name: Upload Linux .7z x64 Artifact
+-      uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f #v6.0.0
+-      with:
+-        name: freetube-${{ steps.versionNumber.outputs.version }}-linux-x64-portable.7z
+-        path: build/freetube-${{ steps.versionNumber.outputs.version }}.7z
+-
+-    - name: Upload .deb x64 Artifact
+-      uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f #v6.0.0
+-      with:
+-        name: freetube_${{ steps.versionNumber.outputs.version }}_amd64.deb
+-        path: build/freetube_${{ steps.versionNumber.outputs.version }}_amd64.deb
+-
+     - name: Upload AppImage x64 Artifact
+       uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f #v6.0.0
+       with:
+         name: freetube-${{ steps.versionNumber.outputs.version }}-amd64.AppImage
+         path: build/FreeTube-${{ steps.versionNumber.outputs.version }}.AppImage
+-
+-    - name: Upload .rpm x64 Artifact
+-      uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f #v6.0.0
+-      with:
+-        name: freetube-${{ steps.versionNumber.outputs.version }}.amd64.rpm
+-        path: build/freetube-${{ steps.versionNumber.outputs.version }}.x86_64.rpm
+-
+-    - name: Upload Pacman .pacman x64 Artifact
+-      uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f #v6.0.0
+-      with:
+-        name: freetube-${{ steps.versionNumber.outputs.version }}-amd64.pacman
+-        path: build/freetube-${{ steps.versionNumber.outputs.version }}.pacman
+
+From d6d6d231b558002d073f41b882509068283cddfb Mon Sep 17 00:00:00 2001
+From: sun <sun@manjaro.lan>
+Date: Sun, 8 Feb 2026 18:22:11 +0800
+Subject: [PATCH 02/33] custom-ui
+
+---
+ .../FtProfileSelector/FtProfileSelector.css   |  32 ++
+ .../FtProfileSelector/FtProfileSelector.vue   |  45 +-
+ .../FtSideNavSearch/FtSideNavSearch.vue       | 421 ++++++++++++++++++
+ src/renderer/components/SideNav/SideNav.vue   |   2 +
+ src/renderer/components/TopNav/TopNav.scss    |  27 +-
+ src/renderer/components/TopNav/TopNav.vue     | 410 +----------------
+ 6 files changed, 503 insertions(+), 434 deletions(-)
+ create mode 100644 src/renderer/components/FtSideNavSearch/FtSideNavSearch.vue
+
+diff --git a/src/renderer/components/FtProfileSelector/FtProfileSelector.css b/src/renderer/components/FtProfileSelector/FtProfileSelector.css
+index 895341047e85c..07c3f1918c1c4 100644
+--- a/src/renderer/components/FtProfileSelector/FtProfileSelector.css
++++ b/src/renderer/components/FtProfileSelector/FtProfileSelector.css
+@@ -90,3 +90,35 @@ Height adjust for profile list so it won't cover navbar.  */
+   inset-block-start: 10px;
+   inset-inline-end: 5px;
+ }
++
++.profileButtons {
++  display: flex;
++  flex-wrap: nowrap;
++  gap: 5px;
++  overflow-x: auto;
++  overflow-y: hidden;
++  max-inline-size: 100%;
++  padding-block: 0;
++  padding-inline: 5px;
++}
++
++.profileButton {
++  border: 1px solid var(--primary-color);
++  border-radius: 6px;
++  background: transparent;
++  color: var(--primary-text-color);
++  cursor: pointer;
++  line-height: 1;
++  padding: 8px 10px;
++  white-space: nowrap;
++}
++
++.profileButton:hover {
++  background-color: var(--side-nav-hover-color);
++  color: var(--side-nav-hover-text-color);
++}
++
++.profileButton.active {
++  background-color: var(--primary-color);
++  color: var(--text-with-main-color);
++}
+diff --git a/src/renderer/components/FtProfileSelector/FtProfileSelector.vue b/src/renderer/components/FtProfileSelector/FtProfileSelector.vue
+index 05aa0334c3f4f..3450889bf0048 100644
+--- a/src/renderer/components/FtProfileSelector/FtProfileSelector.vue
++++ b/src/renderer/components/FtProfileSelector/FtProfileSelector.vue
+@@ -1,5 +1,19 @@
+ <template>
+-  <div>
++  <div v-if="displayMode === 'buttons'" class="profileButtons" role="toolbar">
++    <button
++      v-for="profile in profileList"
++      :key="profile._id"
++      class="profileButton"
++      type="button"
++      :class="{ active: isActiveProfile(profile) }"
++      :title="translateProfileName(profile)"
++      @click="setActiveProfileById(profile._id)"
++    >
++      <span dir="auto">{{ translateProfileName(profile) }}</span>
++    </button>
++  </div>
++
++  <div v-else>
+     <div
+       ref="iconButton"
+       class="colorOption"
+@@ -96,6 +110,13 @@ import { showToast } from '../../helpers/utils'
+ import { MAIN_PROFILE_ID } from '../../../constants'
+ import { getFirstCharacter } from '../../helpers/strings'
+ 
++const props = defineProps({
++  displayMode: {
++    type: String,
++    default: 'dropdown',
++  },
++})
++
+ /**
+  * @typedef {object} Profile
+  * @property {string} _id
+@@ -189,20 +210,14 @@ function handleProfileListEscape() {
+ }
+ 
+ /**
+- * @param {MouseEvent | KeyboardEvent} event
++ * @param {string} profileId
+  */
+-function setActiveProfile(event) {
+-  /** @type {string} */
+-  const profileId = event.currentTarget.dataset.profileId
+-
++function setActiveProfileById(profileId) {
+   if (activeProfile.value._id !== profileId) {
+-    const targetProfile = profileList.value.find((x) => {
+-      return x._id === profileId
+-    })
++    const targetProfile = profileList.value.find((x) => x._id === profileId)
+ 
+     if (targetProfile) {
+       store.commit('setActiveProfile', profileId)
+-
+       showToast(t('Profile.{profile} is now the active profile', { profile: translateProfileName(targetProfile) }))
+     }
+   }
+@@ -210,6 +225,16 @@ function setActiveProfile(event) {
+   profileListShown.value = false
+ }
+ 
++/**
++ * @param {MouseEvent | KeyboardEvent} event
++ */
++function setActiveProfile(event) {
++  /** @type {string} */
++  const profileId = event.currentTarget.dataset.profileId
++
++  setActiveProfileById(profileId)
++}
++
+ /**
+  * @param {Profile} profile
+  */
+diff --git a/src/renderer/components/FtSideNavSearch/FtSideNavSearch.vue b/src/renderer/components/FtSideNavSearch/FtSideNavSearch.vue
+new file mode 100644
+index 0000000000000..1ec9ea80d1016
+--- /dev/null
++++ b/src/renderer/components/FtSideNavSearch/FtSideNavSearch.vue
+@@ -0,0 +1,421 @@
++<template>
++  <div
++    v-if="!hideSearchBar"
++    class="sideNavSearch"
++  >
++    <FtInput
++      ref="searchInput"
++      :placeholder="t('Search / Go to URL')"
++      class="searchInput"
++      is-search
++      :data-list="activeDataList"
++      :data-list-properties="activeDataListProperties"
++      show-clear-text-button
++      show-data-when-empty
++      @input="getSearchSuggestionsDebounce"
++      @click="goToSearch"
++      @clear="clearLastSuggestionQuery"
++      @remove="removeSearchHistoryEntryInDbAndCache"
++    />
++    <button
++      class="navFilterButton"
++      :class="{ filterChanged: searchFilterValueChanged }"
++      :aria-label="t('Search Filters.Search Filters')"
++      :title="t('Search Filters.Search Filters')"
++      @click="showSearchFilters"
++    >
++      <FontAwesomeIcon
++        class="navIcon"
++        :icon="['fas', 'filter']"
++      />
++    </button>
++  </div>
++</template>
++
++<script setup>
++import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
++import { computed, onBeforeUnmount, onMounted, ref, shallowRef, useTemplateRef } from 'vue'
++import { useI18n } from '../../composables/use-i18n-polyfill'
++
++import FtInput from '../FtInput/FtInput.vue'
++
++import store from '../../store/index'
++
++import { KeyboardShortcuts, MOBILE_WIDTH_THRESHOLD, SEARCH_RESULTS_DISPLAY_LIMIT } from '../../../constants'
++import { debounce, openInternalPath } from '../../helpers/utils'
++import { clearLocalSearchSuggestionsSession, getLocalSearchSuggestions } from '../../helpers/api/local'
++import { getInvidiousSearchSuggestions } from '../../helpers/api/invidious'
++
++const { t } = useI18n()
++
++/** @type {import('vue').ShallowRef<string[]>} */
++const searchSuggestionsDataList = shallowRef([])
++const lastSuggestionQuery = ref('')
++
++/** @type {import('vue').ComputedRef<boolean>} */
++const hideSearchBar = computed(() => store.getters.getHideSearchBar)
++/** @type {import('vue').ComputedRef<boolean>} */
++const enableSearchSuggestions = computed(() => store.getters.getEnableSearchSuggestions)
++
++const usingOnlySearchHistoryResults = computed(() => lastSuggestionQuery.value.length === 0)
++
++/** @type {import('vue').ComputedRef<string[]>} */
++const latestMatchingSearchHistoryNames = computed(() => {
++  return store.getters.getLatestMatchingSearchHistoryNames(lastSuggestionQuery.value)
++})
++
++/** @type {import('vue').ComputedRef<string[]>} */
++const latestSearchHistoryNames = computed(() => store.getters.getLatestSearchHistoryNames)
++
++const activeDataList = computed(() => {
++  // show latest search history when the search bar is empty
++  if (usingOnlySearchHistoryResults.value) {
++    return latestSearchHistoryNames.value
++  }
++
++  const searchResults = [...latestMatchingSearchHistoryNames.value]
++
++  if (enableSearchSuggestions.value) {
++    for (const searchSuggestion of searchSuggestionsDataList.value) {
++      // prevent duplicate results between search history entries and YT search suggestions
++      if (latestMatchingSearchHistoryNames.value.includes(searchSuggestion)) {
++        continue
++      }
++
++      searchResults.push(searchSuggestion)
++
++      if (searchResults.length === SEARCH_RESULTS_DISPLAY_LIMIT) {
++        break
++      }
++    }
++  }
++
++  return searchResults
++})
++
++const activeDataListProperties = computed(() => {
++  const searchHistoryEntriesCount = usingOnlySearchHistoryResults.value
++    ? latestSearchHistoryNames.value.length
++    : latestMatchingSearchHistoryNames.value.length
++
++  const properties = []
++
++  for (let i = 0; i < activeDataList.value.length; i++) {
++    properties.push(i < searchHistoryEntriesCount
++      ? { isRemoveable: true, iconName: 'clock-rotate-left' }
++      : { isRemoveable: false, iconName: 'magnifying-glass' }
++    )
++  }
++
++  return properties
++})
++
++/** @type {import('vue').ComputedRef<boolean>} */
++const searchFilterValueChanged = computed(() => store.getters.getSearchFilterValueChanged)
++
++function showSearchFilters() {
++  store.dispatch('showSearchFilters')
++}
++
++const searchInput = useTemplateRef('searchInput')
++
++/** @type {import('vue').ComputedRef<any>} */
++const searchSettings = computed(() => store.getters.getSearchSettings)
++
++/**
++ * @param {string} queryText
++ * @param {object} options
++ * @param {MouseEvent} options.event
++ */
++function goToSearch(queryText, { event }) {
++  const doCreateNewWindow = event && event.shiftKey
++
++  if (window.innerWidth <= MOBILE_WIDTH_THRESHOLD) {
++    searchInput.value?.blur()
++  } else {
++    searchInput.value?.blur()
++  }
++
++  clearLocalSearchSuggestionsSession()
++
++  store.dispatch('getYoutubeUrlInfo', queryText).then((result) => {
++    switch (result.urlType) {
++      case 'video': {
++        const { videoId, timestamp, playlistId } = result
++
++        const query = {}
++        if (timestamp) {
++          query.timestamp = timestamp
++        }
++        if (playlistId && playlistId.length > 0) {
++          query.playlistId = playlistId
++        }
++
++        openInternalPath({
++          path: `/watch/${videoId}`,
++          query,
++          doCreateNewWindow,
++          searchQueryText: queryText,
++        })
++        break
++      }
++
++      case 'playlist': {
++        const { playlistId, query } = result
++
++        openInternalPath({
++          path: `/playlist/${playlistId}`,
++          query,
++          doCreateNewWindow,
++          searchQueryText: queryText,
++        })
++        break
++      }
++
++      case 'search': {
++        const { searchQuery, query } = result
++
++        openInternalPath({
++          path: `/search/${encodeURIComponent(searchQuery)}`,
++          query,
++          doCreateNewWindow,
++          searchQueryText: searchQuery,
++        })
++        break
++      }
++
++      case 'hashtag': {
++        const { hashtag } = result
++        openInternalPath({
++          path: `/hashtag/${encodeURIComponent(hashtag)}`,
++          doCreateNewWindow,
++          searchQueryText: `#${hashtag}`,
++        })
++
++        break
++      }
++
++      case 'post': {
++        const { postId, query } = result
++
++        openInternalPath({
++          path: `/post/${postId}`,
++          query,
++          doCreateNewWindow,
++          searchQueryText: queryText,
++        })
++        break
++      }
++
++      case 'channel': {
++        const { channelId, subPath, url } = result
++
++        openInternalPath({
++          path: `/channel/${channelId}/${subPath}`,
++          doCreateNewWindow,
++          query: {
++            url,
++          },
++          searchQueryText: queryText,
++        })
++        break
++      }
++
++      case 'trending':
++      case 'subscriptions':
++      case 'history':
++      case 'userplaylists':
++        openInternalPath({
++          path: `/${result.urlType}`,
++          doCreateNewWindow,
++          searchQueryText: queryText
++        })
++        break
++
++      case 'invalid_url':
++      default: {
++        openInternalPath({
++          path: `/search/${encodeURIComponent(queryText)}`,
++          query: {
++            sortBy: searchSettings.value.sortBy,
++            time: searchSettings.value.time,
++            type: searchSettings.value.type,
++            duration: searchSettings.value.duration,
++            // Array proxy cannot be cloned during IPC call
++            features: [...searchSettings.value.features],
++          },
++          doCreateNewWindow,
++          searchQueryText: queryText,
++        })
++      }
++    }
++
++    if (doCreateNewWindow) {
++      // Query text copied to new window = can be removed from current window
++      updateSearchInputText('')
++    }
++  })
++}
++
++function clearLastSuggestionQuery() {
++  lastSuggestionQuery.value = ''
++}
++
++/**
++ * @param {string} text
++ */
++function updateSearchInputText(text) {
++  searchInput.value?.setText(text)
++}
++
++/**
++ * @param {string} query
++ */
++function getSearchSuggestionsDebounce(query) {
++  if (query === lastSuggestionQuery.value) {
++    return
++  }
++
++  lastSuggestionQuery.value = query
++
++  if (enableSearchSuggestions.value) {
++    debounceSearchResults(query.trim())
++  }
++}
++
++/** @type {import('vue').ComputedRef<'local' | 'invidious'>} */
++const backendPreference = computed(() => store.getters.getBackendPreference)
++/** @type {import('vue').ComputedRef<boolean>} */
++const backendFallback = computed(() => store.getters.getBackendFallback)
++
++const debounceSearchResults = debounce(/** @param {string} query */(query) => {
++  if (!process.env.SUPPORTS_LOCAL_API || backendPreference.value === 'invidious') {
++    getSearchSuggestionsInvidious(query)
++  } else {
++    getSearchSuggestionsLocal(query)
++  }
++}, 200)
++
++/**
++ * @param {string} query
++ */
++async function getSearchSuggestionsLocal(query) {
++  searchSuggestionsDataList.value = query.length > 0
++    ? await getLocalSearchSuggestions(query)
++    : []
++}
++
++async function getSearchSuggestionsInvidious(query) {
++  if (query === '') {
++    searchSuggestionsDataList.value = []
++    return
++  }
++
++  try {
++    searchSuggestionsDataList.value = (await getInvidiousSearchSuggestions(query)).suggestions
++  } catch (err) {
++    console.error(err)
++
++    if (process.env.SUPPORTS_LOCAL_API && backendFallback.value) {
++      console.error(
++        'Error gettings search suggestions.  Falling back to Local API'
++      )
++      getSearchSuggestionsLocal(query)
++    }
++  }
++}
++
++/**
++ * @param {string} query
++ */
++function removeSearchHistoryEntryInDbAndCache(query) {
++  store.dispatch('removeSearchHistoryEntry', query)
++  store.commit('removeFromSessionSearchHistory', query)
++}
++
++/**
++ * @param {KeyboardEvent} event
++ */
++function handleKeyboardShortcuts(event) {
++  const ctrlOrCommandPressed = (process.platform !== 'darwin' && event.ctrlKey) ||
++    (process.platform === 'darwin' && event.metaKey)
++
++  if (
++    !hideSearchBar.value &&
++    (
++      (ctrlOrCommandPressed && (event.key === 'L' || event.key === 'l')) ||
++      (event.altKey && (event.key === 'D' || event.key === 'd' || (process.platform === 'darwin' && event.key === '∂')))
++    )
++  ) {
++    event.preventDefault()
++
++    // prevent KDE Plasma selection clipboard quirk (see issue #2019)
++    setTimeout(() => {
++      searchInput.value?.focus()
++      searchInput.value?.select()
++    }, 0)
++  }
++}
++
++onMounted(() => {
++  if (process.env.IS_ELECTRON) {
++    window.addEventListener('keydown', handleKeyboardShortcuts)
++
++    window.ftElectron.handleUpdateSearchInputText((searchQueryText) => {
++      if (searchQueryText) {
++        updateSearchInputText(searchQueryText)
++      }
++    })
++  }
++})
++
++onBeforeUnmount(() => {
++  if (process.env.IS_ELECTRON) {
++    window.removeEventListener('keydown', handleKeyboardShortcuts)
++    window.ftElectron.handleUpdateSearchInputText(null)
++  }
++})
++</script>
++
++<style scoped>
++.sideNavSearch {
++  display: flex;
++  align-items: center;
++  gap: 8px;
++  padding: 10px;
++}
++
++.searchInput {
++  flex: 1;
++  min-inline-size: 0;
++}
++
++.navFilterButton {
++  border-radius: 50%;
++  border-style: none;
++  background-color: transparent;
++  color: var(--primary-text-color);
++  cursor: pointer;
++  font-size: 18px;
++  line-height: 1em;
++  padding: 8px;
++  transition: background 0.2s ease-out;
++}
++
++.navFilterButton:hover {
++  background-color: var(--side-nav-hover-color);
++  color: var(--side-nav-hover-text-color);
++}
++
++.navFilterButton:active {
++  background-color: var(--side-nav-active-color);
++  color: var(--side-nav-active-text-color);
++}
++
++.navFilterButton.filterChanged {
++  box-shadow: 0 0 16px var(--primary-color);
++  color: var(--primary-color);
++}
++</style>
++
++
+diff --git a/src/renderer/components/SideNav/SideNav.vue b/src/renderer/components/SideNav/SideNav.vue
+index 85360729e9487..f081390fbd135 100644
+--- a/src/renderer/components/SideNav/SideNav.vue
++++ b/src/renderer/components/SideNav/SideNav.vue
+@@ -8,6 +8,7 @@
+       class="inner"
+       :class="applyHiddenLabels"
+     >
++      <FtSideNavSearch v-if="isOpen" class="mobileHidden" />
+       <router-link
+         class="navOption topNavOption mobileShow "
+         role="button"
+@@ -240,6 +241,7 @@ import { useI18n } from '../../composables/use-i18n-polyfill'
+ 
+ import FtFlexBox from '../ft-flex-box/ft-flex-box.vue'
+ import SideNavMoreOptions from '../SideNavMoreOptions/SideNavMoreOptions.vue'
++import FtSideNavSearch from '../FtSideNavSearch/FtSideNavSearch.vue'
+ 
+ import store from '../../store/index'
+ 
+diff --git a/src/renderer/components/TopNav/TopNav.scss b/src/renderer/components/TopNav/TopNav.scss
+index fdd511559c89b..9fdc56825ac76 100644
+--- a/src/renderer/components/TopNav/TopNav.scss
++++ b/src/renderer/components/TopNav/TopNav.scss
+@@ -23,7 +23,7 @@
+ 
+   @media only screen and (width >= 961px) {
+     display: grid;
+-    grid-template-columns: 1fr 440px 1fr;
++    grid-template-columns: auto 1fr auto;
+   }
+ 
+   @include top-nav-is-colored {
+@@ -202,25 +202,12 @@
+ 
+ .middle {
+   flex: 1;
+-  max-inline-size: 440px;
+-
+-  .searchContainer {
+-    align-items: center;
+-    display: flex;
+-
+-    @media only screen and (width <= 680px) {
+-      background-color: var(--side-nav-color);
+-      inset-inline: 0;
+-      position: fixed;
+-      inset-block-start: 60px;
+-
+-      @include top-nav-is-colored {
+-        background-color: var(--primary-color-hover);
+-      }
+-    }
++  display: flex;
++  align-items: center;
++  justify-content: center;
++  padding-inline: 10px;
+ 
+-    .searchInput {
+-      flex: 1;
+-    }
++  :deep(.profileButtons) {
++    justify-content: center;
+   }
+ }
+diff --git a/src/renderer/components/TopNav/TopNav.vue b/src/renderer/components/TopNav/TopNav.vue
+index 9aa386688bcb7..7ed3b66926003 100644
+--- a/src/renderer/components/TopNav/TopNav.vue
++++ b/src/renderer/components/TopNav/TopNav.vue
+@@ -43,16 +43,6 @@
+         :title="forwardText"
+         @click="historyForward"
+       />
+-      <button
+-        v-if="!hideSearchBar"
+-        class="navSearchButton navButton"
+-        @click="toggleSearchContainer"
+-      >
+-        <FontAwesomeIcon
+-          class="navIcon"
+-          :icon="['fas', 'search']"
+-        />
+-      </button>
+       <button
+         class="navNewWindowButton navButton"
+         :aria-label="t('Open New Window')"
+@@ -80,79 +70,36 @@
+       </RouterLink>
+     </div>
+     <div class="middle">
+-      <div
+-        v-if="!hideSearchBar"
+-        v-show="showSearchContainer"
+-        ref="searchContainer"
+-        class="searchContainer"
+-      >
+-        <FtInput
+-          ref="searchInput"
+-          :placeholder="t('Search / Go to URL')"
+-          class="searchInput"
+-          is-search
+-          :data-list="activeDataList"
+-          :data-list-properties="activeDataListProperties"
+-          show-clear-text-button
+-          show-data-when-empty
+-          @input="getSearchSuggestionsDebounce"
+-          @click="goToSearch"
+-          @clear="clearLastSuggestionQuery"
+-          @remove="removeSearchHistoryEntryInDbAndCache"
+-        />
+-        <button
+-          class="navFilterButton navButton"
+-          :class="{ filterChanged: searchFilterValueChanged }"
+-          :aria-label="t('Search Filters.Search Filters')"
+-          :title="t('Search Filters.Search Filters')"
+-          @click="showSearchFilters"
+-        >
+-          <FontAwesomeIcon
+-            class="navIcon"
+-            :icon="['fas', 'filter']"
+-          />
+-        </button>
+-      </div>
++      <FtProfileSelector display-mode="buttons" />
+     </div>
+-    <FtProfileSelector class="side profiles" />
++    <div class="side profiles" />
+   </nav>
+ </template>
+ 
+ <script setup>
+ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
+-import { computed, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, useTemplateRef, watch } from 'vue'
++import { computed, nextTick, onMounted, ref, shallowRef, watch } from 'vue'
+ import { useI18n } from '../../composables/use-i18n-polyfill'
+ import { useRoute, useRouter } from 'vue-router'
+ 
+-import FtInput from '../FtInput/FtInput.vue'
+ import FtProfileSelector from '../FtProfileSelector/FtProfileSelector.vue'
+ import FtIconButton from '../FtIconButton/FtIconButton.vue'
+ 
+ import store from '../../store/index'
+ 
+-import { KeyboardShortcuts, MOBILE_WIDTH_THRESHOLD, SEARCH_RESULTS_DISPLAY_LIMIT } from '../../../constants'
+-import { debounce, localizeAndAddKeyboardShortcutToActionTitle, openInternalPath } from '../../helpers/utils'
++import { KeyboardShortcuts } from '../../../constants'
++import { localizeAndAddKeyboardShortcutToActionTitle } from '../../helpers/utils'
+ import { translateWindowTitle } from '../../helpers/strings'
+-import { clearLocalSearchSuggestionsSession, getLocalSearchSuggestions } from '../../helpers/api/local'
+-import { getInvidiousSearchSuggestions } from '../../helpers/api/invidious'
+ 
+ const { t } = useI18n()
+ const router = useRouter()
+ const route = useRoute()
+ 
+-const showSearchContainer = ref(true)
+ /** @type {import('vue').ShallowRef<string[]>} */
+ const navigationHistoryDropdownOptions = shallowRef([])
+-/** @type {import('vue').ShallowRef<string[]>} */
+-const searchSuggestionsDataList = shallowRef([])
+-const lastSuggestionQuery = ref('')
+ 
+-/** @type {import('vue').ComputedRef<boolean>} */
+-const hideSearchBar = computed(() => store.getters.getHideSearchBar)
+ /** @type {import('vue').ComputedRef<boolean>} */
+ const hideHeaderLogo = computed(() => store.getters.getHideHeaderLogo)
+-/** @type {import('vue').ComputedRef<boolean>} */
+-const enableSearchSuggestions = computed(() => store.getters.getEnableSearchSuggestions)
+ /** @type {import('vue').ComputedRef<string>} */
+ const barColor = computed(() => store.getters.getBarColor)
+ 
+@@ -251,59 +198,6 @@ function createNewWindow() {
+   window.open(url.toString(), '_blank', 'noreferrer')
+ }
+ 
+-const usingOnlySearchHistoryResults = computed(() => lastSuggestionQuery.value.length === 0)
+-
+-/** @type {import('vue').ComputedRef<string[]>} */
+-const latestMatchingSearchHistoryNames = computed(() => {
+-  return store.getters.getLatestMatchingSearchHistoryNames(lastSuggestionQuery.value)
+-})
+-
+-/** @type {import('vue').ComputedRef<string[]>} */
+-const latestSearchHistoryNames = computed(() => store.getters.getLatestSearchHistoryNames)
+-
+-const activeDataList = computed(() => {
+-  // show latest search history when the search bar is empty
+-  if (usingOnlySearchHistoryResults.value) {
+-    return latestSearchHistoryNames.value
+-  }
+-
+-  const searchResults = [...latestMatchingSearchHistoryNames.value]
+-
+-  if (enableSearchSuggestions.value) {
+-    for (const searchSuggestion of searchSuggestionsDataList.value) {
+-      // prevent duplicate results between search history entries and YT search suggestions
+-      if (latestMatchingSearchHistoryNames.value.includes(searchSuggestion)) {
+-        continue
+-      }
+-
+-      searchResults.push(searchSuggestion)
+-
+-      if (searchResults.length === SEARCH_RESULTS_DISPLAY_LIMIT) {
+-        break
+-      }
+-    }
+-  }
+-
+-  return searchResults
+-})
+-
+-const activeDataListProperties = computed(() => {
+-  const searchHistoryEntriesCount = usingOnlySearchHistoryResults.value
+-    ? latestSearchHistoryNames.value.length
+-    : latestMatchingSearchHistoryNames.value.length
+-
+-  const properties = []
+-
+-  for (let i = 0; i < activeDataList.value.length; i++) {
+-    properties.push(i < searchHistoryEntriesCount
+-      ? { isRemoveable: true, iconName: 'clock-rotate-left' }
+-      : { isRemoveable: false, iconName: 'magnifying-glass' }
+-    )
+-  }
+-
+-  return properties
+-})
+-
+ const isArrowBackwardDisabled = ref(true)
+ const isArrowForwardDisabled = ref(true)
+ 
+@@ -359,279 +253,7 @@ function toggleSideNav() {
+   store.commit('toggleSideNav')
+ }
+ 
+-/** @type {import('vue').ComputedRef<boolean>} */
+-const searchFilterValueChanged = computed(() => store.getters.getSearchFilterValueChanged)
+-
+-function showSearchFilters() {
+-  store.dispatch('showSearchFilters')
+-}
+-
+-const searchContainer = useTemplateRef('searchContainer')
+-const searchInput = useTemplateRef('searchInput')
+-
+-/** @type {import('vue').ComputedRef<any>} */
+-const searchSettings = computed(() => store.getters.getSearchSettings)
+-
+-/**
+- * @param {string} queryText
+- * @param {object} options
+- * @param {MouseEvent} options.event
+- */
+-function goToSearch(queryText, { event }) {
+-  const doCreateNewWindow = event && event.shiftKey
+-
+-  if (window.innerWidth <= MOBILE_WIDTH_THRESHOLD) {
+-    searchContainer.value.blur()
+-    showSearchContainer.value = false
+-  } else {
+-    searchInput.value.blur()
+-  }
+-
+-  clearLocalSearchSuggestionsSession()
+-
+-  store.dispatch('getYoutubeUrlInfo', queryText).then((result) => {
+-    switch (result.urlType) {
+-      case 'video': {
+-        const { videoId, timestamp, playlistId } = result
+-
+-        const query = {}
+-        if (timestamp) {
+-          query.timestamp = timestamp
+-        }
+-        if (playlistId && playlistId.length > 0) {
+-          query.playlistId = playlistId
+-        }
+-
+-        openInternalPath({
+-          path: `/watch/${videoId}`,
+-          query,
+-          doCreateNewWindow,
+-          searchQueryText: queryText,
+-        })
+-        break
+-      }
+-
+-      case 'playlist': {
+-        const { playlistId, query } = result
+-
+-        openInternalPath({
+-          path: `/playlist/${playlistId}`,
+-          query,
+-          doCreateNewWindow,
+-          searchQueryText: queryText,
+-        })
+-        break
+-      }
+-
+-      case 'search': {
+-        const { searchQuery, query } = result
+-
+-        openInternalPath({
+-          path: `/search/${encodeURIComponent(searchQuery)}`,
+-          query,
+-          doCreateNewWindow,
+-          searchQueryText: searchQuery,
+-        })
+-        break
+-      }
+-
+-      case 'hashtag': {
+-        const { hashtag } = result
+-        openInternalPath({
+-          path: `/hashtag/${encodeURIComponent(hashtag)}`,
+-          doCreateNewWindow,
+-          searchQueryText: `#${hashtag}`,
+-        })
+-
+-        break
+-      }
+-
+-      case 'post': {
+-        const { postId, query } = result
+-
+-        openInternalPath({
+-          path: `/post/${postId}`,
+-          query,
+-          doCreateNewWindow,
+-          searchQueryText: queryText,
+-        })
+-        break
+-      }
+-
+-      case 'channel': {
+-        const { channelId, subPath, url } = result
+-
+-        openInternalPath({
+-          path: `/channel/${channelId}/${subPath}`,
+-          doCreateNewWindow,
+-          query: {
+-            url,
+-          },
+-          searchQueryText: queryText,
+-        })
+-        break
+-      }
+-
+-      case 'trending':
+-      case 'subscriptions':
+-      case 'history':
+-      case 'userplaylists':
+-        openInternalPath({
+-          path: `/${result.urlType}`,
+-          doCreateNewWindow,
+-          searchQueryText: queryText
+-        })
+-        break
+-
+-      case 'invalid_url':
+-      default: {
+-        openInternalPath({
+-          path: `/search/${encodeURIComponent(queryText)}`,
+-          query: {
+-            sortBy: searchSettings.value.sortBy,
+-            time: searchSettings.value.time,
+-            type: searchSettings.value.type,
+-            duration: searchSettings.value.duration,
+-            // Array proxy cannot be cloned during IPC call
+-            features: [...searchSettings.value.features],
+-          },
+-          doCreateNewWindow,
+-          searchQueryText: queryText,
+-        })
+-      }
+-    }
+-
+-    if (doCreateNewWindow) {
+-      // Query text copied to new window = can be removed from current window
+-      updateSearchInputText('')
+-    }
+-  })
+-}
+-
+-function clearLastSuggestionQuery() {
+-  lastSuggestionQuery.value = ''
+-}
+-
+-/**
+- * @param {string} text
+- */
+-function updateSearchInputText(text) {
+-  searchInput.value?.setText(text)
+-}
+-
+-/**
+- * @param {string} query
+- */
+-function getSearchSuggestionsDebounce(query) {
+-  if (query === lastSuggestionQuery.value) {
+-    return
+-  }
+-
+-  lastSuggestionQuery.value = query
+-
+-  if (enableSearchSuggestions.value) {
+-    debounceSearchResults(query.trim())
+-  }
+-}
+-
+-/** @type {import('vue').ComputedRef<'local' | 'invidious'>} */
+-const backendPreference = computed(() => store.getters.getBackendPreference)
+-/** @type {import('vue').ComputedRef<boolean>} */
+-const backendFallback = computed(() => store.getters.getBackendFallback)
+-
+-const debounceSearchResults = debounce(/** @param {string} query */(query) => {
+-  if (!process.env.SUPPORTS_LOCAL_API || backendPreference.value === 'invidious') {
+-    getSearchSuggestionsInvidious(query)
+-  } else {
+-    getSearchSuggestionsLocal(query)
+-  }
+-}, 200)
+-
+-/**
+- * @param {string} query
+- */
+-async function getSearchSuggestionsLocal(query) {
+-  searchSuggestionsDataList.value = query.length > 0
+-    ? await getLocalSearchSuggestions(query)
+-    : []
+-}
+-
+-async function getSearchSuggestionsInvidious(query) {
+-  if (query === '') {
+-    searchSuggestionsDataList.value = []
+-    return
+-  }
+-
+-  try {
+-    searchSuggestionsDataList.value = (await getInvidiousSearchSuggestions(query)).suggestions
+-  } catch (err) {
+-    console.error(err)
+-
+-    if (process.env.SUPPORTS_LOCAL_API && backendFallback.value) {
+-      console.error(
+-        'Error gettings search suggestions.  Falling back to Local API'
+-      )
+-      getSearchSuggestionsLocal(query)
+-    }
+-  }
+-}
+-
+-/**
+- * @param {string} query
+- */
+-function removeSearchHistoryEntryInDbAndCache(query) {
+-  store.dispatch('removeSearchHistoryEntry', query)
+-  store.commit('removeFromSessionSearchHistory', query)
+-}
+-
+-function toggleSearchContainer() {
+-  showSearchContainer.value = !showSearchContainer.value
+-}
+-
+-/**
+- * @param {KeyboardEvent} event
+- */
+-function handleKeyboardShortcuts(event) {
+-  const ctrlOrCommandPressed = (process.platform !== 'darwin' && event.ctrlKey) ||
+-    (process.platform === 'darwin' && event.metaKey)
+-
+-  if (
+-    !hideSearchBar.value &&
+-    (
+-      (ctrlOrCommandPressed && (event.key === 'L' || event.key === 'l')) ||
+-      (event.altKey && (event.key === 'D' || event.key === 'd' || (process.platform === 'darwin' && event.key === '∂')))
+-    )
+-  ) {
+-    event.preventDefault()
+-
+-    // In order to prevent Klipper's "Synchronize contents of the clipboard
+-    // and the selection" feature from being triggered when running
+-    // Chromium on KDE Plasma, it seems both focus() focus and
+-    // select() have to be called asynchronously (see issue #2019).
+-    setTimeout(() => {
+-      searchInput.value?.focus()
+-      searchInput.value?.select()
+-    }, 0)
+-  }
+-}
+-
+-let previousWindowWidth
+-
+-function handleWindowResize() {
+-  // Don't change the status of showSearchContainer if only the height of the window changes
+-  // Opening the virtual keyboard can trigger this resize event, but it won't change the width
+-  if (previousWindowWidth !== window.innerWidth) {
+-    showSearchContainer.value = window.innerWidth > MOBILE_WIDTH_THRESHOLD
+-    previousWindowWidth = window.innerWidth
+-  }
+-}
+-
+ onMounted(() => {
+-  previousWindowWidth = window.innerWidth
+-  if (window.innerWidth <= MOBILE_WIDTH_THRESHOLD) {
+-    showSearchContainer.value = false
+-  }
+-
+   // Store is not up-to-date when the component mounts, so we use timeout.
+   setTimeout(() => {
+     if (store.getters.getExpandSideBar) {
+@@ -639,27 +261,7 @@ onMounted(() => {
+     }
+   }, 0)
+ 
+-  window.addEventListener('resize', handleWindowResize)
+-
+-  if (process.env.IS_ELECTRON) {
+-    window.addEventListener('keydown', handleKeyboardShortcuts)
+-
+-    window.ftElectron.handleUpdateSearchInputText((searchQueryText) => {
+-      if (searchQueryText) {
+-        updateSearchInputText(searchQueryText)
+-      }
+-    })
+-  }
+-})
+-
+-onBeforeUnmount(() => {
+-  window.removeEventListener('resize', handleWindowResize)
+-
+-  if (process.env.IS_ELECTRON) {
+-    window.removeEventListener('keydown', handleKeyboardShortcuts)
+-
+-    window.ftElectron.handleUpdateSearchInputText(null)
+-  }
++  setNavigationHistoryDropdownOptions()
+ })
+ </script>
+ 
+
+From 3e8e503401c9c3d8509ee7a9f8e2dca7e863fb0a Mon Sep 17 00:00:00 2001
+From: sun <sun@manjaro.lan>
+Date: Sun, 8 Feb 2026 18:24:26 +0800
+Subject: [PATCH 03/33] fix-action-error
+
+---
+ .../components/FtProfileSelector/FtProfileSelector.css      | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/src/renderer/components/FtProfileSelector/FtProfileSelector.css b/src/renderer/components/FtProfileSelector/FtProfileSelector.css
+index 07c3f1918c1c4..fa609740bf5ca 100644
+--- a/src/renderer/components/FtProfileSelector/FtProfileSelector.css
++++ b/src/renderer/components/FtProfileSelector/FtProfileSelector.css
+@@ -95,8 +95,7 @@ Height adjust for profile list so it won't cover navbar.  */
+   display: flex;
+   flex-wrap: nowrap;
+   gap: 5px;
+-  overflow-x: auto;
+-  overflow-y: hidden;
++  overflow: auto hidden;
+   max-inline-size: 100%;
+   padding-block: 0;
+   padding-inline: 5px;
+@@ -109,7 +108,8 @@ Height adjust for profile list so it won't cover navbar.  */
+   color: var(--primary-text-color);
+   cursor: pointer;
+   line-height: 1;
+-  padding: 8px 10px;
++  padding-block: 8px;
++  padding-inline: 10px;
+   white-space: nowrap;
+ }
+ 
+
+From 2ddf02c30e4fb8068dc35d1d6c735d8b2b0c22d0 Mon Sep 17 00:00:00 2001
+From: sun <sun@manjaro.lan>
+Date: Sun, 8 Feb 2026 18:26:40 +0800
+Subject: [PATCH 04/33] fix-action-error-2
+
+---
+ .../components/FtProfileSelector/FtProfileSelector.vue    | 8 ++++++--
+ .../components/FtSideNavSearch/FtSideNavSearch.vue        | 3 +--
+ src/renderer/components/SideNav/SideNav.vue               | 5 ++++-
+ 3 files changed, 11 insertions(+), 5 deletions(-)
+
+diff --git a/src/renderer/components/FtProfileSelector/FtProfileSelector.vue b/src/renderer/components/FtProfileSelector/FtProfileSelector.vue
+index 3450889bf0048..cf7c73394b4c6 100644
+--- a/src/renderer/components/FtProfileSelector/FtProfileSelector.vue
++++ b/src/renderer/components/FtProfileSelector/FtProfileSelector.vue
+@@ -1,5 +1,9 @@
+ <template>
+-  <div v-if="displayMode === 'buttons'" class="profileButtons" role="toolbar">
++  <div
++    v-if="displayMode === 'buttons'"
++    class="profileButtons"
++    role="toolbar"
++  >
+     <button
+       v-for="profile in profileList"
+       :key="profile._id"
+@@ -110,7 +114,7 @@ import { showToast } from '../../helpers/utils'
+ import { MAIN_PROFILE_ID } from '../../../constants'
+ import { getFirstCharacter } from '../../helpers/strings'
+ 
+-const props = defineProps({
++defineProps({
+   displayMode: {
+     type: String,
+     default: 'dropdown',
+diff --git a/src/renderer/components/FtSideNavSearch/FtSideNavSearch.vue b/src/renderer/components/FtSideNavSearch/FtSideNavSearch.vue
+index 1ec9ea80d1016..db158daa43bf0 100644
+--- a/src/renderer/components/FtSideNavSearch/FtSideNavSearch.vue
++++ b/src/renderer/components/FtSideNavSearch/FtSideNavSearch.vue
+@@ -41,7 +41,7 @@ import FtInput from '../FtInput/FtInput.vue'
+ 
+ import store from '../../store/index'
+ 
+-import { KeyboardShortcuts, MOBILE_WIDTH_THRESHOLD, SEARCH_RESULTS_DISPLAY_LIMIT } from '../../../constants'
++import { MOBILE_WIDTH_THRESHOLD, SEARCH_RESULTS_DISPLAY_LIMIT } from '../../../constants'
+ import { debounce, openInternalPath } from '../../helpers/utils'
+ import { clearLocalSearchSuggestionsSession, getLocalSearchSuggestions } from '../../helpers/api/local'
+ import { getInvidiousSearchSuggestions } from '../../helpers/api/invidious'
+@@ -418,4 +418,3 @@ onBeforeUnmount(() => {
+ }
+ </style>
+ 
+-
+diff --git a/src/renderer/components/SideNav/SideNav.vue b/src/renderer/components/SideNav/SideNav.vue
+index f081390fbd135..8405be8a22c21 100644
+--- a/src/renderer/components/SideNav/SideNav.vue
++++ b/src/renderer/components/SideNav/SideNav.vue
+@@ -8,7 +8,10 @@
+       class="inner"
+       :class="applyHiddenLabels"
+     >
+-      <FtSideNavSearch v-if="isOpen" class="mobileHidden" />
++      <FtSideNavSearch
++        v-if="isOpen"
++        class="mobileHidden"
++      />
+       <router-link
+         class="navOption topNavOption mobileShow "
+         role="button"
+
+From 0c413d543e7ab688cdb569f71d8817bf5adf0203 Mon Sep 17 00:00:00 2001
+From: sun <sun@manjaro.lan>
+Date: Sun, 8 Feb 2026 18:28:39 +0800
+Subject: [PATCH 05/33] fix-action-error-3
+
+---
+ src/renderer/components/FtSideNavSearch/FtSideNavSearch.vue | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/src/renderer/components/FtSideNavSearch/FtSideNavSearch.vue b/src/renderer/components/FtSideNavSearch/FtSideNavSearch.vue
+index db158daa43bf0..bb4f701d4d004 100644
+--- a/src/renderer/components/FtSideNavSearch/FtSideNavSearch.vue
++++ b/src/renderer/components/FtSideNavSearch/FtSideNavSearch.vue
+@@ -416,5 +416,4 @@ onBeforeUnmount(() => {
+   box-shadow: 0 0 16px var(--primary-color);
+   color: var(--primary-color);
+ }
+-</style>
+-
++</style>
+\ No newline at end of file
+
+From 29a9d325a6e46e5b5eebc61ddd591813f60be62a Mon Sep 17 00:00:00 2001
+From: sun <sun@manjaro.lan>
+Date: Sun, 8 Feb 2026 18:30:49 +0800
+Subject: [PATCH 06/33] fix-action-error-4
+
+---
+ src/renderer/components/FtSideNavSearch/FtSideNavSearch.vue | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/src/renderer/components/FtSideNavSearch/FtSideNavSearch.vue b/src/renderer/components/FtSideNavSearch/FtSideNavSearch.vue
+index bb4f701d4d004..2a63d81c4b80e 100644
+--- a/src/renderer/components/FtSideNavSearch/FtSideNavSearch.vue
++++ b/src/renderer/components/FtSideNavSearch/FtSideNavSearch.vue
+@@ -416,4 +416,5 @@ onBeforeUnmount(() => {
+   box-shadow: 0 0 16px var(--primary-color);
+   color: var(--primary-color);
+ }
++/* end */
+ </style>
+\ No newline at end of file
+
+From b9c8ede612a6bc7804c0125b209185f422e77211 Mon Sep 17 00:00:00 2001
+From: sun <sun@manjaro.lan>
+Date: Sun, 8 Feb 2026 18:35:02 +0800
+Subject: [PATCH 07/33] fix-action-error-5
+
+---
+ src/renderer/components/FtSideNavSearch/FtSideNavSearch.vue | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/src/renderer/components/FtSideNavSearch/FtSideNavSearch.vue b/src/renderer/components/FtSideNavSearch/FtSideNavSearch.vue
+index 2a63d81c4b80e..671df9e6c02cb 100644
+--- a/src/renderer/components/FtSideNavSearch/FtSideNavSearch.vue
++++ b/src/renderer/components/FtSideNavSearch/FtSideNavSearch.vue
+@@ -33,6 +33,7 @@
+ </template>
+ 
+ <script setup>
++/* eslint-disable @stylistic/eol-last */
+ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
+ import { computed, onBeforeUnmount, onMounted, ref, shallowRef, useTemplateRef } from 'vue'
+ import { useI18n } from '../../composables/use-i18n-polyfill'
+
+From 151f228aa7dc4ae3058a115237ab544e66da6cf9 Mon Sep 17 00:00:00 2001
+From: sun <sun@manjaro.lan>
+Date: Sun, 8 Feb 2026 18:44:35 +0800
+Subject: [PATCH 08/33] fix-ui
+
+---
+ src/renderer/components/SideNav/SideNav.css |  4 ++--
+ src/renderer/components/TopNav/TopNav.scss  | 21 +++++++++++++++++++++
+ src/renderer/components/TopNav/TopNav.vue   |  2 +-
+ 3 files changed, 24 insertions(+), 3 deletions(-)
+
+diff --git a/src/renderer/components/SideNav/SideNav.css b/src/renderer/components/SideNav/SideNav.css
+index 0f0397d716e7a..b896eaa8353a2 100644
+--- a/src/renderer/components/SideNav/SideNav.css
++++ b/src/renderer/components/SideNav/SideNav.css
+@@ -1,7 +1,7 @@
+ .sideNav {
+   display: block;
+   block-size: calc(100vh - 60px);
+-  inline-size: 200px;
++  inline-size: 300px;
+   overflow-x: hidden;
+   position: sticky;
+   inset-inline-start: 0;
+@@ -17,7 +17,7 @@
+ 
+ .inner {
+   block-size: 100%;
+-  inline-size: 200px;
++  inline-size: 300px;
+   overflow: hidden auto;
+ }
+ 
+diff --git a/src/renderer/components/TopNav/TopNav.scss b/src/renderer/components/TopNav/TopNav.scss
+index 9fdc56825ac76..5403a02330960 100644
+--- a/src/renderer/components/TopNav/TopNav.scss
++++ b/src/renderer/components/TopNav/TopNav.scss
+@@ -210,4 +210,25 @@
+   :deep(.profileButtons) {
+     justify-content: center;
+   }
++
++  :deep(.profileButton) {
++    border: 1px solid var(--primary-shadow-color);
++    background-color: var(--side-nav-hover-color);
++  }
++
++  :deep(.profileButton:hover) {
++    background-color: var(--side-nav-active-color);
++  }
++
++  @include top-nav-is-colored {
++    :deep(.profileButton) {
++      background-color: var(--primary-color-hover);
++      border-color: rgb(0 0 0 / 20%);
++      color: var(--text-with-main-color);
++    }
++
++    :deep(.profileButton.active) {
++      background-color: var(--primary-color-active);
++    }
++  }
+ }
+diff --git a/src/renderer/components/TopNav/TopNav.vue b/src/renderer/components/TopNav/TopNav.vue
+index 7ed3b66926003..a171300d19b84 100644
+--- a/src/renderer/components/TopNav/TopNav.vue
++++ b/src/renderer/components/TopNav/TopNav.vue
+@@ -72,7 +72,7 @@
+     <div class="middle">
+       <FtProfileSelector display-mode="buttons" />
+     </div>
+-    <div class="side profiles" />
++    <FtProfileSelector class="side profiles" />
+   </nav>
+ </template>
+ 
+
+From 346dda58d0016cd8a51d72fd84d9b0fe0b26b351 Mon Sep 17 00:00:00 2001
+From: sun <sun@manjaro.lan>
+Date: Sun, 8 Feb 2026 19:11:18 +0800
+Subject: [PATCH 09/33] enable-hide-profile
+
+---
+ .../FtProfileChannelList.css                  | 68 +++++++++++++++++++
+ .../FtProfileChannelList.vue                  | 30 +++++++-
+ .../FtProfileEdit/FtProfileEdit.vue           |  4 +-
+ .../FtProfileSelector/FtProfileSelector.vue   |  7 +-
+ src/renderer/store/modules/profiles.js        |  7 +-
+ .../views/ProfileSettings/ProfileSettings.vue |  4 +-
+ static/locales/en-US.yaml                     |  1 +
+ static/locales/zh-CN.yaml                     |  1 +
+ 8 files changed, 116 insertions(+), 6 deletions(-)
+
+diff --git a/src/renderer/components/FtProfileChannelList/FtProfileChannelList.css b/src/renderer/components/FtProfileChannelList/FtProfileChannelList.css
+index 3d7ff2ca33542..f411307f761f0 100644
+--- a/src/renderer/components/FtProfileChannelList/FtProfileChannelList.css
++++ b/src/renderer/components/FtProfileChannelList/FtProfileChannelList.css
+@@ -3,6 +3,74 @@ h2,
+   text-align: center;
+ }
+ 
++.hideFromTopButtonsOption {
++  display: flex;
++  justify-content: center;
++  margin-block: 8px 12px;
++  margin-inline: 0;
++}
++
++.hideFromTopButtonsOption .hideFromTopButtonsCheckbox {
++  border: 0;
++  clip-path: circle(0);
++  block-size: 1px;
++  margin: -1px;
++  overflow: hidden;
++  padding: 0;
++  position: absolute;
++  inline-size: 1px;
++}
++
++.hideFromTopButtonsOption label {
++  position: relative;
++  padding-inline-start: 2em;
++  user-select: none;
++  cursor: pointer;
++  display: inline-block;
++}
++
++.hideFromTopButtonsOption label::before {
++  box-sizing: content-box;
++  content: '';
++  color: var(--primary-text-color);
++  position: absolute;
++  inset-block-start: 50%;
++  inset-inline-start: 0;
++  inline-size: 14px;
++  block-size: 14px;
++  margin-block-start: -9px;
++  border: 2px solid var(--primary-text-color);
++  text-align: center;
++  transition: all 0.2s ease;
++}
++
++.hideFromTopButtonsOption label::after {
++  box-sizing: content-box;
++  border-style: solid;
++  border-image: none;
++  border-width: 0 0 3px 3px;
++  content: '';
++  background-color: transparent;
++  position: absolute;
++  inset-block-start: 50%;
++  inset-inline-start: 4px;
++  inline-size: 8px;
++  block-size: 3px;
++  margin-block-start: -4px;
++  transform: rotate(-45deg) scale(0);
++  transform-origin: 50%;
++  transition: transform 200ms ease-out;
++}
++
++.hideFromTopButtonsOption .hideFromTopButtonsCheckbox:focus + label::before,
++.hideFromTopButtonsOption .hideFromTopButtonsCheckbox:hover + label::before {
++  border: 2px solid var(--primary-color);
++}
++
++.hideFromTopButtonsOption .hideFromTopButtonsCheckbox:checked + label::after {
++  transform: rotate(-45deg) scale(1);
++}
++
+ .card {
+   inline-size: 85%;
+   margin-block: 0 15px;
+diff --git a/src/renderer/components/FtProfileChannelList/FtProfileChannelList.vue b/src/renderer/components/FtProfileChannelList/FtProfileChannelList.vue
+index 6ee2b16064283..d515ee5294871 100644
+--- a/src/renderer/components/FtProfileChannelList/FtProfileChannelList.vue
++++ b/src/renderer/components/FtProfileChannelList/FtProfileChannelList.vue
+@@ -7,6 +7,18 @@
+       <p class="selectedCount">
+         {{ selectedText }}
+       </p>
++      <div class="hideFromTopButtonsOption">
++        <input
++          :id="hideFromTopButtonsId"
++          class="hideFromTopButtonsCheckbox"
++          type="checkbox"
++          :checked="hideFromTopNavButtons"
++          @change="setHideFromTopNavButtons($event.target.checked)"
++        >
++        <label :for="hideFromTopButtonsId">
++          {{ $t('Profile.Hide from top profile buttons') }}
++        </label>
++      </div>
+       <FtFlexBox>
+         <FtChannelBubble
+           v-for="channel in subscriptions"
+@@ -48,7 +60,7 @@
+ </template>
+ 
+ <script setup>
+-import { computed, ref, watch } from 'vue'
++import { computed, ref, useId, watch } from 'vue'
+ import { useI18n } from '../../composables/use-i18n-polyfill'
+ 
+ import FtCard from '../ft-card/ft-card.vue'
+@@ -76,6 +88,8 @@ import { youtubeImageUrlToInvidious } from '../../helpers/api/invidious'
+ 
+ const { locale, t } = useI18n()
+ 
++const hideFromTopButtonsId = useId()
++
+ const props = defineProps({
+   profile: {
+     type: Object,
+@@ -87,6 +101,20 @@ const props = defineProps({
+   }
+ })
+ 
++const hideFromTopNavButtons = computed(() => {
++  return props.profile.hideFromTopNavButtons ?? false
++})
++
++/**
++ * @param {boolean} value
++ */
++function setHideFromTopNavButtons(value) {
++  store.dispatch('updateProfile', {
++    ...props.profile,
++    hideFromTopNavButtons: value,
++  })
++}
++
+ /** @type {import('vue').ComputedRef<'local' | 'invidious'>} */
+ const backendPreference = computed(() => {
+   return store.getters.getBackendPreference
+diff --git a/src/renderer/components/FtProfileEdit/FtProfileEdit.vue b/src/renderer/components/FtProfileEdit/FtProfileEdit.vue
+index a9b35615ef179..ddb0a26fce1c4 100644
+--- a/src/renderer/components/FtProfileEdit/FtProfileEdit.vue
++++ b/src/renderer/components/FtProfileEdit/FtProfileEdit.vue
+@@ -135,6 +135,7 @@ import { getFirstCharacter } from '../../helpers/strings'
+  * @property {string} subscriptions[].id
+  * @property {string|undefined} subscriptions[].name
+  * @property {string|undefined} subscriptions[].thumbnail
++ * @property {boolean} hideFromTopNavButtons
+  */
+ 
+ const { locale, t } = useI18n()
+@@ -205,7 +206,8 @@ function saveProfile() {
+     name: profileName.value,
+     bgColor: profileBgColor.value,
+     textColor: profileTextColor.value,
+-    subscriptions: deepCopy(props.profile.subscriptions)
++    subscriptions: deepCopy(props.profile.subscriptions),
++    hideFromTopNavButtons: props.profile.hideFromTopNavButtons ?? false,
+   }
+ 
+   if (!props.isNew) {
+diff --git a/src/renderer/components/FtProfileSelector/FtProfileSelector.vue b/src/renderer/components/FtProfileSelector/FtProfileSelector.vue
+index cf7c73394b4c6..59b4d3344b545 100644
+--- a/src/renderer/components/FtProfileSelector/FtProfileSelector.vue
++++ b/src/renderer/components/FtProfileSelector/FtProfileSelector.vue
+@@ -5,7 +5,7 @@
+     role="toolbar"
+   >
+     <button
+-      v-for="profile in profileList"
++      v-for="profile in profileListForButtons"
+       :key="profile._id"
+       class="profileButton"
+       type="button"
+@@ -145,6 +145,11 @@ const profileList = computed(() => store.getters.getProfileList)
+ /** @type {import('vue').ComputedRef<Profile>} */
+ const activeProfile = computed(() => store.getters.getActiveProfile)
+ 
++/** @type {import('vue').ComputedRef<Profile[]>} */
++const profileListForButtons = computed(() => {
++  return profileList.value.filter((profile) => !profile.hideFromTopNavButtons)
++})
++
+ const activeProfileInitial = computed(() => {
+   return activeProfile.value?.name
+     ? getFirstCharacter(translateProfileName(activeProfile.value), locale.value)
+diff --git a/src/renderer/store/modules/profiles.js b/src/renderer/store/modules/profiles.js
+index 11aee2a60f6ba..0de3f7cbe33d6 100644
+--- a/src/renderer/store/modules/profiles.js
++++ b/src/renderer/store/modules/profiles.js
+@@ -9,7 +9,8 @@ const state = {
+     name: 'All Channels',
+     bgColor: '#000000',
+     textColor: '#FFFFFF',
+-    subscriptions: []
++    subscriptions: [],
++    hideFromTopNavButtons: false,
+   }],
+   activeProfile: MAIN_PROFILE_ID
+ }
+@@ -67,7 +68,8 @@ const actions = {
+         name: defaultName,
+         bgColor: randomColor,
+         textColor: textColor,
+-        subscriptions: []
++        subscriptions: [],
++        hideFromTopNavButtons: false,
+       }
+ 
+       try {
+@@ -83,6 +85,7 @@ const actions = {
+     // We want the primary profile to always be first
+     // So sort with that then sort alphabetically by profile name
+     profiles = profiles.sort(profileSort)
++      .map((profile) => ({ hideFromTopNavButtons: false, ...profile }))
+ 
+     if (state.profileList.length < profiles.length) {
+       const profile = profiles.find((profile) => {
+diff --git a/src/renderer/views/ProfileSettings/ProfileSettings.vue b/src/renderer/views/ProfileSettings/ProfileSettings.vue
+index 432ea8c3eba88..a5a203b41e6b9 100644
+--- a/src/renderer/views/ProfileSettings/ProfileSettings.vue
++++ b/src/renderer/views/ProfileSettings/ProfileSettings.vue
+@@ -75,6 +75,7 @@ import { MAIN_PROFILE_ID } from '../../../constants'
+  * @property {string} subscriptions[].id
+  * @property {string|undefined} subscriptions[].name
+  * @property {string|undefined} subscriptions[].thumbnail
++ * @property {boolean} hideFromTopNavButtons
+  */
+ 
+ const isNewProfileOpen = ref(false)
+@@ -105,7 +106,8 @@ function openSettingsForNewProfile() {
+     name: '',
+     bgColor: getRandomColor().value,
+     textColor: calculateColorLuminance(getRandomColor().value),
+-    subscriptions: []
++    subscriptions: [],
++    hideFromTopNavButtons: false,
+   }
+ 
+   openSettingsProfileId.value = ''
+diff --git a/static/locales/en-US.yaml b/static/locales/en-US.yaml
+index d71b5577981ad..af91aed84ef4e 100644
+--- a/static/locales/en-US.yaml
++++ b/static/locales/en-US.yaml
+@@ -750,6 +750,7 @@ Profile:
+   Select All: Select All
+   Select None: Select None
+   Delete Selected: Delete Selected
++  Hide from top profile buttons: Hide from top profile buttons
+   Add Selected To Profile: Add Selected To Profile
+   No channel(s) have been selected: No channel(s) have been selected
+   ? This is your primary profile.  Are you sure you want to delete the selected channels?  The
+diff --git a/static/locales/zh-CN.yaml b/static/locales/zh-CN.yaml
+index 363b67b86df00..939d5becc2382 100644
+--- a/static/locales/zh-CN.yaml
++++ b/static/locales/zh-CN.yaml
+@@ -930,6 +930,7 @@ Profile:
+   Are you sure you want to delete the selected channels?  This will not delete the channel from any other profile.: 您确定您想删除选择的频道？ 这不会从其他配置文件中删除频道。
+   Add Selected To Profile: 添加选择的到配置文件
+   Delete Selected: 删除选择的
++  Hide from top profile buttons: 在顶部配置文件按钮中隐藏此配置文件
+   '{number} selected': '{number}选择的'
+   ? This is your primary profile.  Are you sure you want to delete the selected channels?  The same channels will be deleted in any profile they are found in.
+   : 这是您的主配置文件。 您确定您想删除选择的频道？ 相同的频道中任何找到的配置文件会被删除。
+
+From 4d84c3acdb9895570bd99c227cdd3bd984492274 Mon Sep 17 00:00:00 2001
+From: sun <sun@manjaro.lan>
+Date: Sun, 8 Feb 2026 19:23:08 +0800
+Subject: [PATCH 10/33] fix-topbutton
+
+---
+ .../FtProfileChannelList.vue                     | 16 +++++++++++-----
+ src/renderer/scss-partials/_utils.scss           |  2 +-
+ 2 files changed, 12 insertions(+), 6 deletions(-)
+
+diff --git a/src/renderer/components/FtProfileChannelList/FtProfileChannelList.vue b/src/renderer/components/FtProfileChannelList/FtProfileChannelList.vue
+index d515ee5294871..965bd59cd09b4 100644
+--- a/src/renderer/components/FtProfileChannelList/FtProfileChannelList.vue
++++ b/src/renderer/components/FtProfileChannelList/FtProfileChannelList.vue
+@@ -12,8 +12,8 @@
+           :id="hideFromTopButtonsId"
+           class="hideFromTopButtonsCheckbox"
+           type="checkbox"
+-          :checked="hideFromTopNavButtons"
+-          @change="setHideFromTopNavButtons($event.target.checked)"
++          v-model="hideFromTopNavButtonsLocal"
++          @change="handleHideFromTopNavButtonsChange"
+         >
+         <label :for="hideFromTopButtonsId">
+           {{ $t('Profile.Hide from top profile buttons') }}
+@@ -101,9 +101,11 @@ const props = defineProps({
+   }
+ })
+ 
+-const hideFromTopNavButtons = computed(() => {
+-  return props.profile.hideFromTopNavButtons ?? false
+-})
++const hideFromTopNavButtonsLocal = ref(false)
++
++watch(() => props.profile.hideFromTopNavButtons, (value) => {
++  hideFromTopNavButtonsLocal.value = value ?? false
++}, { immediate: true })
+ 
+ /**
+  * @param {boolean} value
+@@ -115,6 +117,10 @@ function setHideFromTopNavButtons(value) {
+   })
+ }
+ 
++function handleHideFromTopNavButtonsChange() {
++  setHideFromTopNavButtons(hideFromTopNavButtonsLocal.value)
++}
++
+ /** @type {import('vue').ComputedRef<'local' | 'invidious'>} */
+ const backendPreference = computed(() => {
+   return store.getters.getBackendPreference
+diff --git a/src/renderer/scss-partials/_utils.scss b/src/renderer/scss-partials/_utils.scss
+index d0388efc62876..35cef5df5cd42 100644
+--- a/src/renderer/scss-partials/_utils.scss
++++ b/src/renderer/scss-partials/_utils.scss
+@@ -25,7 +25,7 @@
+   z-index: 3;
+ 
+   @include is-side-nav-open {
+-    inline-size: calc(100% - 200px);
++    inline-size: calc(100% - 300px);
+   }
+ 
+   @include are-side-bar-labels-hidden {
+
+From 6a1f0675032d590d799bf83c85a9ce08e4dd6225 Mon Sep 17 00:00:00 2001
+From: sun <sun@manjaro.lan>
+Date: Sun, 8 Feb 2026 19:34:36 +0800
+Subject: [PATCH 11/33] fix-hiddenbutton
+
+---
+ .../FtProfileSelector/FtProfileSelector.vue   |  3 +-
+ src/renderer/store/modules/settings.js        |  3 +
+ .../views/ProfileSettings/ProfileSettings.css | 40 +++++++++++++
+ .../views/ProfileSettings/ProfileSettings.vue | 60 ++++++++++++++++++-
+ static/locales/en-US.yaml                     |  3 +-
+ static/locales/zh-CN.yaml                     |  3 +-
+ 6 files changed, 107 insertions(+), 5 deletions(-)
+
+diff --git a/src/renderer/components/FtProfileSelector/FtProfileSelector.vue b/src/renderer/components/FtProfileSelector/FtProfileSelector.vue
+index 59b4d3344b545..3cf6e48633531 100644
+--- a/src/renderer/components/FtProfileSelector/FtProfileSelector.vue
++++ b/src/renderer/components/FtProfileSelector/FtProfileSelector.vue
+@@ -147,7 +147,8 @@ const activeProfile = computed(() => store.getters.getActiveProfile)
+ 
+ /** @type {import('vue').ComputedRef<Profile[]>} */
+ const profileListForButtons = computed(() => {
+-  return profileList.value.filter((profile) => !profile.hideFromTopNavButtons)
++  const hiddenIds = store.getters.getHiddenTopNavProfileButtonIds ?? []
++  return profileList.value.filter((profile) => !hiddenIds.includes(profile._id))
+ })
+ 
+ const activeProfileInitial = computed(() => {
+diff --git a/src/renderer/store/modules/settings.js b/src/renderer/store/modules/settings.js
+index 4e04bbf396862..c0ac3bd83d6af 100644
+--- a/src/renderer/store/modules/settings.js
++++ b/src/renderer/store/modules/settings.js
+@@ -303,6 +303,9 @@ const state = {
+   quickBookmarkTargetPlaylistId: 'favorites',
+   generalAutoLoadMorePaginatedItemsEnabled: false,
+   hideToTrayOnMinimize: false,
++  // Profile buttons shown in the top navigation bar (display-mode="buttons")
++  // Array of profile IDs that should be hidden from the top button row.
++  hiddenTopNavProfileButtonIds: [],
+ 
+   // The settings below have side effects
+   currentLocale: 'system',
+diff --git a/src/renderer/views/ProfileSettings/ProfileSettings.css b/src/renderer/views/ProfileSettings/ProfileSettings.css
+index 446d5da64bb30..a409346ec92ad 100644
+--- a/src/renderer/views/ProfileSettings/ProfileSettings.css
++++ b/src/renderer/views/ProfileSettings/ProfileSettings.css
+@@ -30,6 +30,46 @@ h2 {
+   margin-inline: auto;
+ }
+ 
++.topNavProfileButtonsSettings {
++  display: flex;
++  flex-direction: column;
++  gap: 8px;
++  margin-block-start: 10px;
++}
++
++.topNavProfileButtonsSettingRow {
++  display: flex;
++  align-items: center;
++  gap: 10px;
++}
++
++.topNavProfileButtonsSettingCheckbox {
++  inline-size: 18px;
++  block-size: 18px;
++  accent-color: var(--primary-color);
++}
++
++.topNavProfileButtonsSettingButton {
++  border: 1px solid var(--primary-shadow-color);
++  border-radius: 8px;
++  background-color: var(--side-nav-hover-color);
++  color: var(--primary-text-color);
++  cursor: pointer;
++  line-height: 1;
++  padding-block: 8px;
++  padding-inline: 10px;
++  white-space: nowrap;
++}
++
++.topNavProfileButtonsSettingButton.hidden {
++  opacity: 0.6;
++}
++
++.topNavProfileButtonsSettingButton:hover {
++  background-color: var(--side-nav-active-color);
++  color: var(--side-nav-active-text-color);
++}
++
+ @media only screen and (width <= 680px) {
+   .card {
+     inline-size: 90%;
+diff --git a/src/renderer/views/ProfileSettings/ProfileSettings.vue b/src/renderer/views/ProfileSettings/ProfileSettings.vue
+index a5a203b41e6b9..5fdcf7f4a5757 100644
+--- a/src/renderer/views/ProfileSettings/ProfileSettings.vue
++++ b/src/renderer/views/ProfileSettings/ProfileSettings.vue
+@@ -1,5 +1,34 @@
+ <template>
+   <div>
++    <FtCard class="card">
++      <h2>{{ $t('Profile.Top Nav Profile Buttons') }}</h2>
++      <p class="message">
++        {{ $t('Profile.Select which profiles are hidden from the top button row. This does not affect the dropdown menu.') }}
++      </p>
++      <div class="topNavProfileButtonsSettings">
++        <div
++          v-for="profile in profileList"
++          :key="profile._id"
++          class="topNavProfileButtonsSettingRow"
++        >
++          <input
++            :id="'hideTopNavProfileButton-' + profile._id"
++            class="topNavProfileButtonsSettingCheckbox"
++            type="checkbox"
++            :checked="hiddenTopNavProfileButtonIds.includes(profile._id)"
++            @change="toggleHiddenTopNavProfileButton(profile._id)"
++          >
++          <button
++            class="topNavProfileButtonsSettingButton"
++            type="button"
++            :class="{ hidden: hiddenTopNavProfileButtonIds.includes(profile._id) }"
++            @click="toggleHiddenTopNavProfileButton(profile._id)"
++          >
++            <span dir="auto">{{ translateProfileName(profile) }}</span>
++          </button>
++        </div>
++      </div>
++    </FtCard>
+     <FtCard class="card">
+       <h2>{{ $t("Profile.Profile Manager") }}</h2>
+       <FtFlexBox
+@@ -51,6 +80,7 @@
+ 
+ <script setup>
+ import { computed, ref, shallowRef, watch } from 'vue'
++import { useI18n } from '../../composables/use-i18n-polyfill'
+ 
+ import FtCard from '../../components/ft-card/ft-card.vue'
+ import FtFlexBox from '../../components/ft-flex-box/ft-flex-box.vue'
+@@ -65,6 +95,8 @@ import store from '../../store/index'
+ import { calculateColorLuminance, getRandomColor } from '../../helpers/colors'
+ import { MAIN_PROFILE_ID } from '../../../constants'
+ 
++const { t } = useI18n()
++
+ /**
+  * @typedef {object} Profile
+  * @property {string} _id
+@@ -91,6 +123,31 @@ const profileList = computed(() => {
+   return store.getters.getProfileList
+ })
+ 
++const hiddenTopNavProfileButtonIds = computed(() => {
++  return store.getters.getHiddenTopNavProfileButtonIds ?? []
++})
++
++/**
++ * @param {string} profileId
++ */
++function toggleHiddenTopNavProfileButton(profileId) {
++  const current = hiddenTopNavProfileButtonIds.value
++  const set = new Set(current)
++  if (set.has(profileId)) {
++    set.delete(profileId)
++  } else {
++    set.add(profileId)
++  }
++  store.dispatch('updateHiddenTopNavProfileButtonIds', [...set])
++}
++
++/**
++ * @param {Profile} profile
++ */
++function translateProfileName(profile) {
++  return profile._id === MAIN_PROFILE_ID ? t('Profile.All Channels') : profile.name
++}
++
+ watch(profileList, () => {
+   openSettingsProfile.value = getProfileById(openSettingsProfileId.value)
+ }, { deep: true })
+@@ -106,8 +163,7 @@ function openSettingsForNewProfile() {
+     name: '',
+     bgColor: getRandomColor().value,
+     textColor: calculateColorLuminance(getRandomColor().value),
+-    subscriptions: [],
+-    hideFromTopNavButtons: false,
++    subscriptions: []
+   }
+ 
+   openSettingsProfileId.value = ''
+diff --git a/static/locales/en-US.yaml b/static/locales/en-US.yaml
+index af91aed84ef4e..cf1930417fd2c 100644
+--- a/static/locales/en-US.yaml
++++ b/static/locales/en-US.yaml
+@@ -750,9 +750,10 @@ Profile:
+   Select All: Select All
+   Select None: Select None
+   Delete Selected: Delete Selected
+-  Hide from top profile buttons: Hide from top profile buttons
+   Add Selected To Profile: Add Selected To Profile
+   No channel(s) have been selected: No channel(s) have been selected
++  Top Nav Profile Buttons: Top Nav Profile Buttons
++  Select which profiles are hidden from the top button row. This does not affect the dropdown menu.: Select which profiles are hidden from the top button row. This does not affect the dropdown menu.
+   ? This is your primary profile.  Are you sure you want to delete the selected channels?  The
+     same channels will be deleted in any profile they are found in.
+   : This is your primary profile.  Are you sure you want to delete the selected channels?  The
+diff --git a/static/locales/zh-CN.yaml b/static/locales/zh-CN.yaml
+index 939d5becc2382..6456efe625a2c 100644
+--- a/static/locales/zh-CN.yaml
++++ b/static/locales/zh-CN.yaml
+@@ -930,10 +930,11 @@ Profile:
+   Are you sure you want to delete the selected channels?  This will not delete the channel from any other profile.: 您确定您想删除选择的频道？ 这不会从其他配置文件中删除频道。
+   Add Selected To Profile: 添加选择的到配置文件
+   Delete Selected: 删除选择的
+-  Hide from top profile buttons: 在顶部配置文件按钮中隐藏此配置文件
+   '{number} selected': '{number}选择的'
+   ? This is your primary profile.  Are you sure you want to delete the selected channels?  The same channels will be deleted in any profile they are found in.
+   : 这是您的主配置文件。 您确定您想删除选择的频道？ 相同的频道中任何找到的配置文件会被删除。
++  Top Nav Profile Buttons: 顶部配置文件按钮
++  Select which profiles are hidden from the top button row. This does not affect the dropdown menu.: 选择哪些配置文件要在顶部按钮行中隐藏；这不会影响右侧下拉菜单。
+   No channel(s) have been selected: 无频道已选择
+   Select None: 全不选
+   Select All: 全选
+
+From c6d23a5d2a1162ddd34427060ba8ae8c0ed8eaa5 Mon Sep 17 00:00:00 2001
+From: sun <sun@manjaro.lan>
+Date: Sun, 8 Feb 2026 19:34:53 +0800
+Subject: [PATCH 12/33] fix-hiddenbuttton
+
+---
+ .../FtProfileChannelList.css                  | 68 -------------------
+ .../FtProfileChannelList.vue                  | 36 +---------
+ .../FtProfileEdit/FtProfileEdit.vue           |  4 +-
+ src/renderer/store/modules/profiles.js        |  7 +-
+ 4 files changed, 4 insertions(+), 111 deletions(-)
+
+diff --git a/src/renderer/components/FtProfileChannelList/FtProfileChannelList.css b/src/renderer/components/FtProfileChannelList/FtProfileChannelList.css
+index f411307f761f0..3d7ff2ca33542 100644
+--- a/src/renderer/components/FtProfileChannelList/FtProfileChannelList.css
++++ b/src/renderer/components/FtProfileChannelList/FtProfileChannelList.css
+@@ -3,74 +3,6 @@ h2,
+   text-align: center;
+ }
+ 
+-.hideFromTopButtonsOption {
+-  display: flex;
+-  justify-content: center;
+-  margin-block: 8px 12px;
+-  margin-inline: 0;
+-}
+-
+-.hideFromTopButtonsOption .hideFromTopButtonsCheckbox {
+-  border: 0;
+-  clip-path: circle(0);
+-  block-size: 1px;
+-  margin: -1px;
+-  overflow: hidden;
+-  padding: 0;
+-  position: absolute;
+-  inline-size: 1px;
+-}
+-
+-.hideFromTopButtonsOption label {
+-  position: relative;
+-  padding-inline-start: 2em;
+-  user-select: none;
+-  cursor: pointer;
+-  display: inline-block;
+-}
+-
+-.hideFromTopButtonsOption label::before {
+-  box-sizing: content-box;
+-  content: '';
+-  color: var(--primary-text-color);
+-  position: absolute;
+-  inset-block-start: 50%;
+-  inset-inline-start: 0;
+-  inline-size: 14px;
+-  block-size: 14px;
+-  margin-block-start: -9px;
+-  border: 2px solid var(--primary-text-color);
+-  text-align: center;
+-  transition: all 0.2s ease;
+-}
+-
+-.hideFromTopButtonsOption label::after {
+-  box-sizing: content-box;
+-  border-style: solid;
+-  border-image: none;
+-  border-width: 0 0 3px 3px;
+-  content: '';
+-  background-color: transparent;
+-  position: absolute;
+-  inset-block-start: 50%;
+-  inset-inline-start: 4px;
+-  inline-size: 8px;
+-  block-size: 3px;
+-  margin-block-start: -4px;
+-  transform: rotate(-45deg) scale(0);
+-  transform-origin: 50%;
+-  transition: transform 200ms ease-out;
+-}
+-
+-.hideFromTopButtonsOption .hideFromTopButtonsCheckbox:focus + label::before,
+-.hideFromTopButtonsOption .hideFromTopButtonsCheckbox:hover + label::before {
+-  border: 2px solid var(--primary-color);
+-}
+-
+-.hideFromTopButtonsOption .hideFromTopButtonsCheckbox:checked + label::after {
+-  transform: rotate(-45deg) scale(1);
+-}
+-
+ .card {
+   inline-size: 85%;
+   margin-block: 0 15px;
+diff --git a/src/renderer/components/FtProfileChannelList/FtProfileChannelList.vue b/src/renderer/components/FtProfileChannelList/FtProfileChannelList.vue
+index 965bd59cd09b4..6ee2b16064283 100644
+--- a/src/renderer/components/FtProfileChannelList/FtProfileChannelList.vue
++++ b/src/renderer/components/FtProfileChannelList/FtProfileChannelList.vue
+@@ -7,18 +7,6 @@
+       <p class="selectedCount">
+         {{ selectedText }}
+       </p>
+-      <div class="hideFromTopButtonsOption">
+-        <input
+-          :id="hideFromTopButtonsId"
+-          class="hideFromTopButtonsCheckbox"
+-          type="checkbox"
+-          v-model="hideFromTopNavButtonsLocal"
+-          @change="handleHideFromTopNavButtonsChange"
+-        >
+-        <label :for="hideFromTopButtonsId">
+-          {{ $t('Profile.Hide from top profile buttons') }}
+-        </label>
+-      </div>
+       <FtFlexBox>
+         <FtChannelBubble
+           v-for="channel in subscriptions"
+@@ -60,7 +48,7 @@
+ </template>
+ 
+ <script setup>
+-import { computed, ref, useId, watch } from 'vue'
++import { computed, ref, watch } from 'vue'
+ import { useI18n } from '../../composables/use-i18n-polyfill'
+ 
+ import FtCard from '../ft-card/ft-card.vue'
+@@ -88,8 +76,6 @@ import { youtubeImageUrlToInvidious } from '../../helpers/api/invidious'
+ 
+ const { locale, t } = useI18n()
+ 
+-const hideFromTopButtonsId = useId()
+-
+ const props = defineProps({
+   profile: {
+     type: Object,
+@@ -101,26 +87,6 @@ const props = defineProps({
+   }
+ })
+ 
+-const hideFromTopNavButtonsLocal = ref(false)
+-
+-watch(() => props.profile.hideFromTopNavButtons, (value) => {
+-  hideFromTopNavButtonsLocal.value = value ?? false
+-}, { immediate: true })
+-
+-/**
+- * @param {boolean} value
+- */
+-function setHideFromTopNavButtons(value) {
+-  store.dispatch('updateProfile', {
+-    ...props.profile,
+-    hideFromTopNavButtons: value,
+-  })
+-}
+-
+-function handleHideFromTopNavButtonsChange() {
+-  setHideFromTopNavButtons(hideFromTopNavButtonsLocal.value)
+-}
+-
+ /** @type {import('vue').ComputedRef<'local' | 'invidious'>} */
+ const backendPreference = computed(() => {
+   return store.getters.getBackendPreference
+diff --git a/src/renderer/components/FtProfileEdit/FtProfileEdit.vue b/src/renderer/components/FtProfileEdit/FtProfileEdit.vue
+index ddb0a26fce1c4..a9b35615ef179 100644
+--- a/src/renderer/components/FtProfileEdit/FtProfileEdit.vue
++++ b/src/renderer/components/FtProfileEdit/FtProfileEdit.vue
+@@ -135,7 +135,6 @@ import { getFirstCharacter } from '../../helpers/strings'
+  * @property {string} subscriptions[].id
+  * @property {string|undefined} subscriptions[].name
+  * @property {string|undefined} subscriptions[].thumbnail
+- * @property {boolean} hideFromTopNavButtons
+  */
+ 
+ const { locale, t } = useI18n()
+@@ -206,8 +205,7 @@ function saveProfile() {
+     name: profileName.value,
+     bgColor: profileBgColor.value,
+     textColor: profileTextColor.value,
+-    subscriptions: deepCopy(props.profile.subscriptions),
+-    hideFromTopNavButtons: props.profile.hideFromTopNavButtons ?? false,
++    subscriptions: deepCopy(props.profile.subscriptions)
+   }
+ 
+   if (!props.isNew) {
+diff --git a/src/renderer/store/modules/profiles.js b/src/renderer/store/modules/profiles.js
+index 0de3f7cbe33d6..11aee2a60f6ba 100644
+--- a/src/renderer/store/modules/profiles.js
++++ b/src/renderer/store/modules/profiles.js
+@@ -9,8 +9,7 @@ const state = {
+     name: 'All Channels',
+     bgColor: '#000000',
+     textColor: '#FFFFFF',
+-    subscriptions: [],
+-    hideFromTopNavButtons: false,
++    subscriptions: []
+   }],
+   activeProfile: MAIN_PROFILE_ID
+ }
+@@ -68,8 +67,7 @@ const actions = {
+         name: defaultName,
+         bgColor: randomColor,
+         textColor: textColor,
+-        subscriptions: [],
+-        hideFromTopNavButtons: false,
++        subscriptions: []
+       }
+ 
+       try {
+@@ -85,7 +83,6 @@ const actions = {
+     // We want the primary profile to always be first
+     // So sort with that then sort alphabetically by profile name
+     profiles = profiles.sort(profileSort)
+-      .map((profile) => ({ hideFromTopNavButtons: false, ...profile }))
+ 
+     if (state.profileList.length < profiles.length) {
+       const profile = profiles.find((profile) => {
+
+From 51845f8c22b678fff72c47465e55adf5656dbb28 Mon Sep 17 00:00:00 2001
+From: sun <sun@manjaro.lan>
+Date: Sun, 8 Feb 2026 19:53:13 +0800
+Subject: [PATCH 13/33] fix-ui-width
+
+---
+ .../SubscriptionsTabUi/SubscriptionsTabUi.css | 17 +++++++-
+ .../SubscriptionsTabUi/SubscriptionsTabUi.vue | 42 ++++++++++++++-----
+ .../views/ProfileSettings/ProfileSettings.css |  8 ++--
+ .../views/Subscriptions/Subscriptions.css     |  4 +-
+ .../views/Subscriptions/Subscriptions.vue     |  7 ----
+ 5 files changed, 54 insertions(+), 24 deletions(-)
+
+diff --git a/src/renderer/components/SubscriptionsTabUi/SubscriptionsTabUi.css b/src/renderer/components/SubscriptionsTabUi/SubscriptionsTabUi.css
+index a902565bb94b5..d2f343fbd1b33 100644
+--- a/src/renderer/components/SubscriptionsTabUi/SubscriptionsTabUi.css
++++ b/src/renderer/components/SubscriptionsTabUi/SubscriptionsTabUi.css
+@@ -1,5 +1,5 @@
+ .card {
+-  inline-size: 85%;
++  inline-size: 99%;
+   margin-block: 0 60px;
+   margin-inline: auto;
+ }
+@@ -10,6 +10,19 @@
+ 
+ @media only screen and (width <= 680px) {
+   .card {
+-    inline-size: 90%;
++    inline-size: 99%;
+   }
+ }
++
++.errorChannelsSummary {
++  display: flex;
++  align-items: center;
++  justify-content: flex-start;
++  gap: 8px;
++  margin-block: 0 10px;
++  margin-inline: 0;
++}
++
++.errorChannelsTitle {
++  margin-block: 0;
++}
+diff --git a/src/renderer/components/SubscriptionsTabUi/SubscriptionsTabUi.vue b/src/renderer/components/SubscriptionsTabUi/SubscriptionsTabUi.vue
+index bad1f5334360c..a8a554ce5cb2c 100644
+--- a/src/renderer/components/SubscriptionsTabUi/SubscriptionsTabUi.vue
++++ b/src/renderer/components/SubscriptionsTabUi/SubscriptionsTabUi.vue
+@@ -6,16 +6,20 @@
+     <div
+       v-if="!isLoading && errorChannels.length !== 0"
+     >
+-      <h3> {{ $t("Subscriptions.Error Channels") }}</h3>
+-      <FtFlexBox>
+-        <FtChannelBubble
+-          v-for="channel in errorChannels"
+-          :key="channel.id"
+-          :channel-name="channel.name"
+-          :channel-id="channel.id"
+-          :channel-thumbnail="channel.thumbnail"
++      <div class="errorChannelsSummary">
++        <h3 class="errorChannelsTitle">
++          {{ $t("Subscriptions.Error Channels") }} ({{ errorChannels.length }})
++        </h3>
++        <FtIconButton
++          :title="$t('Global.More Options')"
++          :icon="['fas', 'chevron-down']"
++          theme="base-no-default"
++          :use-shadow="false"
++          dropdown-position-x="left"
++          :dropdown-options="errorChannelDropdownOptions"
++          @click="handleErrorChannelDropdownClick"
+         />
+-      </FtFlexBox>
++      </div>
+     </div>
+     <FtFlexBox
+       v-if="!isLoading && activeVideoList.length === 0"
+@@ -70,12 +74,13 @@
+ 
+ <script setup>
+ import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
++import { useRouter } from 'vue-router'
+ 
+ import FtAutoLoadNextPageWrapper from '../FtAutoLoadNextPageWrapper.vue'
+ import FtButton from '../FtButton/FtButton.vue'
+-import FtChannelBubble from '../FtChannelBubble/FtChannelBubble.vue'
+ import FtElementList from '../FtElementList/FtElementList.vue'
+ import FtFlexBox from '../ft-flex-box/ft-flex-box.vue'
++import FtIconButton from '../FtIconButton/FtIconButton.vue'
+ import FtLoader from '../FtLoader/FtLoader.vue'
+ import FtRefreshWidget from '../FtRefreshWidget/FtRefreshWidget.vue'
+ 
+@@ -120,6 +125,8 @@ const props = defineProps({
+ 
+ const emit = defineEmits(['refresh'])
+ 
++const router = useRouter()
++
+ const subscriptionLimit = sessionStorage.getItem('subscriptionLimit')
+ 
+ const dataLimit = ref(subscriptionLimit !== null ? parseInt(subscriptionLimit) : props.initialDataLimit)
+@@ -159,6 +166,21 @@ const filteredVideoList = computed(() => {
+   }
+ })
+ 
++const errorChannelDropdownOptions = computed(() => {
++  return props.errorChannels.map((channel) => ({
++    label: channel.name ?? channel.id,
++    value: channel.id,
++  }))
++})
++
++/**
++ * @param {string|null} channelId
++ */
++function handleErrorChannelDropdownClick(channelId) {
++  if (!channelId) { return }
++  router.push({ path: `/channel/${channelId}` })
++}
++
+ function increaseLimit() {
+   dataLimit.value += props.initialDataLimit
+   sessionStorage.setItem('subscriptionLimit', dataLimit.value.toFixed(0))
+diff --git a/src/renderer/views/ProfileSettings/ProfileSettings.css b/src/renderer/views/ProfileSettings/ProfileSettings.css
+index a409346ec92ad..d5cdffec3586b 100644
+--- a/src/renderer/views/ProfileSettings/ProfileSettings.css
++++ b/src/renderer/views/ProfileSettings/ProfileSettings.css
+@@ -31,16 +31,18 @@ h2 {
+ }
+ 
+ .topNavProfileButtonsSettings {
+-  display: flex;
+-  flex-direction: column;
+-  gap: 8px;
++  display: grid;
++  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
++  gap: 10px;
+   margin-block-start: 10px;
++  align-items: start;
+ }
+ 
+ .topNavProfileButtonsSettingRow {
+   display: flex;
+   align-items: center;
+   gap: 10px;
++  justify-content: flex-start;
+ }
+ 
+ .topNavProfileButtonsSettingCheckbox {
+diff --git a/src/renderer/views/Subscriptions/Subscriptions.css b/src/renderer/views/Subscriptions/Subscriptions.css
+index 1882028a546ae..7fefdb2838777 100644
+--- a/src/renderer/views/Subscriptions/Subscriptions.css
++++ b/src/renderer/views/Subscriptions/Subscriptions.css
+@@ -1,5 +1,5 @@
+ .card {
+-  inline-size: 85%;
++  inline-size: 99%;
+   margin-block: 0 60px;
+   margin-inline: auto;
+ }
+@@ -40,6 +40,6 @@
+ 
+ @media only screen and (width <= 680px) {
+   .card {
+-    inline-size: 90%;
++    inline-size: 99%;
+   }
+ }
+diff --git a/src/renderer/views/Subscriptions/Subscriptions.vue b/src/renderer/views/Subscriptions/Subscriptions.vue
+index 6f36d1111e011..86781d8dc7298 100644
+--- a/src/renderer/views/Subscriptions/Subscriptions.vue
++++ b/src/renderer/views/Subscriptions/Subscriptions.vue
+@@ -1,13 +1,6 @@
+ <template>
+   <div>
+     <FtCard class="card">
+-      <h2>
+-        <FontAwesomeIcon
+-          :icon="['fas', 'rss']"
+-          class="subscriptionIcon"
+-        />
+-        {{ $t("Subscriptions.Subscriptions") }}
+-      </h2>
+       <FtFlexBox
+         class="tabs"
+         role="tablist"
+
+From 1a33536a7ccaffc01f27c29c4b5c0b1c1f837ac1 Mon Sep 17 00:00:00 2001
+From: sun <sun@manjaro.lan>
+Date: Sun, 8 Feb 2026 19:58:37 +0800
+Subject: [PATCH 14/33] fix-action-error-6
+
+---
+ .../components/SubscriptionsTabUi/SubscriptionsTabUi.vue      | 4 ++--
+ src/renderer/views/ProfileSettings/ProfileSettings.vue        | 2 +-
+ static/locales/en-US.yaml                                     | 3 ++-
+ static/locales/zh-CN.yaml                                     | 3 ++-
+ 4 files changed, 7 insertions(+), 5 deletions(-)
+
+diff --git a/src/renderer/components/SubscriptionsTabUi/SubscriptionsTabUi.vue b/src/renderer/components/SubscriptionsTabUi/SubscriptionsTabUi.vue
+index a8a554ce5cb2c..a87bd6f31d379 100644
+--- a/src/renderer/components/SubscriptionsTabUi/SubscriptionsTabUi.vue
++++ b/src/renderer/components/SubscriptionsTabUi/SubscriptionsTabUi.vue
+@@ -8,10 +8,10 @@
+     >
+       <div class="errorChannelsSummary">
+         <h3 class="errorChannelsTitle">
+-          {{ $t("Subscriptions.Error Channels") }} ({{ errorChannels.length }})
++          {{ $t('Subscriptions.Error Channels With Count', { count: errorChannels.length }) }}
+         </h3>
+         <FtIconButton
+-          :title="$t('Global.More Options')"
++          :title="$t('Video.More Options')"
+           :icon="['fas', 'chevron-down']"
+           theme="base-no-default"
+           :use-shadow="false"
+diff --git a/src/renderer/views/ProfileSettings/ProfileSettings.vue b/src/renderer/views/ProfileSettings/ProfileSettings.vue
+index 5fdcf7f4a5757..194d126501912 100644
+--- a/src/renderer/views/ProfileSettings/ProfileSettings.vue
++++ b/src/renderer/views/ProfileSettings/ProfileSettings.vue
+@@ -3,7 +3,7 @@
+     <FtCard class="card">
+       <h2>{{ $t('Profile.Top Nav Profile Buttons') }}</h2>
+       <p class="message">
+-        {{ $t('Profile.Select which profiles are hidden from the top button row. This does not affect the dropdown menu.') }}
++        {{ $t('Profile.Top Nav Profile Buttons Description') }}
+       </p>
+       <div class="topNavProfileButtonsSettings">
+         <div
+diff --git a/static/locales/en-US.yaml b/static/locales/en-US.yaml
+index cf1930417fd2c..d422578a9ffb0 100644
+--- a/static/locales/en-US.yaml
++++ b/static/locales/en-US.yaml
+@@ -125,6 +125,7 @@ Subscriptions:
+   Subscriptions: Subscriptions
+   # channels that were likely deleted
+   Error Channels: Channels with Errors
++  Error Channels With Count: Channels with Errors ({count})
+   This profile has a large number of subscriptions. Forcing RSS to avoid rate limiting: This
+     profile has a large number of subscriptions.  Forcing RSS to avoid rate limiting
+   'Your Subscription list is currently empty. Start adding subscriptions to see them here.': Your Subscription list is currently empty. If you want to import your subscriptions you can go to Data Settings and select Import Subscriptions or you can search for a channel and subscribe to them.
+@@ -753,7 +754,7 @@ Profile:
+   Add Selected To Profile: Add Selected To Profile
+   No channel(s) have been selected: No channel(s) have been selected
+   Top Nav Profile Buttons: Top Nav Profile Buttons
+-  Select which profiles are hidden from the top button row. This does not affect the dropdown menu.: Select which profiles are hidden from the top button row. This does not affect the dropdown menu.
++  Top Nav Profile Buttons Description: Select which profiles are hidden from the top button row. This does not affect the dropdown menu.
+   ? This is your primary profile.  Are you sure you want to delete the selected channels?  The
+     same channels will be deleted in any profile they are found in.
+   : This is your primary profile.  Are you sure you want to delete the selected channels?  The
+diff --git a/static/locales/zh-CN.yaml b/static/locales/zh-CN.yaml
+index 6456efe625a2c..f791d77cb8b1c 100644
+--- a/static/locales/zh-CN.yaml
++++ b/static/locales/zh-CN.yaml
+@@ -94,6 +94,7 @@ Subscriptions:
+   This profile has a large number of subscriptions. Forcing RSS to avoid rate limiting: 这个配置文件有大量订阅。 强制RSS已防止速率限制
+   Load More Videos: 加载更多视频
+   Error Channels: 有错误的频道
++  Error Channels With Count: 有错误的频道（{count}）
+   Disabled Automatic Fetching: 你仅用了自动订阅获取。刷新订阅在此处看到它们。
+   Empty Channels: 你订阅的频道当前没有任何视频。
+   Subscriptions Tabs: 订阅标签页
+@@ -934,7 +935,7 @@ Profile:
+   ? This is your primary profile.  Are you sure you want to delete the selected channels?  The same channels will be deleted in any profile they are found in.
+   : 这是您的主配置文件。 您确定您想删除选择的频道？ 相同的频道中任何找到的配置文件会被删除。
+   Top Nav Profile Buttons: 顶部配置文件按钮
+-  Select which profiles are hidden from the top button row. This does not affect the dropdown menu.: 选择哪些配置文件要在顶部按钮行中隐藏；这不会影响右侧下拉菜单。
++  Top Nav Profile Buttons Description: 选择哪些配置文件要在顶部按钮行中隐藏；这不会影响右侧下拉菜单。
+   No channel(s) have been selected: 无频道已选择
+   Select None: 全不选
+   Select All: 全选
+
+From ae497bc2da6df86062c7f670a812050225f1f4de Mon Sep 17 00:00:00 2001
+From: sun <sun@manjaro.lan>
+Date: Sun, 8 Feb 2026 20:14:10 +0800
+Subject: [PATCH 15/33] fix-ui-2
+
+---
+ src/renderer/App.css                          |  2 +-
+ .../SubscriptionsTabUi/SubscriptionsTabUi.css | 13 +++++++++
+ .../SubscriptionsTabUi/SubscriptionsTabUi.vue | 29 +++++++++++++++++--
+ 3 files changed, 40 insertions(+), 4 deletions(-)
+
+diff --git a/src/renderer/App.css b/src/renderer/App.css
+index c0b4712bf9720..1a4e0f43a1ecd 100644
+--- a/src/renderer/App.css
++++ b/src/renderer/App.css
+@@ -13,7 +13,7 @@
+ .routerView {
+   flex: 1 1 0%;
+   margin-block: 18px;
+-  margin-inline: 10px;
++  margin-inline: 1px;
+ }
+ 
+ .banner {
+diff --git a/src/renderer/components/SubscriptionsTabUi/SubscriptionsTabUi.css b/src/renderer/components/SubscriptionsTabUi/SubscriptionsTabUi.css
+index d2f343fbd1b33..43220c06e1213 100644
+--- a/src/renderer/components/SubscriptionsTabUi/SubscriptionsTabUi.css
++++ b/src/renderer/components/SubscriptionsTabUi/SubscriptionsTabUi.css
+@@ -23,6 +23,19 @@
+   margin-inline: 0;
+ }
+ 
++.errorChannelsToggle {
++  border: 0;
++  padding: 0;
++  margin: 0;
++  background: transparent;
++  cursor: pointer;
++  color: inherit;
++}
++
++.errorChannelsToggle:hover .errorChannelsTitle {
++  text-decoration: underline;
++}
++
+ .errorChannelsTitle {
+   margin-block: 0;
+ }
+diff --git a/src/renderer/components/SubscriptionsTabUi/SubscriptionsTabUi.vue b/src/renderer/components/SubscriptionsTabUi/SubscriptionsTabUi.vue
+index a87bd6f31d379..e3f525e3489cc 100644
+--- a/src/renderer/components/SubscriptionsTabUi/SubscriptionsTabUi.vue
++++ b/src/renderer/components/SubscriptionsTabUi/SubscriptionsTabUi.vue
+@@ -7,9 +7,16 @@
+       v-if="!isLoading && errorChannels.length !== 0"
+     >
+       <div class="errorChannelsSummary">
+-        <h3 class="errorChannelsTitle">
+-          {{ $t('Subscriptions.Error Channels With Count', { count: errorChannels.length }) }}
+-        </h3>
++        <button
++          class="errorChannelsToggle"
++          type="button"
++          :aria-expanded="errorChannelsExpanded"
++          @click="toggleErrorChannelsExpanded"
++        >
++          <h3 class="errorChannelsTitle">
++            {{ $t('Subscriptions.Error Channels With Count', { count: errorChannels.length }) }}
++          </h3>
++        </button>
+         <FtIconButton
+           :title="$t('Video.More Options')"
+           :icon="['fas', 'chevron-down']"
+@@ -20,6 +27,15 @@
+           @click="handleErrorChannelDropdownClick"
+         />
+       </div>
++      <FtFlexBox v-if="errorChannelsExpanded">
++        <FtChannelBubble
++          v-for="channel in errorChannels"
++          :key="channel.id"
++          :channel-name="channel.name"
++          :channel-id="channel.id"
++          :channel-thumbnail="channel.thumbnail"
++        />
++      </FtFlexBox>
+     </div>
+     <FtFlexBox
+       v-if="!isLoading && activeVideoList.length === 0"
+@@ -78,6 +94,7 @@ import { useRouter } from 'vue-router'
+ 
+ import FtAutoLoadNextPageWrapper from '../FtAutoLoadNextPageWrapper.vue'
+ import FtButton from '../FtButton/FtButton.vue'
++import FtChannelBubble from '../FtChannelBubble/FtChannelBubble.vue'
+ import FtElementList from '../FtElementList/FtElementList.vue'
+ import FtFlexBox from '../ft-flex-box/ft-flex-box.vue'
+ import FtIconButton from '../FtIconButton/FtIconButton.vue'
+@@ -127,6 +144,12 @@ const emit = defineEmits(['refresh'])
+ 
+ const router = useRouter()
+ 
++const errorChannelsExpanded = ref(false)
++
++function toggleErrorChannelsExpanded() {
++  errorChannelsExpanded.value = !errorChannelsExpanded.value
++}
++
+ const subscriptionLimit = sessionStorage.getItem('subscriptionLimit')
+ 
+ const dataLimit = ref(subscriptionLimit !== null ? parseInt(subscriptionLimit) : props.initialDataLimit)
+
+From 0021c9f97ea41fd8ab28156a6c35737395da2165 Mon Sep 17 00:00:00 2001
+From: sun <sun@manjaro.lan>
+Date: Sun, 8 Feb 2026 20:16:20 +0800
+Subject: [PATCH 16/33] fix-action-error-7
+
+---
+ .../components/SubscriptionsTabUi/SubscriptionsTabUi.css  | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/src/renderer/components/SubscriptionsTabUi/SubscriptionsTabUi.css b/src/renderer/components/SubscriptionsTabUi/SubscriptionsTabUi.css
+index 43220c06e1213..240f2e6665152 100644
+--- a/src/renderer/components/SubscriptionsTabUi/SubscriptionsTabUi.css
++++ b/src/renderer/components/SubscriptionsTabUi/SubscriptionsTabUi.css
+@@ -32,10 +32,10 @@
+   color: inherit;
+ }
+ 
+-.errorChannelsToggle:hover .errorChannelsTitle {
+-  text-decoration: underline;
+-}
+-
+ .errorChannelsTitle {
+   margin-block: 0;
+ }
++
++.errorChannelsToggle:hover .errorChannelsTitle {
++  text-decoration: underline;
++}
+
+From 66133d70dd22f1232aad5d5050c7550137cd5668 Mon Sep 17 00:00:00 2001
+From: sun <sun@manjaro.lan>
+Date: Sun, 8 Feb 2026 20:32:58 +0800
+Subject: [PATCH 17/33] add tabs
+
+---
+ src/datastores/handlers/base.js               |   4 +
+ src/main/externalPlayer.js                    |  31 +++-
+ .../components/ExternalPlayerSettings.vue     | 134 ++++++++++++++++--
+ .../FtListPlaylist/FtListPlaylist.vue         |   1 +
+ .../WatchVideoInfo/WatchVideoInfo.vue         |   2 +
+ .../components/ft-list-video/ft-list-video.js |   1 +
+ src/renderer/store/modules/profiles.js        |  13 +-
+ src/renderer/store/modules/settings.js        |  21 +++
+ 8 files changed, 188 insertions(+), 19 deletions(-)
+
+diff --git a/src/datastores/handlers/base.js b/src/datastores/handlers/base.js
+index c14b83ea3245d..5ea44754d2048 100644
+--- a/src/datastores/handlers/base.js
++++ b/src/datastores/handlers/base.js
+@@ -133,6 +133,10 @@ class Profiles {
+     return db.profiles.findAsync({})
+   }
+ 
++  static _findOne(_id) {
++    return db.profiles.findOneAsync({ _id })
++  }
++
+   static upsert(profile) {
+     return db.profiles.updateAsync({ _id: profile._id }, profile, { upsert: true })
+   }
+diff --git a/src/main/externalPlayer.js b/src/main/externalPlayer.js
+index 783e2460c3e0a..204cb82938dd0 100644
+--- a/src/main/externalPlayer.js
++++ b/src/main/externalPlayer.js
+@@ -1,12 +1,13 @@
+ import { spawn } from 'node:child_process'
+ import { join } from 'node:path'
+ import { readFile } from 'node:fs/promises'
+-import { settings } from '../datastores/handlers/base'
++import { profiles, settings } from '../datastores/handlers/base'
+ import { isFreeTubeUrl } from './utils'
+ import { IpcChannels, UnsupportedPlayerActions } from '../constants'
+ 
+ /**
+  * @typedef ExternalPlayerPayload
++ * @property {string | undefined | null} [profileId]
+  * @property {string | undefined | null} [videoId]
+  * @property {string | undefined | null} [playlistId]
+  * @property {number | undefined | null} [startTime]
+@@ -52,8 +53,14 @@ export async function handleOpenInExternalPlayer(event, payload) {
+     return
+   }
+ 
++  const profileId = typeof payload.profileId === 'string' ? payload.profileId : null
++  const profile = profileId ? await profiles._findOne(profileId) : null
++  const profileExternalPlayerSettings = profile?.externalPlayerSettings ?? null
++
+   /** @type {string} */
+-  const externalPlayer = (await settings._findOne('externalPlayer'))?.value || ''
++  const externalPlayer = profileExternalPlayerSettings?.player ??
++    (await settings._findOne('externalPlayer'))?.value ||
++    ''
+ 
+   // External player setting not set or set to "none"
+   if (externalPlayer === '') {
+@@ -75,15 +82,23 @@ export async function handleOpenInExternalPlayer(event, payload) {
+   const unsupportedActions = []
+ 
+   /** @type {boolean} */
+-  const ignoreWarnings = (await settings._findOne('externalPlayerIgnoreWarnings'))?.value || false
++  const ignoreWarnings = profileExternalPlayerSettings?.ignoreWarnings ??
++    (await settings._findOne('externalPlayerIgnoreWarnings'))?.value ||
++    false
+ 
+   /** @type {boolean} */
+-  const ignoreDefaultArgs = (await settings._findOne('externalPlayerIgnoreDefaultArgs'))?.value || false
++  const ignoreDefaultArgs = profileExternalPlayerSettings?.ignoreDefaultArgs ??
++    (await settings._findOne('externalPlayerIgnoreDefaultArgs'))?.value ||
++    false
+ 
+   /** @type {string[] | string} */
+-  const customArgs = (await settings._findOne('externalPlayerCustomArgs'))?.value || '[]'
++  const customArgs = profileExternalPlayerSettings?.customArgs ??
++    (await settings._findOne('externalPlayerCustomArgs'))?.value ||
++    '[]'
+ 
+-  if (typeof customArgs === 'string' && customArgs !== '[]') {
++  if (Array.isArray(customArgs) && customArgs.length > 0) {
++    args.push(...customArgs)
++  } else if (typeof customArgs === 'string' && customArgs !== '[]') {
+     args.push(...JSON.parse(customArgs))
+   } else if (!ignoreDefaultArgs && Array.isArray(cmdArgs.defaultCustomArguments)) {
+     args.push(...cmdArgs.defaultCustomArguments)
+@@ -180,7 +195,9 @@ export async function handleOpenInExternalPlayer(event, payload) {
+   )
+ 
+   /** @type {string} */
+-  const externalPlayerExecutable = (await settings._findOne('externalPlayerExecutable'))?.value || ''
++  const externalPlayerExecutable = profileExternalPlayerSettings?.executable ??
++    (await settings._findOne('externalPlayerExecutable'))?.value ||
++    ''
+ 
+   const executable = externalPlayerExecutable.length > 0 ? externalPlayerExecutable : cmdArgs.defaultExecutable
+ 
+diff --git a/src/renderer/components/ExternalPlayerSettings.vue b/src/renderer/components/ExternalPlayerSettings.vue
+index 4f732bc017b1b..5b4611d5ae76e 100644
+--- a/src/renderer/components/ExternalPlayerSettings.vue
++++ b/src/renderer/components/ExternalPlayerSettings.vue
+@@ -2,6 +2,26 @@
+   <FtSettingsSection
+     :title="$t('Settings.External Player Settings.External Player Settings')"
+   >
++    <FtFlexBox
++      class="profileTabs"
++      role="tablist"
++      :aria-label="$t('Profile.Profile Select')"
++    >
++      <!-- eslint-disable-next-line vuejs-accessibility/interactive-supports-focus -->
++      <button
++        v-for="profile in profileList"
++        :key="profile._id"
++        class="profileTab"
++        role="tab"
++        type="button"
++        :aria-selected="selectedProfileId === profile._id"
++        :tabindex="selectedProfileId === profile._id ? 0 : -1"
++        :class="{ selected: selectedProfileId === profile._id }"
++        @click="selectedProfileId = profile._id"
++      >
++        <span dir="auto">{{ translateProfileName(profile) }}</span>
++      </button>
++    </FtFlexBox>
+     <FtFlexBox>
+       <FtSelect
+         :placeholder="$t('Settings.External Player Settings.External Player')"
+@@ -61,7 +81,7 @@
+ </template>
+ 
+ <script setup>
+-import { computed } from 'vue'
++import { computed, ref, watch } from 'vue'
+ import { useI18n } from '../composables/use-i18n-polyfill'
+ 
+ import FtSettingsSection from './FtSettingsSection/FtSettingsSection.vue'
+@@ -72,11 +92,53 @@ import FtFlexBox from './ft-flex-box/ft-flex-box.vue'
+ import FtInputTags from './FtInputTags/FtInputTags.vue'
+ 
+ import store from '../store/index'
++import { MAIN_PROFILE_ID } from '../../constants'
+ 
+ const { t } = useI18n()
+ 
++/** @typedef {{ _id: string, name: string, externalPlayerSettings?: { player?: string, executable?: string, ignoreWarnings?: boolean, ignoreDefaultArgs?: boolean, customArgs?: string[] } }} Profile */
++
++/** @type {import('vue').ComputedRef<Profile[]>} */
++const profileList = computed(() => store.getters.getProfileList)
++/** @type {import('vue').ComputedRef<Profile>} */
++const activeProfile = computed(() => store.getters.getActiveProfile)
++
++const selectedProfileId = ref(activeProfile.value?._id ?? '')
++
++watch(activeProfile, (value) => {
++  // keep a valid selected id when switching active profile
++  if (!profileList.value.some(p => p._id === selectedProfileId.value)) {
++    selectedProfileId.value = value?._id ?? ''
++  }
++})
++
++const selectedProfile = computed(() => {
++  return profileList.value.find(p => p._id === selectedProfileId.value) ?? activeProfile.value
++})
++
++const globalExternalPlayerDefaults = computed(() => {
++  // fall back values from the global settings for profiles without overrides
++  const customArgsString = store.state.settings.externalPlayerCustomArgs ?? '[]'
++  return {
++    player: store.state.settings.externalPlayer ?? '',
++    executable: store.state.settings.externalPlayerExecutable ?? '',
++    ignoreWarnings: store.state.settings.externalPlayerIgnoreWarnings ?? false,
++    ignoreDefaultArgs: store.state.settings.externalPlayerIgnoreDefaultArgs ?? false,
++    customArgs: typeof customArgsString === 'string' ? JSON.parse(customArgsString) : [],
++  }
++})
++
++function getSelectedExternalPlayerSettings() {
++  const overrides = selectedProfile.value?.externalPlayerSettings ?? {}
++  return {
++    ...globalExternalPlayerDefaults.value,
++    ...overrides,
++    customArgs: Array.isArray(overrides.customArgs) ? overrides.customArgs : globalExternalPlayerDefaults.value.customArgs,
++  }
++}
++
+ /** @type {import('vue').ComputedRef<string>} */
+-const externalPlayer = computed(() => store.getters.getExternalPlayer)
++const externalPlayer = computed(() => getSelectedExternalPlayerSettings().player)
+ 
+ /** @type {import('vue').ComputedRef<string[]>} */
+ const externalPlayerNames = computed(() => {
+@@ -91,16 +153,16 @@ const externalPlayerNames = computed(() => {
+ const externalPlayerValues = computed(() => store.getters.getExternalPlayerValues)
+ 
+ /** @type {import('vue').ComputedRef<string>} */
+-const externalPlayerExecutable = computed(() => store.getters.getExternalPlayerExecutable)
++const externalPlayerExecutable = computed(() => getSelectedExternalPlayerSettings().executable)
+ 
+ /** @type {import('vue').ComputedRef<boolean>} */
+-const externalPlayerIgnoreWarnings = computed(() => store.getters.getExternalPlayerIgnoreWarnings)
++const externalPlayerIgnoreWarnings = computed(() => getSelectedExternalPlayerSettings().ignoreWarnings)
+ 
+ /** @type {import('vue').ComputedRef<boolean>} */
+-const externalPlayerIgnoreDefaultArgs = computed(() => store.getters.getExternalPlayerIgnoreDefaultArgs)
++const externalPlayerIgnoreDefaultArgs = computed(() => getSelectedExternalPlayerSettings().ignoreDefaultArgs)
+ 
+ /** @type {import('vue').ComputedRef<string[]>} */
+-const externalPlayerCustomArgs = computed(() => JSON.parse(store.getters.getExternalPlayerCustomArgs))
++const externalPlayerCustomArgs = computed(() => getSelectedExternalPlayerSettings().customArgs)
+ 
+ const externalPlayerCustomArgsTooltip = computed(() => {
+   const tooltip = t('Tooltips.External Player Settings.Custom External Player Arguments')
+@@ -122,35 +184,35 @@ const externalPlayerCustomArgsTooltip = computed(() => {
+  * @param {string} value
+  */
+ function updateExternalPlayer(value) {
+-  store.dispatch('updateExternalPlayer', value)
++  updateSelectedProfileExternalPlayerSettings({ player: value })
+ }
+ 
+ /**
+  * @param {boolean} value
+  */
+ function updateExternalPlayerIgnoreWarnings(value) {
+-  store.dispatch('updateExternalPlayerIgnoreWarnings', value)
++  updateSelectedProfileExternalPlayerSettings({ ignoreWarnings: value })
+ }
+ 
+ /**
+  * @param {boolean} value
+  */
+ function updateExternalPlayerIgnoreDefaultArgs(value) {
+-  store.dispatch('updateExternalPlayerIgnoreDefaultArgs', value)
++  updateSelectedProfileExternalPlayerSettings({ ignoreDefaultArgs: value })
+ }
+ 
+ /**
+  * @param {string} value
+  */
+ function updateExternalPlayerExecutable(value) {
+-  store.dispatch('updateExternalPlayerExecutable', value)
++  updateSelectedProfileExternalPlayerSettings({ executable: value })
+ }
+ 
+ /**
+  * @param {string[]} args
+  */
+ function handleExternalPlayerCustomArgs(args) {
+-  store.dispatch('updateExternalPlayerCustomArgs', JSON.stringify(args))
++  updateSelectedProfileExternalPlayerSettings({ customArgs: args })
+ }
+ 
+ /** @type {import('vue').ComputedRef<boolean>} */
+@@ -159,4 +221,54 @@ const showAddedExternalPlayerCustomArgs = computed(() => store.getters.getShowAd
+ function handleAddedExternalPayerCustomArgs() {
+   store.dispatch('updateShowAddedExternalPlayerCustomArgs', !showAddedExternalPlayerCustomArgs.value)
+ }
++
++/**
++ * @param {Partial<NonNullable<Profile['externalPlayerSettings']>>} patch
++ */
++function updateSelectedProfileExternalPlayerSettings(patch) {
++  const profile = selectedProfile.value
++  if (!profile?._id) { return }
++
++  const existing = profile.externalPlayerSettings ?? {}
++  store.dispatch('updateProfile', {
++    ...profile,
++    externalPlayerSettings: {
++      ...existing,
++      ...patch,
++    }
++  })
++}
++
++/**
++ * @param {Profile} profile
++ */
++function translateProfileName(profile) {
++  return profile._id === MAIN_PROFILE_ID ? t('Profile.All Channels') : profile.name
++}
+ </script>
++
++<style scoped>
++.profileTabs {
++  gap: 5px;
++  flex-wrap: wrap;
++  justify-content: flex-start;
++  margin-block-end: 10px;
++}
++
++.profileTab {
++  border: 1px solid var(--primary-shadow-color);
++  border-radius: 8px;
++  background-color: var(--side-nav-hover-color);
++  color: var(--primary-text-color);
++  cursor: pointer;
++  line-height: 1;
++  padding-block: 8px;
++  padding-inline: 10px;
++  white-space: nowrap;
++}
++
++.profileTab.selected {
++  background-color: var(--primary-color);
++  color: var(--text-with-main-color);
++}
++</style>
+diff --git a/src/renderer/components/FtListPlaylist/FtListPlaylist.vue b/src/renderer/components/FtListPlaylist/FtListPlaylist.vue
+index 700de4532b2cf..a04c5089c22aa 100644
+--- a/src/renderer/components/FtListPlaylist/FtListPlaylist.vue
++++ b/src/renderer/components/FtListPlaylist/FtListPlaylist.vue
+@@ -271,6 +271,7 @@ const defaultPlayback = computed(() => store.getters.getDefaultPlayback)
+ function handleExternalPlayer() {
+   if (process.env.IS_ELECTRON) {
+     window.ftElectron.openInExternalPlayer({
++      profileId: store.getters.getActiveProfile?._id,
+       playlistId: playlistId,
+       playbackRate: defaultPlayback.value,
+     })
+diff --git a/src/renderer/components/WatchVideoInfo/WatchVideoInfo.vue b/src/renderer/components/WatchVideoInfo/WatchVideoInfo.vue
+index b25b215a9821e..dda3fe35991e2 100644
+--- a/src/renderer/components/WatchVideoInfo/WatchVideoInfo.vue
++++ b/src/renderer/components/WatchVideoInfo/WatchVideoInfo.vue
+@@ -351,12 +351,14 @@ function handleExternalPlayer() {
+   // Only play video in non playlist mode when user playlist detected
+   if (props.inUserPlaylist) {
+     payload = {
++      profileId: store.getters.getActiveProfile?._id,
+       videoId: props.id,
+       startTime: props.getTimestamp(),
+       playbackRate: defaultPlayback.value,
+     }
+   } else {
+     payload = {
++      profileId: store.getters.getActiveProfile?._id,
+       videoId: props.id,
+       playlistId: props.playlistId,
+       startTime: props.getTimestamp(),
+diff --git a/src/renderer/components/ft-list-video/ft-list-video.js b/src/renderer/components/ft-list-video/ft-list-video.js
+index 7cd4f2c28c499..c5d9027df3900 100644
+--- a/src/renderer/components/ft-list-video/ft-list-video.js
++++ b/src/renderer/components/ft-list-video/ft-list-video.js
+@@ -600,6 +600,7 @@ export default defineComponent({
+       this.$emit('pause-player')
+ 
+       const payload = {
++        profileId: this.$store.getters.getActiveProfile?._id,
+         videoId: this.id,
+         playlistId: this.playlistIdFinal,
+         startTime: this.watchProgress,
+diff --git a/src/renderer/store/modules/profiles.js b/src/renderer/store/modules/profiles.js
+index 11aee2a60f6ba..b42cb7066962e 100644
+--- a/src/renderer/store/modules/profiles.js
++++ b/src/renderer/store/modules/profiles.js
+@@ -169,8 +169,19 @@ const actions = {
+     }
+   },
+ 
+-  async createProfile({ commit }, profile) {
++  async createProfile({ commit, rootState }, profile) {
+     try {
++      // Seed per-profile external player settings from current global defaults (if missing)
++      if (profile.externalPlayerSettings == null) {
++        const customArgsString = rootState.settings.externalPlayerCustomArgs ?? '[]'
++        profile.externalPlayerSettings = {
++          player: rootState.settings.externalPlayer ?? '',
++          executable: rootState.settings.externalPlayerExecutable ?? '',
++          ignoreWarnings: rootState.settings.externalPlayerIgnoreWarnings ?? false,
++          ignoreDefaultArgs: rootState.settings.externalPlayerIgnoreDefaultArgs ?? false,
++          customArgs: typeof customArgsString === 'string' ? JSON.parse(customArgsString) : [],
++        }
++      }
+       const newProfile = await DBProfileHandlers.create(profile)
+       commit('addProfileToList', newProfile)
+     } catch (errMessage) {
+diff --git a/src/renderer/store/modules/settings.js b/src/renderer/store/modules/settings.js
+index c0ac3bd83d6af..b9035d45691d7 100644
+--- a/src/renderer/store/modules/settings.js
++++ b/src/renderer/store/modules/settings.js
+@@ -422,6 +422,27 @@ const customState = {
+ }
+ 
+ const customGetters = {
++  // External Player settings: allow per-profile overrides.
++  // If the active profile doesn't have overrides, fall back to global settings values.
++  getExternalPlayer: (state, getters, rootState, rootGetters) => {
++    return rootGetters.getActiveProfile?.externalPlayerSettings?.player ?? state.externalPlayer
++  },
++  getExternalPlayerExecutable: (state, getters, rootState, rootGetters) => {
++    return rootGetters.getActiveProfile?.externalPlayerSettings?.executable ?? state.externalPlayerExecutable
++  },
++  getExternalPlayerIgnoreWarnings: (state, getters, rootState, rootGetters) => {
++    return rootGetters.getActiveProfile?.externalPlayerSettings?.ignoreWarnings ?? state.externalPlayerIgnoreWarnings
++  },
++  getExternalPlayerIgnoreDefaultArgs: (state, getters, rootState, rootGetters) => {
++    return rootGetters.getActiveProfile?.externalPlayerSettings?.ignoreDefaultArgs ?? state.externalPlayerIgnoreDefaultArgs
++  },
++  getExternalPlayerCustomArgs: (state, getters, rootState, rootGetters) => {
++    const customArgs = rootGetters.getActiveProfile?.externalPlayerSettings?.customArgs
++    if (Array.isArray(customArgs)) {
++      return JSON.stringify(customArgs)
++    }
++    return state.externalPlayerCustomArgs
++  },
+ }
+ 
+ const customMutations = {}
+
+From 43231920f372e70843b5dcd9d315eff5a6260149 Mon Sep 17 00:00:00 2001
+From: sun <sun@manjaro.lan>
+Date: Sun, 8 Feb 2026 20:35:24 +0800
+Subject: [PATCH 18/33] fix-action-error-8
+
+---
+ src/main/externalPlayer.js | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/src/main/externalPlayer.js b/src/main/externalPlayer.js
+index 204cb82938dd0..d586478656b02 100644
+--- a/src/main/externalPlayer.js
++++ b/src/main/externalPlayer.js
+@@ -59,8 +59,7 @@ export async function handleOpenInExternalPlayer(event, payload) {
+ 
+   /** @type {string} */
+   const externalPlayer = profileExternalPlayerSettings?.player ??
+-    (await settings._findOne('externalPlayer'))?.value ||
+-    ''
++    ((await settings._findOne('externalPlayer'))?.value || '')
+ 
+   // External player setting not set or set to "none"
+   if (externalPlayer === '') {
+
+From 45f2c12364d0dea9255f113415bc684a6105140d Mon Sep 17 00:00:00 2001
+From: sun <sun@manjaro.lan>
+Date: Sun, 8 Feb 2026 20:38:06 +0800
+Subject: [PATCH 19/33] fix-action-error-9
+
+---
+ src/main/externalPlayer.js | 9 +++------
+ 1 file changed, 3 insertions(+), 6 deletions(-)
+
+diff --git a/src/main/externalPlayer.js b/src/main/externalPlayer.js
+index d586478656b02..3e6a471ba45b8 100644
+--- a/src/main/externalPlayer.js
++++ b/src/main/externalPlayer.js
+@@ -82,18 +82,15 @@ export async function handleOpenInExternalPlayer(event, payload) {
+ 
+   /** @type {boolean} */
+   const ignoreWarnings = profileExternalPlayerSettings?.ignoreWarnings ??
+-    (await settings._findOne('externalPlayerIgnoreWarnings'))?.value ||
+-    false
++    ((await settings._findOne('externalPlayerIgnoreWarnings'))?.value || false)
+ 
+   /** @type {boolean} */
+   const ignoreDefaultArgs = profileExternalPlayerSettings?.ignoreDefaultArgs ??
+-    (await settings._findOne('externalPlayerIgnoreDefaultArgs'))?.value ||
+-    false
++    ((await settings._findOne('externalPlayerIgnoreDefaultArgs'))?.value || false)
+ 
+   /** @type {string[] | string} */
+   const customArgs = profileExternalPlayerSettings?.customArgs ??
+-    (await settings._findOne('externalPlayerCustomArgs'))?.value ||
+-    '[]'
++    ((await settings._findOne('externalPlayerCustomArgs'))?.value || '[]')
+ 
+   if (Array.isArray(customArgs) && customArgs.length > 0) {
+     args.push(...customArgs)
+
+From ac16b91bdcd11647fba993157ce0c1f123f6038d Mon Sep 17 00:00:00 2001
+From: sun <sun@manjaro.lan>
+Date: Sun, 8 Feb 2026 20:40:20 +0800
+Subject: [PATCH 20/33] fix-action-error-10
+
+---
+ src/main/externalPlayer.js | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/src/main/externalPlayer.js b/src/main/externalPlayer.js
+index 3e6a471ba45b8..12c1a170c4be9 100644
+--- a/src/main/externalPlayer.js
++++ b/src/main/externalPlayer.js
+@@ -192,8 +192,7 @@ export async function handleOpenInExternalPlayer(event, payload) {
+ 
+   /** @type {string} */
+   const externalPlayerExecutable = profileExternalPlayerSettings?.executable ??
+-    (await settings._findOne('externalPlayerExecutable'))?.value ||
+-    ''
++    ((await settings._findOne('externalPlayerExecutable'))?.value || '')
+ 
+   const executable = externalPlayerExecutable.length > 0 ? externalPlayerExecutable : cmdArgs.defaultExecutable
+ 
+
+From 8d614c85d3882d483cbe9f806ac7f8101afb574f Mon Sep 17 00:00:00 2001
+From: sun <sun@manjaro.lan>
+Date: Sun, 8 Feb 2026 20:52:47 +0800
+Subject: [PATCH 21/33] fix-tabssave
+
+---
+ .../components/ExternalPlayerSettings.vue     | 32 ++++++++++++++-----
+ 1 file changed, 24 insertions(+), 8 deletions(-)
+
+diff --git a/src/renderer/components/ExternalPlayerSettings.vue b/src/renderer/components/ExternalPlayerSettings.vue
+index 5b4611d5ae76e..5452241bfe09f 100644
+--- a/src/renderer/components/ExternalPlayerSettings.vue
++++ b/src/renderer/components/ExternalPlayerSettings.vue
+@@ -93,6 +93,7 @@ import FtInputTags from './FtInputTags/FtInputTags.vue'
+ 
+ import store from '../store/index'
+ import { MAIN_PROFILE_ID } from '../../constants'
++import { deepCopy } from '../helpers/utils'
+ 
+ const { t } = useI18n()
+ 
+@@ -119,12 +120,18 @@ const selectedProfile = computed(() => {
+ const globalExternalPlayerDefaults = computed(() => {
+   // fall back values from the global settings for profiles without overrides
+   const customArgsString = store.state.settings.externalPlayerCustomArgs ?? '[]'
++  let customArgs = []
++  try {
++    customArgs = typeof customArgsString === 'string' ? JSON.parse(customArgsString) : []
++  } catch {
++    customArgs = []
++  }
+   return {
+     player: store.state.settings.externalPlayer ?? '',
+     executable: store.state.settings.externalPlayerExecutable ?? '',
+     ignoreWarnings: store.state.settings.externalPlayerIgnoreWarnings ?? false,
+     ignoreDefaultArgs: store.state.settings.externalPlayerIgnoreDefaultArgs ?? false,
+-    customArgs: typeof customArgsString === 'string' ? JSON.parse(customArgsString) : [],
++    customArgs,
+   }
+ })
+ 
+@@ -180,6 +187,16 @@ const externalPlayerCustomArgsTooltip = computed(() => {
+   return tooltip
+ })
+ 
++// Ensure the selected profile has its own external player settings, so tabs are independent.
++watch(selectedProfile, (profile) => {
++  if (!profile?._id) { return }
++  if (profile.externalPlayerSettings != null) { return }
++
++  const profileCopy = deepCopy(profile)
++  profileCopy.externalPlayerSettings = deepCopy(globalExternalPlayerDefaults.value)
++  store.dispatch('updateProfile', profileCopy)
++}, { immediate: true })
++
+ /**
+  * @param {string} value
+  */
+@@ -230,13 +247,12 @@ function updateSelectedProfileExternalPlayerSettings(patch) {
+   if (!profile?._id) { return }
+ 
+   const existing = profile.externalPlayerSettings ?? {}
+-  store.dispatch('updateProfile', {
+-    ...profile,
+-    externalPlayerSettings: {
+-      ...existing,
+-      ...patch,
+-    }
+-  })
++  const profileCopy = deepCopy(profile)
++  profileCopy.externalPlayerSettings = {
++    ...deepCopy(existing),
++    ...patch,
++  }
++  store.dispatch('updateProfile', profileCopy)
+ }
+ 
+ /**
+
+From 18becc51c6607e485d09361e4e2dd362dfd1fb91 Mon Sep 17 00:00:00 2001
+From: sun <98175070+qifeikeji@users.noreply.github.com>
+Date: Sun, 8 Feb 2026 21:35:27 +0800
+Subject: [PATCH 22/33] add-some-ui-videocard
+
+---
+ .../ft-list-video/ft-list-video.scss          | 42 +++++++++++++++++++
+ 1 file changed, 42 insertions(+)
+
+diff --git a/src/renderer/components/ft-list-video/ft-list-video.scss b/src/renderer/components/ft-list-video/ft-list-video.scss
+index bbe8014181775..f6c8cdb8babb3 100644
+--- a/src/renderer/components/ft-list-video/ft-list-video.scss
++++ b/src/renderer/components/ft-list-video/ft-list-video.scss
+@@ -1,5 +1,47 @@
+ @use '../../scss-partials/ft-list-item';
+ 
++.ft-list-video.grid {
++  // Video card container (thumbnail + title + meta)
++  --videoCardRadius: 14px;
++  --videoCardPadding: 10px;
++  --videoThumbRadius: calc(var(--videoCardRadius) - 4px);
++
++  background-color: var(--card-bg-color);
++  border-radius: var(--videoCardRadius);
++  box-shadow: 0 0 0 1px var(--primary-shadow-color);
++
++  // Override shared list-item padding to create a single rounded container
++  padding: var(--videoCardPadding);
++  // Keep the "extra bottom space" from the original grid layout
++  padding-block-end: calc(var(--videoCardPadding) + 10px);
++
++  &:hover,
++  &:focus-within {
++    box-shadow: 0 0 0 1px var(--side-nav-hover-color);
++  }
++
++  .videoThumbnail {
++    margin-block-end: 10px;
++
++    .thumbnailLink {
++      border-radius: var(--videoThumbRadius);
++    }
++
++    .thumbnailImage {
++      border-radius: var(--videoThumbRadius);
++    }
++  }
++
++  // Clamp title to 2 lines
++  .h3Title {
++    display: -webkit-box;
++    -webkit-box-orient: vertical;
++    -webkit-line-clamp: 2;
++    overflow: hidden;
++    line-height: 1.25;
++  }
++}
++
+ .thumbnailLink:hover {
+   outline: 3px solid var(--side-nav-hover-color);
+ }
+
+From 299cbae124545b52765c048d3014572ff834a05b Mon Sep 17 00:00:00 2001
+From: sun <98175070+qifeikeji@users.noreply.github.com>
+Date: Sun, 8 Feb 2026 21:37:52 +0800
+Subject: [PATCH 23/33] fix-action-error-12
+
+---
+ .../ft-list-video/ft-list-video.scss          | 34 +++++++++----------
+ 1 file changed, 17 insertions(+), 17 deletions(-)
+
+diff --git a/src/renderer/components/ft-list-video/ft-list-video.scss b/src/renderer/components/ft-list-video/ft-list-video.scss
+index f6c8cdb8babb3..ddf3d4313eda3 100644
+--- a/src/renderer/components/ft-list-video/ft-list-video.scss
++++ b/src/renderer/components/ft-list-video/ft-list-video.scss
+@@ -1,19 +1,28 @@
+ @use '../../scss-partials/ft-list-item';
+ 
++.thumbnailLink:hover {
++  outline: 3px solid var(--side-nav-hover-color);
++}
++
++.thumbnailImage {
++  // Makes img element sized correctly before image loading starts
++  aspect-ratio: 16/9 auto;
++}
++
+ .ft-list-video.grid {
+   // Video card container (thumbnail + title + meta)
+-  --videoCardRadius: 14px;
+-  --videoCardPadding: 10px;
+-  --videoThumbRadius: calc(var(--videoCardRadius) - 4px);
++  --video-card-radius: 14px;
++  --video-card-padding: 10px;
++  --video-thumb-radius: calc(var(--video-card-radius) - 4px);
+ 
+   background-color: var(--card-bg-color);
+-  border-radius: var(--videoCardRadius);
++  border-radius: var(--video-card-radius);
+   box-shadow: 0 0 0 1px var(--primary-shadow-color);
+ 
+   // Override shared list-item padding to create a single rounded container
+-  padding: var(--videoCardPadding);
++  padding: var(--video-card-padding);
+   // Keep the "extra bottom space" from the original grid layout
+-  padding-block-end: calc(var(--videoCardPadding) + 10px);
++  padding-block-end: calc(var(--video-card-padding) + 10px);
+ 
+   &:hover,
+   &:focus-within {
+@@ -24,11 +33,11 @@
+     margin-block-end: 10px;
+ 
+     .thumbnailLink {
+-      border-radius: var(--videoThumbRadius);
++      border-radius: var(--video-thumb-radius);
+     }
+ 
+     .thumbnailImage {
+-      border-radius: var(--videoThumbRadius);
++      border-radius: var(--video-thumb-radius);
+     }
+   }
+ 
+@@ -42,15 +51,6 @@
+   }
+ }
+ 
+-.thumbnailLink:hover {
+-  outline: 3px solid var(--side-nav-hover-color);
+-}
+-
+-.thumbnailImage {
+-  // Makes img element sized correctly before image loading starts
+-  aspect-ratio: 16/9 auto;
+-}
+-
+ .videoTagLine {
+   margin-block-start: 3px;
+ }
+
+From ac642995a61814be4c6e429b3a025ada1027b9e6 Mon Sep 17 00:00:00 2001
+From: sun <98175070+qifeikeji@users.noreply.github.com>
+Date: Sun, 8 Feb 2026 21:48:13 +0800
+Subject: [PATCH 24/33] add-hover-effect
+
+---
+ src/renderer/components/TopNav/TopNav.scss          | 13 +++++++++++++
+ .../components/ft-list-video/ft-list-video.scss     |  9 +++++++--
+ 2 files changed, 20 insertions(+), 2 deletions(-)
+
+diff --git a/src/renderer/components/TopNav/TopNav.scss b/src/renderer/components/TopNav/TopNav.scss
+index 5403a02330960..a3f9988abb09c 100644
+--- a/src/renderer/components/TopNav/TopNav.scss
++++ b/src/renderer/components/TopNav/TopNav.scss
+@@ -214,10 +214,15 @@
+   :deep(.profileButton) {
+     border: 1px solid var(--primary-shadow-color);
+     background-color: var(--side-nav-hover-color);
++    transition: box-shadow 0.15s ease-out, background-color 0.15s ease-out, transform 0.15s ease-out;
+   }
+ 
+   :deep(.profileButton:hover) {
+     background-color: var(--side-nav-active-color);
++    box-shadow:
++      0 0 0 2px var(--primary-color),
++      0 6px 18px rgb(0 0 0 / 18%);
++    transform: translateY(-1px);
+   }
+ 
+   @include top-nav-is-colored {
+@@ -225,10 +230,18 @@
+       background-color: var(--primary-color-hover);
+       border-color: rgb(0 0 0 / 20%);
+       color: var(--text-with-main-color);
++      transition: box-shadow 0.15s ease-out, background-color 0.15s ease-out, transform 0.15s ease-out;
+     }
+ 
+     :deep(.profileButton.active) {
+       background-color: var(--primary-color-active);
+     }
++
++    :deep(.profileButton:hover) {
++      box-shadow:
++        0 0 0 2px var(--text-with-main-color),
++        0 6px 18px rgb(0 0 0 / 18%);
++      transform: translateY(-1px);
++    }
+   }
+ }
+diff --git a/src/renderer/components/ft-list-video/ft-list-video.scss b/src/renderer/components/ft-list-video/ft-list-video.scss
+index ddf3d4313eda3..19e541ff4b7be 100644
+--- a/src/renderer/components/ft-list-video/ft-list-video.scss
++++ b/src/renderer/components/ft-list-video/ft-list-video.scss
+@@ -15,9 +15,10 @@
+   --video-card-padding: 10px;
+   --video-thumb-radius: calc(var(--video-card-radius) - 4px);
+ 
+-  background-color: var(--card-bg-color);
++  background-color: var(--secondary-card-bg-color);
+   border-radius: var(--video-card-radius);
+   box-shadow: 0 0 0 1px var(--primary-shadow-color);
++  transition: box-shadow 0.15s ease-out, background-color 0.15s ease-out, transform 0.15s ease-out;
+ 
+   // Override shared list-item padding to create a single rounded container
+   padding: var(--video-card-padding);
+@@ -26,7 +27,11 @@
+ 
+   &:hover,
+   &:focus-within {
+-    box-shadow: 0 0 0 1px var(--side-nav-hover-color);
++    background-color: var(--card-bg-color);
++    box-shadow:
++      0 0 0 2px var(--primary-color),
++      0 6px 18px rgb(0 0 0 / 18%);
++    transform: translateY(-1px);
+   }
+ 
+   .videoThumbnail {
+
+From 0ecec8e0bec14cc21d3680fd599f71edb380c336 Mon Sep 17 00:00:00 2001
+From: sun <98175070+qifeikeji@users.noreply.github.com>
+Date: Sun, 8 Feb 2026 22:05:21 +0800
+Subject: [PATCH 25/33] fix-hover-color
+
+---
+ .../FtRefreshWidget/FtRefreshWidget.scss      | 11 ++-
+ .../FtRefreshWidget/FtRefreshWidget.vue       | 15 ++--
+ .../SubscriptionsTabUi/SubscriptionsTabUi.vue |  5 +-
+ .../SubscriptionsTabsInRefreshBar.vue         | 82 +++++++++++++++++++
+ .../ft-list-video/ft-list-video.scss          |  3 +-
+ .../subscriptions-tabs-context.js             |  9 ++
+ 6 files changed, 113 insertions(+), 12 deletions(-)
+ create mode 100644 src/renderer/components/SubscriptionsTabUi/SubscriptionsTabsInRefreshBar.vue
+ create mode 100644 src/renderer/views/Subscriptions/subscriptions-tabs-context.js
+
+diff --git a/src/renderer/components/FtRefreshWidget/FtRefreshWidget.scss b/src/renderer/components/FtRefreshWidget/FtRefreshWidget.scss
+index 6a84a3331f7b9..b1bd018e11c34 100644
+--- a/src/renderer/components/FtRefreshWidget/FtRefreshWidget.scss
++++ b/src/renderer/components/FtRefreshWidget/FtRefreshWidget.scss
+@@ -9,14 +9,17 @@
+   border-inline-start: 2px solid var(--primary-shadow-color);
+   display: flex;
+   align-items: center;
+-  gap: 5px;
+-  justify-content: flex-end;
++  gap: 10px;
++  justify-content: space-between;
+ 
+   @include utils.fixed-top-bar;
+ }
+ 
+-.floatingRefreshSection:has(.lastRefreshTimestamp + .refreshButton) {
+-  justify-content: space-between;
++.left {
++  display: flex;
++  align-items: center;
++  gap: 10px;
++  min-inline-size: 0;
+ }
+ 
+ .lastRefreshTimestamp {
+diff --git a/src/renderer/components/FtRefreshWidget/FtRefreshWidget.vue b/src/renderer/components/FtRefreshWidget/FtRefreshWidget.vue
+index 0605d249c5aa0..1bd4136626aa1 100644
+--- a/src/renderer/components/FtRefreshWidget/FtRefreshWidget.vue
++++ b/src/renderer/components/FtRefreshWidget/FtRefreshWidget.vue
+@@ -2,12 +2,15 @@
+   <div
+     class="floatingRefreshSection"
+   >
+-    <p
+-      v-if="lastRefreshTimestamp"
+-      class="lastRefreshTimestamp"
+-    >
+-      {{ t('Feed.Feed Last Updated', { feedName: title, date: lastRefreshTimestamp }) }}
+-    </p>
++    <div class="left">
++      <slot />
++      <p
++        v-if="lastRefreshTimestamp"
++        class="lastRefreshTimestamp"
++      >
++        {{ t('Feed.Feed Last Updated', { feedName: title, date: lastRefreshTimestamp }) }}
++      </p>
++    </div>
+     <FtIconButton
+       :disabled="disableRefresh"
+       :icon="['fas', 'sync']"
+diff --git a/src/renderer/components/SubscriptionsTabUi/SubscriptionsTabUi.vue b/src/renderer/components/SubscriptionsTabUi/SubscriptionsTabUi.vue
+index e3f525e3489cc..7d8a97e7f7784 100644
+--- a/src/renderer/components/SubscriptionsTabUi/SubscriptionsTabUi.vue
++++ b/src/renderer/components/SubscriptionsTabUi/SubscriptionsTabUi.vue
+@@ -84,7 +84,9 @@
+       :last-refresh-timestamp="lastRefreshTimestamp"
+       :title="title"
+       @click="refresh"
+-    />
++    >
++      <SubscriptionsTabsInRefreshBar />
++    </FtRefreshWidget>
+   </div>
+ </template>
+ 
+@@ -100,6 +102,7 @@ import FtFlexBox from '../ft-flex-box/ft-flex-box.vue'
+ import FtIconButton from '../FtIconButton/FtIconButton.vue'
+ import FtLoader from '../FtLoader/FtLoader.vue'
+ import FtRefreshWidget from '../FtRefreshWidget/FtRefreshWidget.vue'
++import SubscriptionsTabsInRefreshBar from './SubscriptionsTabsInRefreshBar.vue'
+ 
+ import store from '../../store/index'
+ 
+diff --git a/src/renderer/components/SubscriptionsTabUi/SubscriptionsTabsInRefreshBar.vue b/src/renderer/components/SubscriptionsTabUi/SubscriptionsTabsInRefreshBar.vue
+new file mode 100644
+index 0000000000000..12b439698acb2
+--- /dev/null
++++ b/src/renderer/components/SubscriptionsTabUi/SubscriptionsTabsInRefreshBar.vue
+@@ -0,0 +1,82 @@
++<template>
++  <div
++    v-if="ctx && ctx.visibleTabs.value.length > 0"
++    class="subscriptionsTabsInRefreshBar"
++    role="tablist"
++    :aria-label="t('Subscriptions.Subscriptions Tabs')"
++  >
++    <button
++      v-for="tab in ctx.visibleTabs.value"
++      :key="tab"
++      class="subscriptionsTabButton"
++      type="button"
++      role="tab"
++      :aria-selected="ctx.currentTab.value === tab"
++      :class="{ selected: ctx.currentTab.value === tab }"
++      @click="ctx.changeTab(tab)"
++    >
++      <span dir="auto">{{ tabLabel(tab) }}</span>
++    </button>
++  </div>
++</template>
++
++<script setup>
++import { useI18n } from '../../composables/use-i18n-polyfill'
++import { useSubscriptionsTabsContext } from '../../views/Subscriptions/subscriptions-tabs-context'
++
++const { t } = useI18n()
++const ctx = useSubscriptionsTabsContext()
++
++/**
++ * @param {'videos' | 'shorts' | 'live' | 'community'} tab
++ */
++function tabLabel(tab) {
++  switch (tab) {
++    case 'videos':
++      return t('Global.Videos')
++    case 'shorts':
++      return t('Global.Shorts')
++    case 'live':
++      return t('Global.Live')
++    case 'community':
++      return t('Global.Posts')
++  }
++}
++</script>
++
++<style scoped>
++.subscriptionsTabsInRefreshBar {
++  display: flex;
++  gap: 6px;
++  flex-wrap: wrap;
++  align-items: center;
++}
++
++.subscriptionsTabButton {
++  border: 1px solid var(--primary-shadow-color);
++  border-radius: 8px;
++  background-color: rgb(0 0 0 / 10%);
++  color: var(--primary-text-color);
++  cursor: pointer;
++  line-height: 1;
++  padding-block: 6px;
++  padding-inline: 10px;
++  white-space: nowrap;
++  transition: box-shadow 0.15s ease-out, background-color 0.15s ease-out, transform 0.15s ease-out;
++}
++
++.subscriptionsTabButton:hover {
++  background-color: var(--card-bg-color);
++  box-shadow:
++    0 0 0 2px var(--primary-color),
++    0 6px 18px rgb(0 0 0 / 18%);
++  transform: translateY(-1px);
++}
++
++.subscriptionsTabButton.selected {
++  background-color: var(--primary-color);
++  color: var(--text-with-main-color);
++}
++</style>
++
++
+diff --git a/src/renderer/components/ft-list-video/ft-list-video.scss b/src/renderer/components/ft-list-video/ft-list-video.scss
+index 19e541ff4b7be..89b6f252233e3 100644
+--- a/src/renderer/components/ft-list-video/ft-list-video.scss
++++ b/src/renderer/components/ft-list-video/ft-list-video.scss
+@@ -15,7 +15,8 @@
+   --video-card-padding: 10px;
+   --video-thumb-radius: calc(var(--video-card-radius) - 4px);
+ 
+-  background-color: var(--secondary-card-bg-color);
++  // Slightly darker than parent background (works better in dark/system theme)
++  background-color: rgb(0 0 0 / 10%);
+   border-radius: var(--video-card-radius);
+   box-shadow: 0 0 0 1px var(--primary-shadow-color);
+   transition: box-shadow 0.15s ease-out, background-color 0.15s ease-out, transform 0.15s ease-out;
+diff --git a/src/renderer/views/Subscriptions/subscriptions-tabs-context.js b/src/renderer/views/Subscriptions/subscriptions-tabs-context.js
+new file mode 100644
+index 0000000000000..63b1fe87916de
+--- /dev/null
++++ b/src/renderer/views/Subscriptions/subscriptions-tabs-context.js
+@@ -0,0 +1,9 @@
++import { inject } from 'vue'
++
++export const SUBSCRIPTIONS_TABS_CTX = Symbol('subscriptions-tabs-ctx')
++
++export function useSubscriptionsTabsContext() {
++  return inject(SUBSCRIPTIONS_TABS_CTX, null)
++}
++
++
+
+From b738ae8eaa8058ffe72c8cb0464b0c829c6caae8 Mon Sep 17 00:00:00 2001
+From: sun <98175070+qifeikeji@users.noreply.github.com>
+Date: Sun, 8 Feb 2026 22:05:38 +0800
+Subject: [PATCH 26/33] fix-hover-color
+
+---
+ .../views/Subscriptions/Subscriptions.vue     | 152 +-----------------
+ 1 file changed, 8 insertions(+), 144 deletions(-)
+
+diff --git a/src/renderer/views/Subscriptions/Subscriptions.vue b/src/renderer/views/Subscriptions/Subscriptions.vue
+index 86781d8dc7298..6673c9e76b0ed 100644
+--- a/src/renderer/views/Subscriptions/Subscriptions.vue
++++ b/src/renderer/views/Subscriptions/Subscriptions.vue
+@@ -1,92 +1,6 @@
+ <template>
+   <div>
+     <FtCard class="card">
+-      <FtFlexBox
+-        class="tabs"
+-        role="tablist"
+-        :aria-label="$t('Subscriptions.Subscriptions Tabs')"
+-      >
+-        <!-- eslint-disable-next-line vuejs-accessibility/interactive-supports-focus -->
+-        <div
+-          v-if="!hideSubscriptionsVideos"
+-          ref="videosTab"
+-          class="tab"
+-          role="tab"
+-          :aria-selected="currentTab === 'videos'"
+-          aria-controls="subscriptionsPanel"
+-          :tabindex="currentTab === 'videos' ? 0 : -1"
+-          :class="{ selectedTab: currentTab === 'videos' }"
+-          @click="changeTab('videos')"
+-          @keydown.space.enter.prevent="changeTab('videos')"
+-          @keydown.left.right="focusTab($event, 'videos')"
+-        >
+-          <FontAwesomeIcon
+-            :icon="['fa', 'video']"
+-            class="subscriptionIcon"
+-          />
+-          {{ $t("Global.Videos") }}
+-        </div>
+-        <!-- eslint-disable-next-line vuejs-accessibility/interactive-supports-focus -->
+-        <div
+-          v-if="!hideSubscriptionsShorts"
+-          ref="shortsTab"
+-          class="tab"
+-          role="tab"
+-          :aria-selected="currentTab === 'shorts'"
+-          aria-controls="subscriptionsPanel"
+-          :tabindex="currentTab === 'shorts' ? 0 : -1"
+-          :class="{ selectedTab: currentTab === 'shorts' }"
+-          @click="changeTab('shorts')"
+-          @keydown.space.enter.prevent="changeTab('shorts')"
+-          @keydown.left.right="focusTab($event, 'shorts')"
+-        >
+-          <FontAwesomeIcon
+-            :icon="['fa', 'clapperboard']"
+-            class="subscriptionIcon"
+-          />
+-          {{ $t("Global.Shorts") }}
+-        </div>
+-        <!-- eslint-disable-next-line vuejs-accessibility/interactive-supports-focus -->
+-        <div
+-          v-if="!hideSubscriptionsLive"
+-          ref="liveTab"
+-          class="tab"
+-          role="tab"
+-          :aria-selected="currentTab === 'live'"
+-          aria-controls="subscriptionsPanel"
+-          :tabindex="currentTab === 'live' ? 0 : -1"
+-          :class="{ selectedTab: currentTab === 'live' }"
+-          @click="changeTab('live')"
+-          @keydown.space.enter.prevent="changeTab('live')"
+-          @keydown.left.right="focusTab($event, 'live')"
+-        >
+-          <FontAwesomeIcon
+-            :icon="['fa', 'tower-broadcast']"
+-            class="subscriptionIcon"
+-          />
+-          {{ $t("Global.Live") }}
+-        </div>
+-        <!-- eslint-disable-next-line vuejs-accessibility/interactive-supports-focus -->
+-        <div
+-          v-if="visibleTabs.includes('community')"
+-          ref="communityTab"
+-          class="tab"
+-          role="tab"
+-          :aria-selected="currentTab === 'community'"
+-          aria-controls="subscriptionsPanel"
+-          :tabindex="currentTab === 'community' ? 0 : -1"
+-          :class="{ selectedTab: currentTab === 'community' }"
+-          @click="changeTab('community')"
+-          @keydown.space.enter.prevent="changeTab('community')"
+-          @keydown.left.right="focusTab($event, 'community')"
+-        >
+-          <FontAwesomeIcon
+-            :icon="['fa', 'message']"
+-            class="subscriptionIcon"
+-          />
+-          {{ $t("Global.Posts") }}
+-        </div>
+-      </FtFlexBox>
+       <SubscriptionsVideos
+         v-if="currentTab === 'videos'"
+         id="subscriptionsPanel"
+@@ -118,17 +32,16 @@
+ </template>
+ 
+ <script setup>
+-import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
+-import { computed, ref, useTemplateRef, watch } from 'vue'
++import { computed, provide, ref, watch } from 'vue'
+ 
+ import FtCard from '../../components/ft-card/ft-card.vue'
+-import FtFlexBox from '../../components/ft-flex-box/ft-flex-box.vue'
+ import SubscriptionsVideos from '../../components/SubscriptionsVideos.vue'
+ import SubscriptionsLive from '../../components/SubscriptionsLive.vue'
+ import SubscriptionsShorts from '../../components/SubscriptionsShorts.vue'
+ import SubscriptionsPosts from '../../components/SubscriptionsPosts.vue'
+ 
+ import store from '../../store/index'
++import { SUBSCRIPTIONS_TABS_CTX } from './subscriptions-tabs-context'
+ 
+ /** @type {import('vue').ComputedRef<boolean>} */
+ const hideSubscriptionsVideos = computed(() => {
+@@ -196,6 +109,12 @@ const visibleTabs = computed(() => {
+   return tabs
+ })
+ 
++provide(SUBSCRIPTIONS_TABS_CTX, {
++  currentTab,
++  visibleTabs,
++  changeTab,
++})
++
+ watch(visibleTabs, (value) => {
+   if (value.length === 0) {
+     currentTab.value = null
+@@ -231,61 +150,6 @@ function changeTab(tab) {
+     currentTab.value = visibleTabs.value.length > 0 ? visibleTabs.value[0] : null
+   }
+ }
+-
+-const videosTab = useTemplateRef('videosTab')
+-const liveTab = useTemplateRef('liveTab')
+-const shortsTab = useTemplateRef('shortsTab')
+-const communityTab = useTemplateRef('communityTab')
+-
+-/**
+- * @param {KeyboardEvent} event
+- * @param {'videos' | 'shorts' | 'live' | 'community'} focusedTab
+- */
+-function focusTab(event, focusedTab) {
+-  if (event.altKey) {
+-    return
+-  }
+-
+-  event.preventDefault()
+-
+-  const visibleTabsCached = visibleTabs.value
+-
+-  if (visibleTabsCached.length === 1) {
+-    store.commit('setOutlinesHidden', false)
+-    return
+-  }
+-
+-  let index = visibleTabsCached.indexOf(focusedTab)
+-
+-  if (event.key === 'ArrowLeft') {
+-    index--
+-  } else {
+-    index++
+-  }
+-
+-  if (index < 0) {
+-    index = visibleTabsCached.length - 1
+-  } else if (index > visibleTabsCached.length - 1) {
+-    index = 0
+-  }
+-
+-  switch (visibleTabsCached[index]) {
+-    case 'videos':
+-      videosTab.value?.focus()
+-      break
+-    case 'live':
+-      liveTab.value?.focus()
+-      break
+-    case 'shorts':
+-      shortsTab.value?.focus()
+-      break
+-    case 'community':
+-      communityTab.value?.focus()
+-      break
+-  }
+-
+-  store.commit('setOutlinesHidden', false)
+-}
+ </script>
+ 
+ <style scoped src="./Subscriptions.css" />
+
+From b95777d0fd49fa2ed89324696283e99c02b324a5 Mon Sep 17 00:00:00 2001
+From: sun <98175070+qifeikeji@users.noreply.github.com>
+Date: Sun, 8 Feb 2026 22:07:59 +0800
+Subject: [PATCH 27/33] fix-action-error-13
+
+---
+ .../SubscriptionsTabUi/SubscriptionsTabsInRefreshBar.vue        | 2 --
+ src/renderer/views/Subscriptions/subscriptions-tabs-context.js  | 2 --
+ 2 files changed, 4 deletions(-)
+
+diff --git a/src/renderer/components/SubscriptionsTabUi/SubscriptionsTabsInRefreshBar.vue b/src/renderer/components/SubscriptionsTabUi/SubscriptionsTabsInRefreshBar.vue
+index 12b439698acb2..e6aa9c3d8fabd 100644
+--- a/src/renderer/components/SubscriptionsTabUi/SubscriptionsTabsInRefreshBar.vue
++++ b/src/renderer/components/SubscriptionsTabUi/SubscriptionsTabsInRefreshBar.vue
+@@ -78,5 +78,3 @@ function tabLabel(tab) {
+   color: var(--text-with-main-color);
+ }
+ </style>
+-
+-
+diff --git a/src/renderer/views/Subscriptions/subscriptions-tabs-context.js b/src/renderer/views/Subscriptions/subscriptions-tabs-context.js
+index 63b1fe87916de..27d8c0ed3560e 100644
+--- a/src/renderer/views/Subscriptions/subscriptions-tabs-context.js
++++ b/src/renderer/views/Subscriptions/subscriptions-tabs-context.js
+@@ -5,5 +5,3 @@ export const SUBSCRIPTIONS_TABS_CTX = Symbol('subscriptions-tabs-ctx')
+ export function useSubscriptionsTabsContext() {
+   return inject(SUBSCRIPTIONS_TABS_CTX, null)
+ }
+-
+-
+
+From cf1bf2ba6f86849ca0103f6e357c4917f57a3f47 Mon Sep 17 00:00:00 2001
+From: sun <98175070+qifeikeji@users.noreply.github.com>
+Date: Sun, 8 Feb 2026 22:25:47 +0800
+Subject: [PATCH 28/33] fix-ui-3
+
+---
+ .../components/ExternalPlayerSettings.vue      | 18 ++++++++++++++++++
+ .../SubscriptionsTabUi/SubscriptionsTabUi.css  |  7 ++++---
+ .../components/ft-list-video/ft-list-video.js  | 16 +++++++++++++++-
+ src/renderer/store/modules/profiles.js         |  1 +
+ src/renderer/store/modules/settings.js         |  3 +++
+ .../views/Subscriptions/Subscriptions.css      |  7 ++++---
+ static/locales/en-US.yaml                      |  1 +
+ static/locales/zh-CN.yaml                      |  1 +
+ 8 files changed, 47 insertions(+), 7 deletions(-)
+
+diff --git a/src/renderer/components/ExternalPlayerSettings.vue b/src/renderer/components/ExternalPlayerSettings.vue
+index 5452241bfe09f..9c9b66e536b63 100644
+--- a/src/renderer/components/ExternalPlayerSettings.vue
++++ b/src/renderer/components/ExternalPlayerSettings.vue
+@@ -34,6 +34,13 @@
+       />
+     </FtFlexBox>
+     <FtFlexBox>
++      <FtToggleSwitch
++        :label="$t('Settings.External Player Settings.Open Videos In External Player On Click')"
++        :default-value="openVideosOnClick"
++        :disabled="externalPlayer === ''"
++        :compact="true"
++        @change="updateOpenVideosOnClick"
++      />
+       <FtToggleSwitch
+         :label="$t('Settings.External Player Settings.Ignore Unsupported Action Warnings')"
+         :default-value="externalPlayerIgnoreWarnings"
+@@ -132,6 +139,7 @@ const globalExternalPlayerDefaults = computed(() => {
+     ignoreWarnings: store.state.settings.externalPlayerIgnoreWarnings ?? false,
+     ignoreDefaultArgs: store.state.settings.externalPlayerIgnoreDefaultArgs ?? false,
+     customArgs,
++    openVideosOnClick: false,
+   }
+ })
+ 
+@@ -187,6 +195,9 @@ const externalPlayerCustomArgsTooltip = computed(() => {
+   return tooltip
+ })
+ 
++/** @type {import('vue').ComputedRef<boolean>} */
++const openVideosOnClick = computed(() => getSelectedExternalPlayerSettings().openVideosOnClick ?? false)
++
+ // Ensure the selected profile has its own external player settings, so tabs are independent.
+ watch(selectedProfile, (profile) => {
+   if (!profile?._id) { return }
+@@ -232,6 +243,13 @@ function handleExternalPlayerCustomArgs(args) {
+   updateSelectedProfileExternalPlayerSettings({ customArgs: args })
+ }
+ 
++/**
++ * @param {boolean} value
++ */
++function updateOpenVideosOnClick(value) {
++  updateSelectedProfileExternalPlayerSettings({ openVideosOnClick: value })
++}
++
+ /** @type {import('vue').ComputedRef<boolean>} */
+ const showAddedExternalPlayerCustomArgs = computed(() => store.getters.getShowAddedExternalPlayerCustomArgs)
+ 
+diff --git a/src/renderer/components/SubscriptionsTabUi/SubscriptionsTabUi.css b/src/renderer/components/SubscriptionsTabUi/SubscriptionsTabUi.css
+index 240f2e6665152..eda6194ce5e83 100644
+--- a/src/renderer/components/SubscriptionsTabUi/SubscriptionsTabUi.css
++++ b/src/renderer/components/SubscriptionsTabUi/SubscriptionsTabUi.css
+@@ -1,7 +1,8 @@
+ .card {
+-  inline-size: 99%;
+-  margin-block: 0 60px;
++  inline-size: 98.5%;
++  margin-block: 0 20px;
+   margin-inline: auto;
++  padding-block-start: 25px;
+ }
+ 
+ .message {
+@@ -10,7 +11,7 @@
+ 
+ @media only screen and (width <= 680px) {
+   .card {
+-    inline-size: 99%;
++    inline-size: 98.5%;
+   }
+ }
+ 
+diff --git a/src/renderer/components/ft-list-video/ft-list-video.js b/src/renderer/components/ft-list-video/ft-list-video.js
+index c5d9027df3900..4f526293fbdd7 100644
+--- a/src/renderer/components/ft-list-video/ft-list-video.js
++++ b/src/renderer/components/ft-list-video/ft-list-video.js
+@@ -359,6 +359,9 @@ export default defineComponent({
+     externalPlayer: function () {
+       return this.$store.getters.getExternalPlayer
+     },
++    externalPlayerOpenVideosOnClick: function () {
++      return this.$store.getters.getExternalPlayerOpenVideosOnClick
++    },
+ 
+     externalPlayerIsDefaultViewingMode: function () {
+       return process.env.IS_ELECTRON && this.externalPlayer !== '' && this.$store.getters.getDefaultViewingMode === 'external_player'
+@@ -539,9 +542,20 @@ export default defineComponent({
+     }
+   },
+   methods: {
+-    handleWatchPageLinkClick: function() {
++    handleWatchPageLinkClick: function(event) {
+       if (this.externalPlayerIsDefaultViewingMode) {
+         this.handleExternalPlayer()
++        return
++      }
++
++      if (
++        process.env.IS_ELECTRON &&
++        this.externalPlayer !== '' &&
++        this.externalPlayerOpenVideosOnClick
++      ) {
++        event?.preventDefault?.()
++        event?.stopPropagation?.()
++        this.handleExternalPlayer()
+       }
+     },
+     fetchDeArrowThumbnail: async function() {
+diff --git a/src/renderer/store/modules/profiles.js b/src/renderer/store/modules/profiles.js
+index b42cb7066962e..d13990b01935a 100644
+--- a/src/renderer/store/modules/profiles.js
++++ b/src/renderer/store/modules/profiles.js
+@@ -180,6 +180,7 @@ const actions = {
+           ignoreWarnings: rootState.settings.externalPlayerIgnoreWarnings ?? false,
+           ignoreDefaultArgs: rootState.settings.externalPlayerIgnoreDefaultArgs ?? false,
+           customArgs: typeof customArgsString === 'string' ? JSON.parse(customArgsString) : [],
++          openVideosOnClick: false,
+         }
+       }
+       const newProfile = await DBProfileHandlers.create(profile)
+diff --git a/src/renderer/store/modules/settings.js b/src/renderer/store/modules/settings.js
+index b9035d45691d7..286ebd0fe7cac 100644
+--- a/src/renderer/store/modules/settings.js
++++ b/src/renderer/store/modules/settings.js
+@@ -443,6 +443,9 @@ const customGetters = {
+     }
+     return state.externalPlayerCustomArgs
+   },
++  getExternalPlayerOpenVideosOnClick: (state, getters, rootState, rootGetters) => {
++    return rootGetters.getActiveProfile?.externalPlayerSettings?.openVideosOnClick ?? false
++  },
+ }
+ 
+ const customMutations = {}
+diff --git a/src/renderer/views/Subscriptions/Subscriptions.css b/src/renderer/views/Subscriptions/Subscriptions.css
+index 7fefdb2838777..b19425e551bfc 100644
+--- a/src/renderer/views/Subscriptions/Subscriptions.css
++++ b/src/renderer/views/Subscriptions/Subscriptions.css
+@@ -1,7 +1,8 @@
+ .card {
+-  inline-size: 99%;
+-  margin-block: 0 60px;
++  inline-size: 98.5%;
++  margin-block: 0 20px;
+   margin-inline: auto;
++  padding-block-start: 25px;
+ }
+ 
+ .message {
+@@ -40,6 +41,6 @@
+ 
+ @media only screen and (width <= 680px) {
+   .card {
+-    inline-size: 99%;
++    inline-size: 98.5%;
+   }
+ }
+diff --git a/static/locales/en-US.yaml b/static/locales/en-US.yaml
+index d422578a9ffb0..54ee2eea817f0 100644
+--- a/static/locales/en-US.yaml
++++ b/static/locales/en-US.yaml
+@@ -497,6 +497,7 @@ Settings:
+   External Player Settings:
+     External Player Settings: External Player
+     External Player: External Player
++    Open Videos In External Player On Click: Open videos in external player on click
+     Ignore Unsupported Action Warnings: Ignore Unsupported Action Warnings
+     Ignore Default Arguments: Ignore Default Arguments
+     Custom External Player Executable: Custom External Player Executable
+diff --git a/static/locales/zh-CN.yaml b/static/locales/zh-CN.yaml
+index f791d77cb8b1c..a6bfea1bc4202 100644
+--- a/static/locales/zh-CN.yaml
++++ b/static/locales/zh-CN.yaml
+@@ -582,6 +582,7 @@ Settings:
+   External Player Settings:
+     Custom External Player Arguments: 定制外部播放器的参数
+     Custom External Player Executable: 自定义外部播放器的可执行文件
++    Open Videos In External Player On Click: 点击视频时用外部播放器打开
+     Ignore Unsupported Action Warnings: 忽略不支持的行为的警告
+     External Player: 外部播放器
+     External Player Settings: 外部播放器
+
+From 5cb39c407f0ad996072b71b5ab22afe545eb24b9 Mon Sep 17 00:00:00 2001
+From: sun <98175070+qifeikeji@users.noreply.github.com>
+Date: Sun, 8 Feb 2026 22:38:22 +0800
+Subject: [PATCH 29/33] fix-ui-4
+
+---
+ .../components/FtProfileSelector/FtProfileSelector.css        | 4 +++-
+ src/renderer/components/ft-list-video/ft-list-video.vue       | 4 ++--
+ 2 files changed, 5 insertions(+), 3 deletions(-)
+
+diff --git a/src/renderer/components/FtProfileSelector/FtProfileSelector.css b/src/renderer/components/FtProfileSelector/FtProfileSelector.css
+index fa609740bf5ca..037880915fe70 100644
+--- a/src/renderer/components/FtProfileSelector/FtProfileSelector.css
++++ b/src/renderer/components/FtProfileSelector/FtProfileSelector.css
+@@ -97,8 +97,10 @@ Height adjust for profile list so it won't cover navbar.  */
+   gap: 5px;
+   overflow: auto hidden;
+   max-inline-size: 100%;
+-  padding-block: 0;
++  padding-block: 5px;
+   padding-inline: 5px;
++  block-size: 36px;
++  align-items: center;
+ }
+ 
+ .profileButton {
+diff --git a/src/renderer/components/ft-list-video/ft-list-video.vue b/src/renderer/components/ft-list-video/ft-list-video.vue
+index d745bfa22fef4..5f4dc825cb074 100644
+--- a/src/renderer/components/ft-list-video/ft-list-video.vue
++++ b/src/renderer/components/ft-list-video/ft-list-video.vue
+@@ -15,7 +15,7 @@
+         class="thumbnailLink"
+         tabindex="-1"
+         :to="watchVideoRouterLink"
+-        @click="handleWatchPageLinkClick"
++        @click="handleWatchPageLinkClick($event)"
+       >
+         <img
+           :src="thumbnail"
+@@ -113,7 +113,7 @@
+       <router-link
+         class="title"
+         :to="watchVideoRouterLink"
+-        @click="handleWatchPageLinkClick"
++        @click="handleWatchPageLinkClick($event)"
+       >
+         <h3
+           class="h3Title"
+
+From 50105844b646eb306ae611ba6613ca44a73d67b8 Mon Sep 17 00:00:00 2001
+From: sun <98175070+qifeikeji@users.noreply.github.com>
+Date: Sun, 8 Feb 2026 22:47:29 +0800
+Subject: [PATCH 30/33] fix-jump
+
+---
+ src/renderer/components/ft-list-video/ft-list-video.js  | 1 +
+ src/renderer/components/ft-list-video/ft-list-video.vue | 4 ++--
+ 2 files changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/src/renderer/components/ft-list-video/ft-list-video.js b/src/renderer/components/ft-list-video/ft-list-video.js
+index 4f526293fbdd7..6185b1698c510 100644
+--- a/src/renderer/components/ft-list-video/ft-list-video.js
++++ b/src/renderer/components/ft-list-video/ft-list-video.js
+@@ -555,6 +555,7 @@ export default defineComponent({
+       ) {
+         event?.preventDefault?.()
+         event?.stopPropagation?.()
++        event?.stopImmediatePropagation?.()
+         this.handleExternalPlayer()
+       }
+     },
+diff --git a/src/renderer/components/ft-list-video/ft-list-video.vue b/src/renderer/components/ft-list-video/ft-list-video.vue
+index 5f4dc825cb074..3f3affc03af11 100644
+--- a/src/renderer/components/ft-list-video/ft-list-video.vue
++++ b/src/renderer/components/ft-list-video/ft-list-video.vue
+@@ -15,7 +15,7 @@
+         class="thumbnailLink"
+         tabindex="-1"
+         :to="watchVideoRouterLink"
+-        @click="handleWatchPageLinkClick($event)"
++        @click.capture="handleWatchPageLinkClick($event)"
+       >
+         <img
+           :src="thumbnail"
+@@ -113,7 +113,7 @@
+       <router-link
+         class="title"
+         :to="watchVideoRouterLink"
+-        @click="handleWatchPageLinkClick($event)"
++        @click.capture="handleWatchPageLinkClick($event)"
+       >
+         <h3
+           class="h3Title"
+
+From bf6bdbc5982119d74e87e998ecb6ecf4087f438c Mon Sep 17 00:00:00 2001
+From: sun <98175070+qifeikeji@users.noreply.github.com>
+Date: Sun, 8 Feb 2026 22:59:42 +0800
+Subject: [PATCH 31/33] add-setting-leftcolumn-width
+
+---
+ src/renderer/App.vue                          | 12 ++++++++
+ .../GeneralSettings/GeneralSettings.vue       | 28 +++++++++++++++++++
+ src/renderer/components/SideNav/SideNav.css   |  4 +--
+ src/renderer/scss-partials/_utils.scss        |  2 +-
+ src/renderer/store/modules/settings.js        |  2 ++
+ static/locales/en-US.yaml                     |  1 +
+ static/locales/zh-CN.yaml                     |  1 +
+ 7 files changed, 47 insertions(+), 3 deletions(-)
+
+diff --git a/src/renderer/App.vue b/src/renderer/App.vue
+index 0a7df65be74cd..f0b04a79e681b 100644
+--- a/src/renderer/App.vue
++++ b/src/renderer/App.vue
+@@ -2,6 +2,7 @@
+   <div
+     v-if="dataReady"
+     class="app"
++    :style="appStyle"
+     :class="{
+       hideOutlines: outlinesHidden,
+       isLocaleRightToLeft: isLocaleRightToLeft,
+@@ -147,6 +148,17 @@ const isSideNavOpen = computed(() => store.getters.getIsSideNavOpen)
+ /** @type {import('vue').ComputedRef<boolean>} */
+ const hideLabelsSideBar = computed(() => store.getters.getHideLabelsSideBar)
+ 
++/** @type {import('vue').ComputedRef<number>} */
++const sideNavWidthPx = computed(() => store.getters.getSideNavWidthPx)
++
++const appStyle = computed(() => {
++  const width = Number(sideNavWidthPx.value)
++  const safeWidth = Number.isFinite(width) ? Math.min(Math.max(width, 180), 800) : 300
++  return {
++    '--side-nav-open-width': `${safeWidth}px`,
++  }
++})
++
+ /** @type {import('vue').ComputedRef<boolean>} */
+ const isAnyPromptOpen = computed(() => store.getters.isAnyPromptOpen)
+ 
+diff --git a/src/renderer/components/GeneralSettings/GeneralSettings.vue b/src/renderer/components/GeneralSettings/GeneralSettings.vue
+index ec1c79fa0f428..8adf48a926ca1 100644
+--- a/src/renderer/components/GeneralSettings/GeneralSettings.vue
++++ b/src/renderer/components/GeneralSettings/GeneralSettings.vue
+@@ -91,6 +91,16 @@
+         :icon="['fas', 'images']"
+         @change="handleThumbnailPreferenceChange"
+       />
++      <FtInput
++        :placeholder="t('Settings.General Settings.Side Nav Width (px)')"
++        :show-action-button="false"
++        :show-label="true"
++        input-type="number"
++        :min="180"
++        :max="800"
++        :value="sideNavWidthPxString"
++        @input="handleSideNavWidthPxInput"
++      />
+       <FtSelect
+         :placeholder="t('Settings.General Settings.Locale Preference')"
+         :value="currentLocale"
+@@ -196,6 +206,24 @@ const IS_MAC = process.platform === 'darwin'
+ const { t } = useI18n()
+ const router = useRouter()
+ 
++/** @type {import('vue').ComputedRef<number>} */
++const sideNavWidthPx = computed(() => store.getters.getSideNavWidthPx)
++const sideNavWidthPxString = computed(() => String(sideNavWidthPx.value ?? 300))
++
++const sideNavWidthDebouncedUpdate = debounce((value) => {
++  store.dispatch('updateSideNavWidthPx', value)
++}, 250)
++
++/**
++ * @param {string} value
++ */
++function handleSideNavWidthPxInput(value) {
++  const parsed = Math.round(Number(value))
++  if (!Number.isFinite(parsed)) { return }
++  const clamped = Math.min(Math.max(parsed, 180), 800)
++  sideNavWidthDebouncedUpdate(clamped)
++}
++
+ /** @type {import('vue').ComputedRef<boolean>} */
+ const checkForUpdates = computed(() => store.getters.getCheckForUpdates)
+ 
+diff --git a/src/renderer/components/SideNav/SideNav.css b/src/renderer/components/SideNav/SideNav.css
+index b896eaa8353a2..d7a96fca94b65 100644
+--- a/src/renderer/components/SideNav/SideNav.css
++++ b/src/renderer/components/SideNav/SideNav.css
+@@ -1,7 +1,7 @@
+ .sideNav {
+   display: block;
+   block-size: calc(100vh - 60px);
+-  inline-size: 300px;
++  inline-size: var(--side-nav-open-width, 300px);
+   overflow-x: hidden;
+   position: sticky;
+   inset-inline-start: 0;
+@@ -17,7 +17,7 @@
+ 
+ .inner {
+   block-size: 100%;
+-  inline-size: 300px;
++  inline-size: var(--side-nav-open-width, 300px);
+   overflow: hidden auto;
+ }
+ 
+diff --git a/src/renderer/scss-partials/_utils.scss b/src/renderer/scss-partials/_utils.scss
+index 35cef5df5cd42..1144d83597658 100644
+--- a/src/renderer/scss-partials/_utils.scss
++++ b/src/renderer/scss-partials/_utils.scss
+@@ -25,7 +25,7 @@
+   z-index: 3;
+ 
+   @include is-side-nav-open {
+-    inline-size: calc(100% - 300px);
++    inline-size: calc(100% - var(--side-nav-open-width, 300px));
+   }
+ 
+   @include are-side-bar-labels-hidden {
+diff --git a/src/renderer/store/modules/settings.js b/src/renderer/store/modules/settings.js
+index 286ebd0fe7cac..740cc7579d41c 100644
+--- a/src/renderer/store/modules/settings.js
++++ b/src/renderer/store/modules/settings.js
+@@ -180,6 +180,8 @@ const state = {
+   externalPlayerIgnoreDefaultArgs: false,
+   externalPlayerCustomArgs: '[]',
+   showAddedExternalPlayerCustomArgs: true,
++  // UI layout
++  sideNavWidthPx: 300,
+   expandSideBar: false,
+   hideActiveSubscriptions: false,
+   hideChannelCommunity: false,
+diff --git a/static/locales/en-US.yaml b/static/locales/en-US.yaml
+index 54ee2eea817f0..13d94b6b2ed83 100644
+--- a/static/locales/en-US.yaml
++++ b/static/locales/en-US.yaml
+@@ -304,6 +304,7 @@ Settings:
+       End: End
+       Hidden: Hidden
+       Blur: Blur
++    Side Nav Width (px): Side nav width (px)
+     Current Invidious Instance: Current Invidious Instance
+     The currently set default instance is {instance}: The currently set default instance is {instance}
+     No default instance has been set: No default instance has been set
+diff --git a/static/locales/zh-CN.yaml b/static/locales/zh-CN.yaml
+index a6bfea1bc4202..0a74525bfd1c4 100644
+--- a/static/locales/zh-CN.yaml
++++ b/static/locales/zh-CN.yaml
+@@ -226,6 +226,7 @@ Settings:
+       End: '结尾'
+       Hidden: 隐藏缩略图
+       Blur: 模糊
++    Side Nav Width (px): 左侧栏宽度(px)
+     Region for Trending: '热门区域'
+         #! List countries
+     Check for Updates: 检查更新
+
+From 8a31f1acc7f954114b2dda71db5d5b7d89bc98f4 Mon Sep 17 00:00:00 2001
+From: sun <98175070+qifeikeji@users.noreply.github.com>
+Date: Sun, 8 Feb 2026 23:33:04 +0800
+Subject: [PATCH 32/33] add-settingcolumn + move-searchbar
+
+---
+ src/renderer/App.vue                          |  9 ++++++
+ .../components/FtAutoGrid/FtAutoGrid.css      |  2 +-
+ .../FtRefreshWidget/FtRefreshWidget.scss      |  8 +++++
+ .../FtRefreshWidget/FtRefreshWidget.vue       |  5 +++-
+ .../FtSideNavSearch/FtSideNavSearch.vue       | 29 +++++++++++++++++++
+ .../GeneralSettings/GeneralSettings.vue       | 29 +++++++++++++++++++
+ .../SubscriptionsTabUi/SubscriptionsTabUi.vue |  8 ++++-
+ src/renderer/store/modules/settings.js        |  1 +
+ static/locales/en-US.yaml                     |  2 ++
+ static/locales/zh-CN.yaml                     |  2 ++
+ 10 files changed, 92 insertions(+), 3 deletions(-)
+
+diff --git a/src/renderer/App.vue b/src/renderer/App.vue
+index f0b04a79e681b..133f211beffe5 100644
+--- a/src/renderer/App.vue
++++ b/src/renderer/App.vue
+@@ -150,12 +150,21 @@ const hideLabelsSideBar = computed(() => store.getters.getHideLabelsSideBar)
+ 
+ /** @type {import('vue').ComputedRef<number>} */
+ const sideNavWidthPx = computed(() => store.getters.getSideNavWidthPx)
++/** @type {import('vue').ComputedRef<number>} */
++const videoGridColumns = computed(() => store.getters.getVideoGridColumns)
+ 
+ const appStyle = computed(() => {
+   const width = Number(sideNavWidthPx.value)
+   const safeWidth = Number.isFinite(width) ? Math.min(Math.max(width, 180), 800) : 300
++
++  const cols = Math.round(Number(videoGridColumns.value))
++  const safeCols = Number.isFinite(cols) ? Math.min(Math.max(cols, 0), 12) : 0
++  const gridTemplateColumns = safeCols >= 1
++    ? `repeat(${safeCols}, minmax(0, 1fr))`
++    : 'repeat(auto-fill, minmax(262px, 1fr))'
+   return {
+     '--side-nav-open-width': `${safeWidth}px`,
++    '--video-grid-template-columns': gridTemplateColumns,
+   }
+ })
+ 
+diff --git a/src/renderer/components/FtAutoGrid/FtAutoGrid.css b/src/renderer/components/FtAutoGrid/FtAutoGrid.css
+index f3c809edb2ae8..f4ec461c0e903 100644
+--- a/src/renderer/components/FtAutoGrid/FtAutoGrid.css
++++ b/src/renderer/components/FtAutoGrid/FtAutoGrid.css
+@@ -1,7 +1,7 @@
+ .grid {
+   display: grid;
+   gap: 8px;
+-  grid-template-columns: repeat(auto-fill, minmax(262px, 1fr));
++  grid-template-columns: var(--video-grid-template-columns, repeat(auto-fill, minmax(262px, 1fr)));
+   justify-content: space-evenly;
+ }
+ 
+diff --git a/src/renderer/components/FtRefreshWidget/FtRefreshWidget.scss b/src/renderer/components/FtRefreshWidget/FtRefreshWidget.scss
+index b1bd018e11c34..87a026d5df3ae 100644
+--- a/src/renderer/components/FtRefreshWidget/FtRefreshWidget.scss
++++ b/src/renderer/components/FtRefreshWidget/FtRefreshWidget.scss
+@@ -22,6 +22,14 @@
+   min-inline-size: 0;
+ }
+ 
++.center {
++  flex: 1;
++  display: flex;
++  justify-content: center;
++  align-items: center;
++  min-inline-size: 0;
++}
++
+ .lastRefreshTimestamp {
+   margin-block: 0;
+   text-align: center;
+diff --git a/src/renderer/components/FtRefreshWidget/FtRefreshWidget.vue b/src/renderer/components/FtRefreshWidget/FtRefreshWidget.vue
+index 1bd4136626aa1..4dc1895a829f8 100644
+--- a/src/renderer/components/FtRefreshWidget/FtRefreshWidget.vue
++++ b/src/renderer/components/FtRefreshWidget/FtRefreshWidget.vue
+@@ -3,7 +3,7 @@
+     class="floatingRefreshSection"
+   >
+     <div class="left">
+-      <slot />
++      <slot name="left" />
+       <p
+         v-if="lastRefreshTimestamp"
+         class="lastRefreshTimestamp"
+@@ -11,6 +11,9 @@
+         {{ t('Feed.Feed Last Updated', { feedName: title, date: lastRefreshTimestamp }) }}
+       </p>
+     </div>
++    <div class="center">
++      <slot name="center" />
++    </div>
+     <FtIconButton
+       :disabled="disableRefresh"
+       :icon="['fas', 'sync']"
+diff --git a/src/renderer/components/FtSideNavSearch/FtSideNavSearch.vue b/src/renderer/components/FtSideNavSearch/FtSideNavSearch.vue
+index 671df9e6c02cb..3c8c3273c44a9 100644
+--- a/src/renderer/components/FtSideNavSearch/FtSideNavSearch.vue
++++ b/src/renderer/components/FtSideNavSearch/FtSideNavSearch.vue
+@@ -2,6 +2,7 @@
+   <div
+     v-if="!hideSearchBar"
+     class="sideNavSearch"
++    :class="{ compact }"
+   >
+     <FtInput
+       ref="searchInput"
+@@ -47,6 +48,13 @@ import { debounce, openInternalPath } from '../../helpers/utils'
+ import { clearLocalSearchSuggestionsSession, getLocalSearchSuggestions } from '../../helpers/api/local'
+ import { getInvidiousSearchSuggestions } from '../../helpers/api/invidious'
+ 
++defineProps({
++  compact: {
++    type: Boolean,
++    default: false,
++  },
++})
++
+ const { t } = useI18n()
+ 
+ /** @type {import('vue').ShallowRef<string[]>} */
+@@ -386,6 +394,27 @@ onBeforeUnmount(() => {
+   padding: 10px;
+ }
+ 
++.sideNavSearch.compact {
++  gap: 6px;
++  padding: 0;
++  max-inline-size: min(720px, 100%);
++}
++
++.sideNavSearch.compact :deep(.ft-input-component) {
++  min-block-size: 34px;
++}
++
++.sideNavSearch.compact :deep(.ft-input) {
++  padding-block: 6px;
++  padding-inline: 10px;
++  font-size: 14px;
++}
++
++.sideNavSearch.compact .navFilterButton {
++  padding: 6px;
++  font-size: 16px;
++}
++
+ .searchInput {
+   flex: 1;
+   min-inline-size: 0;
+diff --git a/src/renderer/components/GeneralSettings/GeneralSettings.vue b/src/renderer/components/GeneralSettings/GeneralSettings.vue
+index 8adf48a926ca1..bbf3d34ec2a3f 100644
+--- a/src/renderer/components/GeneralSettings/GeneralSettings.vue
++++ b/src/renderer/components/GeneralSettings/GeneralSettings.vue
+@@ -82,6 +82,17 @@
+         :icon="listType === 'grid' ? ['fas', 'grip'] : ['fas', 'list']"
+         @change="updateListType"
+       />
++      <FtInput
++        :placeholder="t('Settings.General Settings.Video Grid Columns')"
++        :show-action-button="false"
++        :show-label="true"
++        input-type="number"
++        :min="0"
++        :max="12"
++        :value="videoGridColumnsString"
++        :tooltip="t('Tooltips.General Settings.Video Grid Columns')"
++        @input="handleVideoGridColumnsInput"
++      />
+       <FtSelect
+         :placeholder="t('Settings.General Settings.Thumbnail Preference.Thumbnail Preference')"
+         :value="thumbnailPreference"
+@@ -224,6 +235,24 @@ function handleSideNavWidthPxInput(value) {
+   sideNavWidthDebouncedUpdate(clamped)
+ }
+ 
++/** @type {import('vue').ComputedRef<number>} */
++const videoGridColumns = computed(() => store.getters.getVideoGridColumns)
++const videoGridColumnsString = computed(() => String(videoGridColumns.value ?? 0))
++
++const videoGridColumnsDebouncedUpdate = debounce((value) => {
++  store.dispatch('updateVideoGridColumns', value)
++}, 250)
++
++/**
++ * @param {string} value
++ */
++function handleVideoGridColumnsInput(value) {
++  const parsed = Math.round(Number(value))
++  if (!Number.isFinite(parsed)) { return }
++  const clamped = Math.min(Math.max(parsed, 0), 12)
++  videoGridColumnsDebouncedUpdate(clamped)
++}
++
+ /** @type {import('vue').ComputedRef<boolean>} */
+ const checkForUpdates = computed(() => store.getters.getCheckForUpdates)
+ 
+diff --git a/src/renderer/components/SubscriptionsTabUi/SubscriptionsTabUi.vue b/src/renderer/components/SubscriptionsTabUi/SubscriptionsTabUi.vue
+index 7d8a97e7f7784..04e2a0e2d85d5 100644
+--- a/src/renderer/components/SubscriptionsTabUi/SubscriptionsTabUi.vue
++++ b/src/renderer/components/SubscriptionsTabUi/SubscriptionsTabUi.vue
+@@ -85,7 +85,12 @@
+       :title="title"
+       @click="refresh"
+     >
+-      <SubscriptionsTabsInRefreshBar />
++      <template #left>
++        <SubscriptionsTabsInRefreshBar />
++      </template>
++      <template #center>
++        <FtSideNavSearch compact />
++      </template>
+     </FtRefreshWidget>
+   </div>
+ </template>
+@@ -103,6 +108,7 @@ import FtIconButton from '../FtIconButton/FtIconButton.vue'
+ import FtLoader from '../FtLoader/FtLoader.vue'
+ import FtRefreshWidget from '../FtRefreshWidget/FtRefreshWidget.vue'
+ import SubscriptionsTabsInRefreshBar from './SubscriptionsTabsInRefreshBar.vue'
++import FtSideNavSearch from '../FtSideNavSearch/FtSideNavSearch.vue'
+ 
+ import store from '../../store/index'
+ 
+diff --git a/src/renderer/store/modules/settings.js b/src/renderer/store/modules/settings.js
+index 740cc7579d41c..10b2a2081f030 100644
+--- a/src/renderer/store/modules/settings.js
++++ b/src/renderer/store/modules/settings.js
+@@ -182,6 +182,7 @@ const state = {
+   showAddedExternalPlayerCustomArgs: true,
+   // UI layout
+   sideNavWidthPx: 300,
++  videoGridColumns: 0,
+   expandSideBar: false,
+   hideActiveSubscriptions: false,
+   hideChannelCommunity: false,
+diff --git a/static/locales/en-US.yaml b/static/locales/en-US.yaml
+index 13d94b6b2ed83..b3e039a96fd44 100644
+--- a/static/locales/en-US.yaml
++++ b/static/locales/en-US.yaml
+@@ -305,6 +305,7 @@ Settings:
+       Hidden: Hidden
+       Blur: Blur
+     Side Nav Width (px): Side nav width (px)
++    Video Grid Columns: Video grid columns
+     Current Invidious Instance: Current Invidious Instance
+     The currently set default instance is {instance}: The currently set default instance is {instance}
+     No default instance has been set: No default instance has been set
+@@ -1057,6 +1058,7 @@ Tooltips:
+       By default FreeTube will open the clicked link in your default browser.
+     Open Deep Links In New Window: URLs passed to FreeTube, such as by redirect
+       browser extensions or command line arguments, are opened in a new window.
++    Video Grid Columns: Set to 0 for automatic columns. Otherwise uses a fixed number of columns for grid view.
+   Player Settings:
+     Proxy Videos Through Invidious: Will connect to Invidious to serve videos instead
+       of making a direct connection to YouTube.
+diff --git a/static/locales/zh-CN.yaml b/static/locales/zh-CN.yaml
+index 0a74525bfd1c4..22f2855e375a2 100644
+--- a/static/locales/zh-CN.yaml
++++ b/static/locales/zh-CN.yaml
+@@ -227,6 +227,7 @@ Settings:
+       Hidden: 隐藏缩略图
+       Blur: 模糊
+     Side Nav Width (px): 左侧栏宽度(px)
++    Video Grid Columns: 视频网格列数
+     Region for Trending: '热门区域'
+         #! List countries
+     Check for Updates: 检查更新
+@@ -973,6 +974,7 @@ Tooltips:
+     Region for Trending: 热门区域让您挑选您想要显示哪个国家的热门视频。
+     External Link Handling: "选择单击一个无法在 FreeTube 中打开的链接时触发的默认操作。\n默认情况下，FreeTube 将在您的默认浏览器中打开所点击链接。\n"
+     Open Deep Links In New Window: 在新窗口由浏览器的重定向扩展或命令行变量传递到 FreeTube 的 URL。
++    Video Grid Columns: 设为 0 表示自动列数；否则网格视图使用固定列数。
+   External Player Settings:
+     External Player: 选择一个外部播放器将在缩略图上显示一个图标，用于在外部播放器中打开视频(播放列表，如果支持)。警告，Invidious 设置不影响外部播放器。
+     Custom External Player Executable: 默认情况下，FreeTube 假设选择的外部播放器可以通过 PATH 环境变量找到。如果需要，可以在这里设置自定义路径。
+
+From 6f903ffdc12a5ec8cf7b748f3f0c2932fb7e23a8 Mon Sep 17 00:00:00 2001
+From: sun <98175070+qifeikeji@users.noreply.github.com>
+Date: Sun, 8 Feb 2026 23:33:33 +0800
+Subject: [PATCH 33/33] add-settingcolumn + move-searchbar
+
+---
+ src/renderer/components/SideNav/SideNav.vue | 5 -----
+ 1 file changed, 5 deletions(-)
+
+diff --git a/src/renderer/components/SideNav/SideNav.vue b/src/renderer/components/SideNav/SideNav.vue
+index 8405be8a22c21..85360729e9487 100644
+--- a/src/renderer/components/SideNav/SideNav.vue
++++ b/src/renderer/components/SideNav/SideNav.vue
+@@ -8,10 +8,6 @@
+       class="inner"
+       :class="applyHiddenLabels"
+     >
+-      <FtSideNavSearch
+-        v-if="isOpen"
+-        class="mobileHidden"
+-      />
+       <router-link
+         class="navOption topNavOption mobileShow "
+         role="button"
+@@ -244,7 +240,6 @@ import { useI18n } from '../../composables/use-i18n-polyfill'
+ 
+ import FtFlexBox from '../ft-flex-box/ft-flex-box.vue'
+ import SideNavMoreOptions from '../SideNavMoreOptions/SideNavMoreOptions.vue'
+-import FtSideNavSearch from '../FtSideNavSearch/FtSideNavSearch.vue'
+ 
+ import store from '../../store/index'
+ 

@@ -159,11 +159,11 @@
   }
 
   .opened {
-    inline-size: 200px;
+    inline-size: var(--side-nav-open-width, 200px);
   }
 
   .opened .inner {
-    inline-size: 200px;
+    inline-size: var(--side-nav-open-width, 200px);
   }
 
   .opened .refreshIcon {
