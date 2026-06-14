@@ -146,12 +146,17 @@
         <router-link
           v-if="channelId !== null"
           class="channelName"
+          :class="{ highlightedSubscriptionChannel: highlightedSubscriptionChannelName }"
           dir="auto"
           :to="`/channel/${channelId}`"
         >
           {{ channelName }}
         </router-link>
-        <bdi v-else-if="channelName !== null">
+        <bdi
+          v-else-if="channelName !== null"
+          class="channelName"
+          :class="{ highlightedSubscriptionChannel: highlightedSubscriptionChannelName }"
+        >
           {{ channelName }}
         </bdi>
         <span

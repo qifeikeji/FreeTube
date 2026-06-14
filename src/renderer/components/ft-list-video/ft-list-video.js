@@ -191,6 +191,17 @@ export default defineComponent({
       return this.$route.name === 'subscriptions' || this.$route.name === 'default'
     },
 
+    highlightedSubscriptionChannelName: function () {
+      if (!this.inSubscriptions || this.channelId == null) {
+        return false
+      }
+
+      const subscriptions = this.$store.getters.getActiveProfile.subscriptions
+      const entry = subscriptions.find((channel) => channel.id === this.channelId)
+
+      return entry?.highlighted === true
+    },
+
     inUserPlaylist: function () {
       return this.playlistTypeFinal === 'user' || this.selectedUserPlaylist != null
     },

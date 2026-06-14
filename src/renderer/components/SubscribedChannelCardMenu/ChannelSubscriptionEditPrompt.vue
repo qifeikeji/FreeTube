@@ -45,23 +45,33 @@
         >
           {{ t('Channels.Notes Color') }}
         </span>
-        <div
-          class="colorSwatches"
-          role="radiogroup"
-          :aria-labelledby="colorFieldId"
-        >
-          <button
-            v-for="option in noteColorOptions"
-            :key="option.value"
-            type="button"
-            class="colorSwatch"
-            role="radio"
-            :aria-checked="draftNotesColor === option.value"
-            :class="{ selected: draftNotesColor === option.value }"
-            :style="{ backgroundColor: option.value }"
-            :title="option.label"
-            @click="draftNotesColor = option.value"
-          />
+        <div class="colorAndHighlightRow">
+          <div
+            class="colorSwatches"
+            role="radiogroup"
+            :aria-labelledby="colorFieldId"
+          >
+            <button
+              v-for="option in noteColorOptions"
+              :key="option.value"
+              type="button"
+              class="colorSwatch"
+              role="radio"
+              :aria-checked="draftNotesColor === option.value"
+              :class="{ selected: draftNotesColor === option.value }"
+              :style="{ backgroundColor: option.value }"
+              :title="option.label"
+              @click="draftNotesColor = option.value"
+            />
+          </div>
+          <label class="highlightControl">
+            <input
+              v-model="draftHighlighted"
+              class="highlightCheckbox"
+              type="checkbox"
+            >
+            <span class="highlightLabel">{{ t('Channels.Highlight Channel') }}</span>
+          </label>
         </div>
       </section>
       <FtFlexBox class="actions">
@@ -120,6 +130,7 @@ const noteColorOptions = computed(() => [
 
 const draftNotes = ref('')
 const draftNotesColor = ref(defaultNotesColor)
+const draftHighlighted = ref(false)
 
 /**
  * @param {string} color
@@ -140,6 +151,7 @@ watch(() => props.channel, (channel) => {
   draftNotes.value = typeof rawNotes === 'string' ? rawNotes : ''
 
   draftNotesColor.value = normalizeStoredNotesColor(channel.notesColor ?? '')
+  draftHighlighted.value = channel.highlighted === true
 }, { immediate: true })
 
 /**
@@ -155,6 +167,7 @@ function save() {
   emit('save', {
     notes: draftNotes.value,
     notesColor: draftNotesColor.value === defaultNotesColor ? '' : draftNotesColor.value,
+    highlighted: draftHighlighted.value,
   })
 }
 
@@ -237,11 +250,52 @@ function cancel() {
   outline-offset: 1px;
 }
 
+.colorAndHighlightRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
 .colorSwatches {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 12px;
+}
+
+.highlightControl {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.highlightCheckbox {
+  appearance: none;
+  box-sizing: border-box;
+  inline-size: 20px;
+  block-size: 20px;
+  margin: 0;
+  border: 2px solid var(--primary-text-color);
+  border-radius: 4px;
+  background-color: transparent;
+  cursor: pointer;
+}
+
+.highlightCheckbox:checked {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+  box-shadow: inset 0 0 0 2px var(--card-bg-color);
+}
+
+.highlightLabel {
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1;
 }
 
 .colorSwatch {

@@ -51,6 +51,10 @@
   }
 }
 
+.infoLine .channelName.highlightedSubscriptionChannel {
+  color: #1e88e5;
+}
+
 .grabBar {
   color: var(--tertiary-text-color);
   cursor: grab;

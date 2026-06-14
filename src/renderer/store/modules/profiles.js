@@ -206,9 +206,9 @@ const actions = {
   },
 
   /**
-   * @param {{ channelId: string, notes?: string, notesColor?: string }} payload
+   * @param {{ channelId: string, notes?: string, notesColor?: string, highlighted?: boolean }} payload
    */
-  async updateChannelSubscriptionCustomization({ dispatch, state }, { channelId, notes, notesColor }) {
+  async updateChannelSubscriptionCustomization({ dispatch, state }, { channelId, notes, notesColor, highlighted }) {
     for (const profile of state.profileList) {
       const index = profile.subscriptions.findIndex((channel) => channel.id === channelId)
       if (index === -1) { continue }
@@ -228,6 +228,14 @@ const actions = {
           delete channel.notesColor
         } else {
           channel.notesColor = color
+        }
+      }
+
+      if (highlighted !== undefined) {
+        if (highlighted) {
+          channel.highlighted = true
+        } else {
+          delete channel.highlighted
         }
       }
 

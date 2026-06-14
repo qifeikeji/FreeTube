@@ -265,7 +265,7 @@ function closeChannelEditPrompt() {
 }
 
 /**
- * @param {{ notes: string, notesColor: string }} payload
+ * @param {{ notes: string, notesColor: string, highlighted: boolean }} payload
  */
 async function saveChannelCustomization(payload) {
   const channel = editingChannel.value
@@ -275,6 +275,7 @@ async function saveChannelCustomization(payload) {
     channelId: channel.id,
     notes: payload.notes,
     notesColor: payload.notesColor,
+    highlighted: payload.highlighted,
   })
 
   closeChannelEditPrompt()
