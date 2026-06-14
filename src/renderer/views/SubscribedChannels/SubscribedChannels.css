@@ -120,6 +120,7 @@
 
   .channels {
     --channel-card-icon-size: 64px;
+
     gap: 10px;
   }
 }
