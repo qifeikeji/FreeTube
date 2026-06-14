@@ -255,3 +255,4 @@ function cancel() {
 .channelSubscriptionEditDialog.ft-card.flex-column {
   overflow-y: auto;
 }
+</style>
