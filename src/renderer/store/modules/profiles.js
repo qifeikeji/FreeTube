@@ -205,6 +205,36 @@ const actions = {
     }
   },
 
+  /**
+   * @param {{ channelId: string, notes?: string, notesColor?: string }} payload
+   */
+  async updateChannelSubscriptionCustomization({ dispatch, state }, { channelId, notes, notesColor }) {
+    for (const profile of state.profileList) {
+      const index = profile.subscriptions.findIndex((channel) => channel.id === channelId)
+      if (index === -1) { continue }
+
+      const profileCopy = deepCopy(profile)
+      const channel = profileCopy.subscriptions[index]
+
+      if (notes !== undefined) {
+        const trimmed = typeof notes === 'string' ? notes.trim() : ''
+        channel.notes = trimmed
+        delete channel.note
+      }
+
+      if (notesColor !== undefined) {
+        const color = typeof notesColor === 'string' ? notesColor.trim() : ''
+        if (color === '') {
+          delete channel.notesColor
+        } else {
+          channel.notesColor = color
+        }
+      }
+
+      await dispatch('updateProfile', profileCopy)
+    }
+  },
+
   async createProfile({ commit, rootState }, profile) {
     try {
       if (profile.externalPlayerSettings == null) {

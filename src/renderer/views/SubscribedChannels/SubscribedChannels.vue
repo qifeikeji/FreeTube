@@ -30,53 +30,81 @@
         <ft-flex-box class="count">
           {{ $t('Channels.Count', { number: channelList.length }) }}
         </ft-flex-box>
-        <ft-flex-box class="channels">
-          <div
+        <div class="channels">
+          <article
             v-for="channel in channelList"
             :key="channel.id"
-            class="channel"
+            class="channelCard"
+            @contextmenu.prevent="openChannelContextMenu($event, channel)"
           >
-            <router-link
-              tabindex="-1"
-              class="thumbnailContainer"
-              :to="`/channel/${channel.id}`"
-            >
-              <img
-                v-if="channel.thumbnail != null"
-                class="channelThumbnail"
-                :src="thumbnailURL(channel.thumbnail)"
-                alt=""
-                @error.once="updateThumbnail(channel)"
+            <div class="channelCardMain">
+              <router-link
+                tabindex="-1"
+                class="channelIconLink"
+                :to="`/channel/${channel.id}`"
+                @contextmenu.prevent="openChannelContextMenu($event, channel)"
               >
-              <font-awesome-icon
-                v-else
-                class="channelThumbnail"
-                :icon="['fas', 'circle-user']"
-              />
-            </router-link>
-            <router-link
-              class="channelName"
-              dir="auto"
-              :title="channel.name"
-              :to="`/channel/${channel.id}`"
-            >
-              {{ channel.name }}
-            </router-link>
-            <div
-              v-if="!hideUnsubscribeButton"
-              class="unsubscribeContainer"
-            >
-              <ft-subscribe-button
-                :channel-id="channel.id"
-                :channel-name="channel.name"
-                :channel-thumbnail="channel.thumbnail"
-                :open-dropdown-on-subscribe="false"
-              />
+                <div class="channelIconWrap">
+                  <img
+                    v-if="channel.thumbnail != null"
+                    class="channelThumbnail"
+                    :src="thumbnailURL(channel.thumbnail)"
+                    alt=""
+                    @error.once="updateThumbnail(channel)"
+                  >
+                  <font-awesome-icon
+                    v-else
+                    class="channelThumbnailFallback"
+                    :icon="['fas', 'circle-user']"
+                  />
+                </div>
+              </router-link>
+              <div class="channelText">
+                <router-link
+                  class="channelName"
+                  dir="auto"
+                  :title="channel.name"
+                  :to="`/channel/${channel.id}`"
+                  @contextmenu.prevent="openChannelContextMenu($event, channel)"
+                >
+                  {{ channel.name }}
+                </router-link>
+                <p
+                  v-if="getChannelNotes(channel)"
+                  class="channelNotes"
+                  :style="getChannelNotesStyle(channel)"
+                >
+                  {{ getChannelNotes(channel) }}
+                </p>
+              </div>
             </div>
-          </div>
-        </ft-flex-box>
+          </article>
+        </div>
       </template>
     </ft-card>
+    <SubscribedChannelContextMenu
+      v-if="contextMenuChannel != null"
+      :channel="contextMenuChannel"
+      :position="contextMenuPosition"
+      :show-unsubscribe="!hideUnsubscribeButton"
+      @edit="openChannelEditPrompt"
+      @unsubscribe="requestUnsubscribeFromContextMenu"
+      @close="closeChannelContextMenu"
+    />
+    <ChannelSubscriptionEditPrompt
+      :channel="editingChannel"
+      @save="saveChannelCustomization"
+      @cancel="closeChannelEditPrompt"
+    />
+    <FtPrompt
+      v-if="unsubscribePromptChannel != null"
+      :label="t('Channels.Unsubscribe Prompt', { channelName: unsubscribePromptChannel.name })"
+      :option-names="[t('Yes'), t('No')]"
+      :option-values="['yes', 'no']"
+      autosize
+      :is-first-option-destructive="true"
+      @click="handleUnsubscribeConfirmation"
+    />
   </div>
 </template>
 
@@ -87,16 +115,19 @@ import { isNavigationFailure, NavigationFailureType, useRoute, useRouter } from 
 import FtCard from '../../components/ft-card/ft-card.vue'
 import FtFlexBox from '../../components/ft-flex-box/ft-flex-box.vue'
 import FtInput from '../../components/FtInput/FtInput.vue'
-import FtSubscribeButton from '../../components/FtSubscribeButton/FtSubscribeButton.vue'
+import FtPrompt from '../../components/FtPrompt/FtPrompt.vue'
+import SubscribedChannelContextMenu from '../../components/SubscribedChannelCardMenu/SubscribedChannelContextMenu.vue'
+import ChannelSubscriptionEditPrompt from '../../components/SubscribedChannelCardMenu/ChannelSubscriptionEditPrompt.vue'
 import { invidiousGetChannelInfo, youtubeImageUrlToInvidious, invidiousImageUrlToInvidious } from '../../helpers/api/invidious'
 import { getLocalChannel, parseLocalChannelHeader } from '../../helpers/api/local'
-import { ctrlFHandler, debounce } from '../../helpers/utils'
+import { ctrlFHandler, debounce, showToast } from '../../helpers/utils'
 import { useI18n } from '../../composables/use-i18n-polyfill.js'
 import store from '../../store/index'
+import { MAIN_PROFILE_ID } from '../../../constants'
 
 const route = useRoute()
 const router = useRouter()
-const { locale } = useI18n()
+const { locale, t } = useI18n()
 
 const re = {
   url: /(.+=\w)\d+(.+)/,
@@ -111,6 +142,17 @@ const subscribedChannels = ref([])
 const filteredChannels = ref([])
 
 const searchBarChannels = useTemplateRef('searchBarChannels')
+
+/** @type {import('vue').Ref<object | null>} */
+const contextMenuChannel = ref(null)
+const contextMenuPosition = ref({ x: 0, y: 0 })
+/** @type {import('vue').Ref<object | null>} */
+const editingChannel = ref(null)
+/** @type {import('vue').Ref<object | null>} */
+const unsubscribePromptChannel = ref(null)
+
+/** @type {import('vue').ComputedRef<object[]>} */
+const profileList = computed(() => store.getters.getProfileList)
 
 /** @type {import('vue').ComputedRef<object>} */
 const activeProfile = computed(() => {
@@ -150,6 +192,114 @@ const backendPreference = computed(() => {
 const currentInvidiousInstanceUrl = computed(() => {
   return store.getters.getCurrentInvidiousInstanceUrl
 })
+
+function getChannelNotes(channel) {
+  const raw = channel.notes ?? channel.note ?? ''
+  return typeof raw === 'string' ? raw.trim() : ''
+}
+
+function getChannelNotesStyle(channel) {
+  const color = channel.notesColor
+  if (typeof color !== 'string' || color.trim() === '') {
+    return undefined
+  }
+  return { color: color.trim() }
+}
+
+/**
+ * @param {MouseEvent} event
+ * @param {object} channel
+ */
+function openChannelContextMenu(event, channel) {
+  event.preventDefault()
+  event.stopPropagation()
+  contextMenuChannel.value = channel
+  contextMenuPosition.value = { x: event.clientX, y: event.clientY }
+}
+
+function closeChannelContextMenu() {
+  contextMenuChannel.value = null
+}
+
+function openChannelEditPrompt() {
+  if (contextMenuChannel.value == null) { return }
+  editingChannel.value = contextMenuChannel.value
+  closeChannelContextMenu()
+}
+
+function closeChannelEditPrompt() {
+  editingChannel.value = null
+}
+
+/**
+ * @param {{ notes: string, notesColor: string }} payload
+ */
+async function saveChannelCustomization(payload) {
+  const channel = editingChannel.value
+  if (channel == null) { return }
+
+  await store.dispatch('updateChannelSubscriptionCustomization', {
+    channelId: channel.id,
+    notes: payload.notes,
+    notesColor: payload.notesColor,
+  })
+
+  closeChannelEditPrompt()
+  getSubscription()
+}
+
+function requestUnsubscribeFromContextMenu() {
+  if (contextMenuChannel.value == null) { return }
+
+  const channel = contextMenuChannel.value
+  closeChannelContextMenu()
+
+  if (store.getters.getUnsubscriptionPopupStatus) {
+    unsubscribePromptChannel.value = channel
+  } else {
+    unsubscribeChannel(channel.id)
+  }
+}
+
+/**
+ * @param {'yes' | 'no' | null} value
+ */
+function handleUnsubscribeConfirmation(value) {
+  const channel = unsubscribePromptChannel.value
+  unsubscribePromptChannel.value = null
+
+  if (value === 'yes' && channel != null) {
+    unsubscribeChannel(channel.id)
+  }
+}
+
+/**
+ * @param {string} channelId
+ */
+function unsubscribeChannel(channelId) {
+  const active = activeProfile.value
+  const profileIds = [active._id]
+
+  if (active._id === MAIN_PROFILE_ID) {
+    profileList.value.forEach((profileInList) => {
+      if (profileInList._id === MAIN_PROFILE_ID) {
+        return
+      }
+
+      if (profileInList.subscriptions.some((entry) => entry.id === channelId)) {
+        profileIds.push(profileInList._id)
+      }
+    })
+  }
+
+  store.dispatch('removeChannelFromProfiles', { channelId, profileIds })
+
+  showToast(t('Channel.Channel has been removed from your subscriptions'))
+
+  if (active._id === MAIN_PROFILE_ID && profileIds.length > 1) {
+    showToast(t('Channel.Removed subscription from {count} other channel(s)', { count: profileIds.length - 1 }))
+  }
+}
 
 function getSubscription() {
   subscribedChannels.value = activeSubscriptionList.value.slice().sort((a, b) => {

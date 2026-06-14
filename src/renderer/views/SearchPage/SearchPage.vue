@@ -1,5 +1,10 @@
 <template>
   <div>
+    <FtRefreshWidget :show-refresh-button="false">
+      <template #center>
+        <FtSideNavSearch compact />
+      </template>
+    </FtRefreshWidget>
     <FtLoader
       v-if="isLoading"
       :fullscreen="true"
@@ -46,6 +51,8 @@ import FtLoader from '../../components/FtLoader/FtLoader.vue'
 import FtCard from '../../components/ft-card/ft-card.vue'
 import FtElementList from '../../components/FtElementList/FtElementList.vue'
 import FtAutoLoadNextPageWrapper from '../../components/FtAutoLoadNextPageWrapper.vue'
+import FtRefreshWidget from '../../components/FtRefreshWidget/FtRefreshWidget.vue'
+import FtSideNavSearch from '../../components/FtSideNavSearch/FtSideNavSearch.vue'
 
 import store from '../../store'
 

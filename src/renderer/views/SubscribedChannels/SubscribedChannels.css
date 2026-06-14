@@ -13,59 +13,100 @@
 }
 
 .channels {
+  --channel-card-icon-size: 72px;
+  --channel-card-min-column: 320px;
+
   inline-size: 100%;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-  gap: 2.5rem;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, var(--channel-card-min-column)), 1fr));
+  gap: 12px;
   margin-block-start: 2rem;
 }
 
-.channel {
+.channelCard {
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  row-gap: 0.75rem;
-  padding: 0.5rem;
+  padding: 12px;
+  border-radius: 14px;
+  background-color: var(--secondary-card-bg-color);
+  box-shadow: 0 0 0 1px var(--primary-shadow-color);
+  min-inline-size: 0;
+  cursor: context-menu;
 }
 
-.thumbnailContainer {
-  flex-grow: 0;
+.channelCardMain {
+  display: grid;
+  grid-template-columns: var(--channel-card-icon-size) minmax(0, 1fr);
+  column-gap: 12px;
+  align-items: stretch;
+  min-inline-size: 0;
+}
+
+.channelIconLink {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+}
+
+.channelIconWrap {
+  block-size: var(--channel-card-icon-size);
+  inline-size: var(--channel-card-icon-size);
+  border-radius: 12px;
+  overflow: hidden;
+  background-color: var(--card-bg-color);
   display: flex;
   align-items: center;
-  color: inherit;
+  justify-content: center;
 }
 
 .channelThumbnail {
-  block-size: 120px;
-  border-radius: 50%;
+  block-size: 100%;
+  inline-size: 100%;
+  object-fit: cover;
+  border-radius: 12px;
+}
+
+.channelThumbnailFallback {
+  font-size: 2.5rem;
+  color: var(--tertiary-text-color);
+}
+
+.channelText {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 4px;
+  min-block-size: var(--channel-card-icon-size);
+  min-inline-size: 0;
 }
 
 .channelName {
-  flex-grow: 1;
   color: inherit;
-  font-size: 1.1rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1.25;
   text-decoration: none;
-  text-align: center;
+  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  overflow-wrap: break-word;
-  inline-size: 100%;
+}
+
+.channelName:hover {
+  text-decoration: underline;
+}
+
+.channelNotes {
+  margin: 0;
+  color: var(--tertiary-text-color);
+  font-size: 0.8125rem;
+  line-height: 1.35;
+  overflow: hidden;
   display: -webkit-box;
-  line-clamp: 3;
-  -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
-  padding-block: 0;
-  padding-inline: 4px;
-}
-
-.unsubscribeContainer {
-  flex-grow: 0;
-  display: flex;
-  align-items: center;
-}
-
-.unsubscribeContainer .btn {
-  block-size: 80%;
+  -webkit-line-clamp: 4;
+  line-clamp: 4;
+  max-block-size: calc(var(--channel-card-icon-size) - 1.35rem);
 }
 
 .headingIcon {
@@ -78,10 +119,7 @@
   }
 
   .channels {
-    gap: 1.5rem;
-  }
-
-  .channelThumbnail {
-    block-size: 80px;
+    --channel-card-icon-size: 64px;
+    gap: 10px;
   }
 }

@@ -1011,6 +1011,12 @@ Channels:
   Title: 频道列表
   Empty: 你的频道列表当前为空。
   Unsubscribe Prompt: 你确定你要取消订阅 "{channelName}" 吗？
+  Edit Channel Content: 编辑频道内容
+  Channel Notes: 频道备注
+  Channel Notes Placeholder: 输入备注（可选）
+  Notes Color: 备注颜色
+  Reset Notes Color: 恢复默认颜色
+  Save Channel Notes: 保存
 Clipboard:
   Copy failed: 未能复制到剪贴板
   Cannot access clipboard without a secure connection: 没有安全连接无法访问剪贴板

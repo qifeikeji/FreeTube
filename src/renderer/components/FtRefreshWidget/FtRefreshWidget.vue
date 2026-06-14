@@ -19,6 +19,7 @@
     </div>
     <div class="right">
       <FtIconButton
+        v-if="showRefreshButton"
         :disabled="disableRefresh"
         :icon="['fas', 'sync']"
         class="refreshButton"
@@ -55,7 +56,11 @@ const props = defineProps({
   },
   title: {
     type: String,
-    required: true
+    default: ''
+  },
+  showRefreshButton: {
+    type: Boolean,
+    default: true
   }
 })
 

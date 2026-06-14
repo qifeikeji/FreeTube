@@ -35,8 +35,9 @@
 
 <script setup>
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
-import { computed, onBeforeUnmount, onMounted, ref, shallowRef, useTemplateRef } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, shallowRef, useTemplateRef, watch } from 'vue'
 import { useI18n } from '../../composables/use-i18n-polyfill'
+import { useRoute } from 'vue-router'
 
 import FtInput from '../FtInput/FtInput.vue'
 
@@ -55,6 +56,7 @@ defineProps({
 })
 
 const { t } = useI18n()
+const route = useRoute()
 
 /** @type {import('vue').ShallowRef<string[]>} */
 const searchSuggestionsDataList = shallowRef([])
@@ -354,6 +356,8 @@ function handleKeyboardShortcuts(event) {
 }
 
 onMounted(() => {
+  syncSearchInputFromRoute()
+
   if (process.env.IS_ELECTRON) {
     window.addEventListener('keydown', handleKeyboardShortcuts)
 
@@ -363,6 +367,27 @@ onMounted(() => {
       }
     })
   }
+})
+
+function syncSearchInputFromRoute() {
+  const queryParam = route.params.query
+  if (typeof queryParam !== 'string' || queryParam.length === 0) {
+    return
+  }
+
+  if (!route.path.startsWith('/search/')) {
+    return
+  }
+
+  try {
+    updateSearchInputText(decodeURIComponent(queryParam))
+  } catch {
+    updateSearchInputText(queryParam)
+  }
+}
+
+watch(() => route.path, () => {
+  syncSearchInputFromRoute()
 })
 
 onBeforeUnmount(() => {
@@ -394,6 +419,7 @@ onBeforeUnmount(() => {
 }
 
 .sideNavSearch.compact :deep(.ft-input) {
+  margin-block-end: 0;
   padding-block: 5px;
   padding-inline: 10px;
   font-size: 14px;

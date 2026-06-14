@@ -140,6 +140,12 @@ Channels:
   Count: '{number} channel(s) found.'
   Empty: Your channel list is currently empty.
   Unsubscribe Prompt: Are you sure you want to unsubscribe from "{channelName}"?
+  Edit Channel Content: Edit channel content
+  Channel Notes: Channel notes
+  Channel Notes Placeholder: Notes (optional)
+  Notes Color: Notes color
+  Reset Notes Color: Reset to default color
+  Save Channel Notes: Save
 Trending:
   Trending: Trending
   Gaming: Gaming
