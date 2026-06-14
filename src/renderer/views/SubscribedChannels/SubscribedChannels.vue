@@ -44,19 +44,17 @@
                 :to="`/channel/${channel.id}`"
                 @contextmenu.prevent="openChannelContextMenu($event, channel)"
               >
-                <div class="channelIconWrap">
+                <div
+                  class="channelIconWrap"
+                  :class="{ isPlaceholder: !shouldShowChannelThumbnail(channel) }"
+                >
                   <img
-                    v-if="channel.thumbnail != null"
+                    v-if="shouldShowChannelThumbnail(channel)"
                     class="channelThumbnail"
                     :src="thumbnailURL(channel.thumbnail)"
                     alt=""
-                    @error.once="updateThumbnail(channel)"
+                    @error="handleThumbnailError(channel)"
                   >
-                  <font-awesome-icon
-                    v-else
-                    class="channelThumbnailFallback"
-                    :icon="['fas', 'circle-user']"
-                  />
                 </div>
               </router-link>
               <div class="channelText">
@@ -143,6 +141,8 @@ const filteredChannels = ref([])
 
 const searchBarChannels = useTemplateRef('searchBarChannels')
 
+/** @type {import('vue').Ref<Record<string, boolean>>} */
+const failedThumbnailByChannelId = ref({})
 /** @type {import('vue').Ref<object | null>} */
 const contextMenuChannel = ref(null)
 const contextMenuPosition = ref({ x: 0, y: 0 })
@@ -204,6 +204,39 @@ function getChannelNotesStyle(channel) {
     return undefined
   }
   return { color: color.trim() }
+}
+
+/**
+ * @param {object} channel
+ */
+function shouldShowChannelThumbnail(channel) {
+  if (channel.thumbnail == null) {
+    return false
+  }
+  return !failedThumbnailByChannelId.value[channel.id]
+}
+
+/**
+ * @param {object} channel
+ */
+function handleThumbnailError(channel) {
+  failedThumbnailByChannelId.value = {
+    ...failedThumbnailByChannelId.value,
+    [channel.id]: true,
+  }
+  updateThumbnail(channel)
+}
+
+/**
+ * @param {string} channelId
+ */
+function clearThumbnailLoadFailure(channelId) {
+  if (!failedThumbnailByChannelId.value[channelId]) {
+    return
+  }
+  const next = { ...failedThumbnailByChannelId.value }
+  delete next[channelId]
+  failedThumbnailByChannelId.value = next
 }
 
 /**
@@ -356,6 +389,8 @@ function updateThumbnail(channel) {
             channelThumbnailUrl: thumbnailURL(parseLocalChannelHeader(response).thumbnailUrl),
             channelName: channel.name,
             channelId: channel.id
+          }).then(() => {
+            clearThumbnailLoadFailure(channel.id)
           })
         }
       })
@@ -367,7 +402,7 @@ function updateThumbnail(channel) {
           channelThumbnailUrl: thumbnailURL(response.authorThumbnails[0].url),
           channelName: channel.name,
           channelId: channel.id
-        })
+        }).then(() => clearThumbnailLoadFailure(channel.id))
       })
     }, errorCount * 500)
   }

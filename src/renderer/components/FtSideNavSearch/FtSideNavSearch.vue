@@ -11,7 +11,6 @@
       is-search
       :data-list="activeDataList"
       :data-list-properties="activeDataListProperties"
-      show-clear-text-button
       show-data-when-empty
       @input="getSearchSuggestionsDebounce"
       @click="goToSearch"

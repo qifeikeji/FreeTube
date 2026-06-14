@@ -13,8 +13,10 @@
 }
 
 .channels {
+  --channel-card-bg: #282828;
+  --channel-card-bg-hover: #1f1f1f;
   --channel-card-icon-size: 72px;
-  --channel-card-min-column: 320px;
+  --channel-card-min-column: 300px;
 
   inline-size: 100%;
   display: grid;
@@ -29,10 +31,19 @@
   flex-direction: column;
   padding: 12px;
   border-radius: 14px;
-  background-color: var(--secondary-card-bg-color);
-  box-shadow: 0 0 0 1px var(--primary-shadow-color);
+  background-color: var(--channel-card-bg);
+  border: 2px solid transparent;
+  box-shadow: none;
   min-inline-size: 0;
   cursor: context-menu;
+  transition: background-color 0.15s ease-out, border-color 0.15s ease-out, box-shadow 0.15s ease-out;
+}
+
+.channelCard:hover,
+.channelCard:focus-within {
+  background-color: var(--channel-card-bg-hover);
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 1px var(--primary-shadow-color);
 }
 
 .channelCardMain {
@@ -54,10 +65,19 @@
   inline-size: var(--channel-card-icon-size);
   border-radius: 12px;
   overflow: hidden;
-  background-color: var(--card-bg-color);
+  background-color: var(--channel-card-bg);
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.channelIconWrap.isPlaceholder {
+  background-color: var(--channel-card-bg);
+}
+
+.channelCard:hover .channelIconWrap.isPlaceholder,
+.channelCard:focus-within .channelIconWrap.isPlaceholder {
+  background-color: var(--channel-card-bg-hover);
 }
 
 .channelThumbnail {
@@ -65,11 +85,6 @@
   inline-size: 100%;
   object-fit: cover;
   border-radius: 12px;
-}
-
-.channelThumbnailFallback {
-  font-size: 2.5rem;
-  color: var(--tertiary-text-color);
 }
 
 .channelText {
@@ -90,10 +105,6 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-
-.channelName:hover {
-  text-decoration: underline;
 }
 
 .channelNotes {

@@ -1,45 +1,72 @@
 <template>
   <FtPrompt
     v-if="channel != null"
-    :label="t('Channels.Edit Channel Content')"
     autosize
+    theme="flex-column"
     @click="handlePromptClick"
   >
-    <div class="editForm">
-      <label
-        class="fieldLabel"
-        :for="notesFieldId"
-      >
-        {{ t('Channels.Channel Notes') }}
-      </label>
-      <textarea
-        :id="notesFieldId"
-        v-model="draftNotes"
-        class="notesField"
-        rows="5"
-        :maxlength="2000"
-        :placeholder="t('Channels.Channel Notes Placeholder')"
-      />
-      <label
-        class="fieldLabel"
-        :for="colorFieldId"
-      >
-        {{ t('Channels.Notes Color') }}
-      </label>
-      <div class="colorRow">
-        <input
-          :id="colorFieldId"
-          v-model="draftNotesColor"
-          type="color"
-          class="colorInput"
+    <template #label="{ labelId }">
+      <div class="dialogHeader">
+        <h2
+          :id="labelId"
+          class="dialogTitle"
         >
+          {{ t('Channels.Edit Channel Content') }}
+        </h2>
+        <p
+          class="dialogChannelName"
+          dir="auto"
+        >
+          {{ channel.name }}
+        </p>
+      </div>
+    </template>
+    <div class="editForm">
+      <section class="formSection">
+        <label
+          class="fieldLabel"
+          :for="notesFieldId"
+        >
+          {{ t('Channels.Channel Notes') }}
+        </label>
+        <textarea
+          :id="notesFieldId"
+          v-model="draftNotes"
+          class="notesField"
+          rows="6"
+          :maxlength="2000"
+          :placeholder="t('Channels.Channel Notes Placeholder')"
+        />
+      </section>
+      <section class="formSection">
+        <label
+          class="fieldLabel"
+          :for="colorFieldId"
+        >
+          {{ t('Channels.Notes Color') }}
+        </label>
+        <div class="colorRow">
+          <input
+            :id="colorFieldId"
+            v-model="draftNotesColor"
+            type="color"
+            class="colorInput"
+          >
+          <div
+            class="colorPreview"
+            :style="{ color: draftNotesColor }"
+          >
+            {{ t('Channels.Notes Color Preview') }}
+          </div>
+        </div>
         <FtButton
+          class="resetColorButton"
           :label="t('Channels.Reset Notes Color')"
           background-color="var(--accent-color)"
           text-color="var(--text-with-accent-color)"
           @click="draftNotesColor = defaultNotesColor"
         />
-      </div>
+      </section>
       <FtFlexBox class="actions">
         <FtButton
           :label="t('Channels.Save Channel Notes')"
@@ -115,49 +142,97 @@ function cancel() {
 </script>
 
 <style scoped>
+.dialogHeader {
+  text-align: center;
+  margin-block-end: 4px;
+}
+
+.dialogTitle {
+  margin-block: 0 6px;
+}
+
+.dialogChannelName {
+  margin: 0;
+  color: var(--tertiary-text-color);
+  font-size: 1rem;
+  font-weight: 500;
+}
+
 .editForm {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  margin-block-end: 8px;
+  gap: 16px;
+  margin-block: 8px 4px;
+  inline-size: min(520px, 100%);
+  margin-inline: auto;
+}
+
+.formSection {
+  padding: 14px;
+  border-radius: 12px;
+  background-color: #282828;
+  box-shadow: 0 0 0 1px var(--primary-shadow-color);
 }
 
 .fieldLabel {
+  display: block;
   font-weight: 600;
-  margin-block-start: 4px;
+  margin-block-end: 8px;
 }
 
 .notesField {
   box-sizing: border-box;
   inline-size: 100%;
-  min-block-size: 120px;
-  padding: 10px;
+  min-block-size: 140px;
+  padding: 12px;
   border: 0;
-  border-radius: 5px;
+  border-radius: 8px;
   font-size: 15px;
+  line-height: 1.45;
   font-family: inherit;
   color: var(--secondary-text-color);
   background-color: var(--search-bar-color);
   resize: vertical;
 }
 
+.notesField:focus {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 1px;
+}
+
 .colorRow {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
 }
 
 .colorInput {
-  block-size: 40px;
-  inline-size: 56px;
+  block-size: 44px;
+  inline-size: 64px;
   padding: 0;
   border: 0;
+  border-radius: 8px;
   background: transparent;
   cursor: pointer;
 }
 
+.colorPreview {
+  flex: 1;
+  min-inline-size: 120px;
+  padding-block: 10px;
+  padding-inline: 12px;
+  border-radius: 8px;
+  background-color: var(--search-bar-color);
+  font-size: 14px;
+}
+
+.resetColorButton {
+  margin-block-start: 10px;
+}
+
 .actions {
-  margin-block-start: 12px;
+  margin-block-start: 4px;
+  justify-content: center;
 }
 </style>
