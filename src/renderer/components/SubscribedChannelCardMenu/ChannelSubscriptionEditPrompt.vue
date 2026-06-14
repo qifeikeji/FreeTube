@@ -3,6 +3,7 @@
     v-if="channel != null"
     autosize
     theme="flex-column"
+    prompt-card-class="channelSubscriptionEditDialog"
     @click="handlePromptClick"
   >
     <template #label="{ labelId }">
@@ -59,13 +60,6 @@
             {{ t('Channels.Notes Color Preview') }}
           </div>
         </div>
-        <FtButton
-          class="resetColorButton"
-          :label="t('Channels.Reset Notes Color')"
-          background-color="var(--accent-color)"
-          text-color="var(--text-with-accent-color)"
-          @click="draftNotesColor = defaultNotesColor"
-        />
       </section>
       <FtFlexBox class="actions">
         <FtButton
@@ -77,6 +71,12 @@
         <FtButton
           :label="t('Cancel')"
           @click="cancel"
+        />
+        <FtButton
+          :label="t('Channels.Reset Notes Color')"
+          background-color="var(--accent-color)"
+          text-color="var(--text-with-accent-color)"
+          @click="draftNotesColor = defaultNotesColor"
         />
       </FtFlexBox>
     </div>
@@ -160,11 +160,13 @@ function cancel() {
 
 .editForm {
   display: flex;
+  flex: 1;
   flex-direction: column;
   gap: 16px;
   margin-block: 8px 4px;
-  inline-size: min(520px, 100%);
-  margin-inline: auto;
+  inline-size: 100%;
+  min-block-size: 0;
+  box-sizing: border-box;
 }
 
 .formSection {
@@ -227,12 +229,29 @@ function cancel() {
   font-size: 14px;
 }
 
-.resetColorButton {
-  margin-block-start: 10px;
-}
-
 .actions {
-  margin-block-start: 4px;
+  margin-block-start: auto;
   justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 </style>
+
+<style>
+.channelSubscriptionEditDialog.ft-card {
+  box-sizing: border-box;
+  inline-size: 500px;
+  block-size: 500px;
+  max-inline-size: min(500px, 95vw) !important;
+  max-block-size: min(500px, 95vh);
+  border-radius: 16px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  padding-block: 16px 20px;
+  padding-inline: 20px;
+}
+
+.channelSubscriptionEditDialog.ft-card.flex-column {
+  overflow-y: auto;
+}

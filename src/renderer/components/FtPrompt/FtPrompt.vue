@@ -11,7 +11,7 @@
       <FtCard
         ref="promptCard"
         class="promptCard"
-        :class="{ autosize, [theme]: true }"
+        :class="[{ autosize, [theme]: true }, promptCardClass]"
         role="dialog"
         aria-modal="true"
         :aria-labelledby="id"
@@ -96,6 +96,10 @@ const props = defineProps({
   inert: {
     type: Boolean,
     default: false
+  },
+  promptCardClass: {
+    type: String,
+    default: ''
   }
 })
 
