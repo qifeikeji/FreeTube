@@ -39,25 +39,29 @@
         />
       </section>
       <section class="formSection">
-        <label
+        <span
+          :id="colorFieldId"
           class="fieldLabel"
-          :for="colorFieldId"
         >
           {{ t('Channels.Notes Color') }}
-        </label>
-        <div class="colorRow">
-          <input
-            :id="colorFieldId"
-            v-model="draftNotesColor"
-            type="color"
-            class="colorInput"
-          >
-          <div
-            class="colorPreview"
-            :style="{ color: draftNotesColor }"
-          >
-            {{ t('Channels.Notes Color Preview') }}
-          </div>
+        </span>
+        <div
+          class="colorSwatches"
+          role="radiogroup"
+          :aria-labelledby="colorFieldId"
+        >
+          <button
+            v-for="option in noteColorOptions"
+            :key="option.value"
+            type="button"
+            class="colorSwatch"
+            role="radio"
+            :aria-checked="draftNotesColor === option.value"
+            :class="{ selected: draftNotesColor === option.value }"
+            :style="{ backgroundColor: option.value }"
+            :title="option.label"
+            @click="draftNotesColor = option.value"
+          />
         </div>
       </section>
       <FtFlexBox class="actions">
@@ -75,7 +79,7 @@
           :label="t('Channels.Reset Notes Color')"
           background-color="var(--accent-color)"
           text-color="var(--text-with-accent-color)"
-          @click="draftNotesColor = defaultNotesColor"
+          @click="resetNotesColor"
         />
       </FtFlexBox>
     </div>
@@ -83,7 +87,7 @@
 </template>
 
 <script setup>
-import { useId, watch, ref } from 'vue'
+import { useId, watch, ref, computed } from 'vue'
 import { useI18n } from '../../composables/use-i18n-polyfill'
 
 import FtPrompt from '../FtPrompt/FtPrompt.vue'
@@ -104,10 +108,30 @@ const { t } = useI18n()
 const notesFieldId = useId()
 const colorFieldId = useId()
 
-const defaultNotesColor = '#8b949e'
+const defaultNotesColor = ''
+
+const noteColorOptions = computed(() => [
+  { label: t('Channels.Note Color Red'), value: '#e53935' },
+  { label: t('Channels.Note Color Yellow'), value: '#fdd835' },
+  { label: t('Channels.Note Color Blue'), value: '#1e88e5' },
+  { label: t('Channels.Note Color Green'), value: '#43a047' },
+  { label: t('Channels.Note Color Purple'), value: '#8e24aa' },
+])
 
 const draftNotes = ref('')
 const draftNotesColor = ref(defaultNotesColor)
+
+/**
+ * @param {string} color
+ */
+function normalizeStoredNotesColor(color) {
+  if (typeof color !== 'string' || color.trim() === '') {
+    return defaultNotesColor
+  }
+  const normalized = color.trim().toLowerCase()
+  const match = noteColorOptions.value.find((option) => option.value.toLowerCase() === normalized)
+  return match ? match.value : defaultNotesColor
+}
 
 watch(() => props.channel, (channel) => {
   if (channel == null) { return }
@@ -115,8 +139,7 @@ watch(() => props.channel, (channel) => {
   const rawNotes = channel.notes ?? channel.note ?? ''
   draftNotes.value = typeof rawNotes === 'string' ? rawNotes : ''
 
-  const rawColor = channel.notesColor ?? ''
-  draftNotesColor.value = typeof rawColor === 'string' && rawColor !== '' ? rawColor : defaultNotesColor
+  draftNotesColor.value = normalizeStoredNotesColor(channel.notesColor ?? '')
 }, { immediate: true })
 
 /**
@@ -133,6 +156,10 @@ function save() {
     notes: draftNotes.value,
     notesColor: draftNotesColor.value === defaultNotesColor ? '' : draftNotesColor.value,
   })
+}
+
+function resetNotesColor() {
+  draftNotesColor.value = defaultNotesColor
 }
 
 function cancel() {
@@ -210,31 +237,30 @@ function cancel() {
   outline-offset: 1px;
 }
 
-.colorRow {
+.colorSwatches {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 12px;
 }
 
-.colorInput {
-  block-size: 44px;
-  inline-size: 64px;
-  padding: 0;
-  border: 0;
+.colorSwatch {
+  block-size: 40px;
+  inline-size: 40px;
   border-radius: 8px;
-  background: transparent;
+  border: 2px solid transparent;
+  box-sizing: border-box;
   cursor: pointer;
+  padding: 0;
+  transition: border-color 0.12s ease-out;
 }
 
-.colorPreview {
-  flex: 1;
-  min-inline-size: 120px;
-  padding-block: 10px;
-  padding-inline: 12px;
-  border-radius: 8px;
-  background-color: var(--search-bar-color);
-  font-size: 14px;
+.colorSwatch:hover {
+  border-color: rgb(255 255 255 / 45%);
+}
+
+.colorSwatch.selected {
+  border-color: #fff;
 }
 
 .actions {

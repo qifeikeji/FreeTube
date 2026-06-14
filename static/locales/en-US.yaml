@@ -146,7 +146,11 @@ Channels:
   Notes Color: Notes color
   Reset Notes Color: Reset to default color
   Save Channel Notes: Save
-  Notes Color Preview: Sample note text
+  Note Color Red: Red
+  Note Color Yellow: Yellow
+  Note Color Blue: Blue
+  Note Color Green: Green
+  Note Color Purple: Purple
 Trending:
   Trending: Trending
   Gaming: Gaming
