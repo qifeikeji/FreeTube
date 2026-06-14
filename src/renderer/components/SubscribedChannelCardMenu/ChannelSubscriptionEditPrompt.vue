@@ -23,7 +23,7 @@
       </div>
     </template>
     <div class="editForm">
-      <section class="formSection">
+      <section class="formSection notesSection">
         <label
           class="fieldLabel"
           :for="notesFieldId"
@@ -34,7 +34,6 @@
           :id="notesFieldId"
           v-model="draftNotes"
           class="notesField"
-          rows="6"
           :maxlength="2000"
           :placeholder="t('Channels.Channel Notes Placeholder')"
         />
@@ -166,6 +165,7 @@ function cancel() {
   margin-block: 8px 4px;
   inline-size: 100%;
   min-block-size: 0;
+  overflow: hidden;
   box-sizing: border-box;
 }
 
@@ -174,6 +174,13 @@ function cancel() {
   border-radius: 12px;
   background-color: #282828;
   box-shadow: 0 0 0 1px var(--primary-shadow-color);
+}
+
+.notesSection {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-block-size: 0;
 }
 
 .fieldLabel {
@@ -185,7 +192,8 @@ function cancel() {
 .notesField {
   box-sizing: border-box;
   inline-size: 100%;
-  min-block-size: 140px;
+  flex: 1;
+  min-block-size: 0;
   padding: 12px;
   border: 0;
   border-radius: 8px;
@@ -194,7 +202,7 @@ function cancel() {
   font-family: inherit;
   color: var(--secondary-text-color);
   background-color: var(--search-bar-color);
-  resize: vertical;
+  resize: none;
 }
 
 .notesField:focus {
@@ -238,21 +246,23 @@ function cancel() {
 </style>
 
 <style>
-.channelSubscriptionEditDialog.ft-card {
+.channelSubscriptionEditDialog.ft-card.promptCard {
   box-sizing: border-box;
   inline-size: 500px;
-  block-size: 500px;
+  block-size: 560px;
   max-inline-size: min(500px, 95vw) !important;
-  max-block-size: min(500px, 95vh);
+  max-block-size: min(560px, 95vh);
   border-radius: 16px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
   padding-block: 16px 20px;
   padding-inline: 20px;
+  scrollbar-width: none;
 }
 
-.channelSubscriptionEditDialog.ft-card.flex-column {
-  overflow-y: auto;
+.channelSubscriptionEditDialog.ft-card.promptCard::-webkit-scrollbar {
+  display: none;
+  inline-size: 0;
 }
 </style>

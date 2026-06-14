@@ -16,7 +16,7 @@
   --channel-card-bg: #282828;
   --channel-card-bg-hover: #1f1f1f;
   --channel-card-icon-size: 72px;
-  --channel-card-min-column: 300px;
+  --channel-card-min-column: 260px;
 
   inline-size: 100%;
   display: grid;
