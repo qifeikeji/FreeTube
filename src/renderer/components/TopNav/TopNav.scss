@@ -17,6 +17,7 @@
   inset-inline: 0;
   line-height: 60px;
   position: sticky;
+  /* stylelint-disable-next-line length-zero-no-unit -- unit required for calc() fallbacks */
   inset-block-start: var(--window-titlebar-height, 0px);
   inline-size: 100%;
   z-index: 4;

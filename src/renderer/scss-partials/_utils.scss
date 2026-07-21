@@ -18,6 +18,7 @@
 
 @mixin fixed-top-bar {
   position: fixed;
+  /* stylelint-disable-next-line length-zero-no-unit -- unit required for calc() fallbacks */
   inset-block-start: calc(60px + var(--window-titlebar-height, 0px));
   inset-inline-end: 0;
   inline-size: calc(100% - 80px);

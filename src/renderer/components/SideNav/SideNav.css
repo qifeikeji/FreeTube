@@ -1,10 +1,12 @@
 .sideNav {
   display: block;
+  /* stylelint-disable-next-line length-zero-no-unit -- unit required for calc() fallbacks */
   block-size: calc(100vh - 60px - var(--window-titlebar-height, 0px));
   inline-size: 80px;
   overflow-x: hidden;
   position: sticky;
   inset-inline-start: 0;
+  /* stylelint-disable-next-line length-zero-no-unit -- unit required for calc() fallbacks */
   inset-block-start: calc(60px + var(--window-titlebar-height, 0px));
   z-index: 3;
   box-shadow: 1px -1px 1px -1px var(--primary-shadow-color);
