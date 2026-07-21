@@ -33,7 +33,7 @@
 }
 
 /* Light theme glass / control surfaces */
-body.light .app {
+.light .app {
   --ui-glass-surface: rgb(255 255 255 / 90%);
   --ui-glass-control: rgb(0 0 0 / 6%);
   --ui-glass-control-hover: rgb(0 0 0 / 12%);
