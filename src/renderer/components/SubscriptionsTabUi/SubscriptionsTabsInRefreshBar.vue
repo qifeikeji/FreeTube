@@ -70,7 +70,7 @@ function tabLabel(tab) {
   block-size: 36px;
   min-block-size: 36px;
   backdrop-filter: blur(10px);
-  // stylelint-disable-next-line property-no-vendor-prefix
+  /* stylelint-disable-next-line property-no-vendor-prefix */
   -webkit-backdrop-filter: blur(10px);
   transition: background-color 0.15s ease-out, border-color 0.15s ease-out, box-shadow 0.15s ease-out;
 }

@@ -440,7 +440,7 @@ onBeforeUnmount(() => {
   background-color: rgb(0 0 0 / 38%);
   color: rgb(255 255 255 / 78%);
   backdrop-filter: blur(10px);
-  // stylelint-disable-next-line property-no-vendor-prefix
+  /* stylelint-disable-next-line property-no-vendor-prefix */
   -webkit-backdrop-filter: blur(10px);
 }
 
@@ -499,7 +499,7 @@ onBeforeUnmount(() => {
   border: 1px solid rgb(255 255 255 / 10%);
   color: inherit;
   backdrop-filter: blur(10px);
-  // stylelint-disable-next-line property-no-vendor-prefix
+  /* stylelint-disable-next-line property-no-vendor-prefix */
   -webkit-backdrop-filter: blur(10px);
 }
 
