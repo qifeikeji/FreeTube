@@ -1082,7 +1082,7 @@ Tooltips:
     Video Grid Columns: Set to 0 for automatic columns. Otherwise uses a fixed number of columns for grid view.
     Video Grid Min Column Width: Minimum width for each card when automatic columns are enabled. The page fills as many columns as fit, then shares leftover width (after gaps) across cards so no horizontal scrollbar appears.
   Theme Settings:
-    Window Title Suffix: Custom text after the dash in the window title. Example: "Video Name - YourName". Leave empty to use FreeTube.
+    Window Title Suffix: 'Custom text after the dash in the window title. Example: "Video Name - YourName". Leave empty to use FreeTube.'
   Player Settings:
     Proxy Videos Through Invidious: Will connect to Invidious to serve videos instead
       of making a direct connection to YouTube.
