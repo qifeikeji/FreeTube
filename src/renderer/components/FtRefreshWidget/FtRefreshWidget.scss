@@ -86,7 +86,6 @@
   /* Leave room under the glass bar; content can still scroll beneath it for blur */
   /* stylelint-disable-next-line length-zero-no-unit -- unit required for calc() */
   padding-block: calc(var(--refresh-bar-occupied-height, 52px) + 0px) 0px;
-
   padding-inline: 1px;
   box-sizing: border-box;
 }
@@ -157,7 +156,6 @@
   .refreshPageBody {
     /* stylelint-disable-next-line length-zero-no-unit -- unit required for calc() */
     padding-block: calc(var(--refresh-bar-occupied-height, 52px) + 0px) 0px;
-
     padding-inline: 8px;
   }
 }
