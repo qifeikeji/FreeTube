@@ -24,7 +24,7 @@
 }
 
 .topNavOption {
-  margin-block-start: 10px;
+  margin-block-start: 0;
 }
 
 .navOption,
@@ -159,7 +159,7 @@
 }
 
 .sideNav hr {
-  inline-size: 90%;
+  inline-size: 98%;
   block-size: 1px;
   border: 0;
   background-color: var(--primary-color);

@@ -284,12 +284,12 @@ function clearFilters() {
 .searchFiltersDialog.ft-card.promptCard {
   box-sizing: border-box;
   border-radius: var(--ui-control-radius, 10px);
-  background-color: var(--ui-glass-surface, rgb(18 18 18 / 72%)) !important;
+  background-color: var(--ui-glass-surface, rgb(18 18 18 / 86%)) !important;
   border: 1px solid var(--ui-glass-border, rgb(255 255 255 / 12%));
   box-shadow: 0 16px 40px rgb(0 0 0 / 40%);
   color: var(--ui-glass-text-strong, rgb(255 255 255 / 90%));
-  backdrop-filter: blur(20px) saturate(140%);
+  backdrop-filter: var(--ui-glass-blur, blur(20px) saturate(140%));
   /* stylelint-disable-next-line property-no-vendor-prefix */
-  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  -webkit-backdrop-filter: var(--ui-glass-blur, blur(20px) saturate(140%));
 }
 </style>

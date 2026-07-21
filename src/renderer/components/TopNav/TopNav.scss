@@ -85,7 +85,8 @@
 }
 
 .topNavBarColor .navButton,
-.topNavBarColor :deep(.ftIconButton:not(.arrowDisabled) .iconButton) {
+.topNavBarColor :deep(.ftIconButton:not(.arrowDisabled) .iconButton),
+.topNavBarColor :deep(.profileSettingsButton) {
   color: var(--text-with-main-color);
 
   &:hover {

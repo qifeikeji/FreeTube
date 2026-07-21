@@ -510,7 +510,7 @@ onBeforeUnmount(() => {
   color: rgb(255 255 255 / 42%);
 }
 
-/* Search history / suggestions dropdown */
+/* Search history / suggestions dropdown — match search-filter glass standard */
 .sideNavSearch.compact :deep(.list) {
   box-sizing: border-box;
   margin-block-start: 6px;
@@ -518,12 +518,12 @@ onBeforeUnmount(() => {
   padding-inline: 0;
   border-radius: var(--ui-control-radius, 10px);
   border: 1px solid var(--ui-glass-border, rgb(255 255 255 / 12%));
-  background-color: var(--ui-glass-surface, rgb(18 18 18 / 72%));
-  color: var(--ui-glass-text-strong, rgb(255 255 255 / 92%));
-  box-shadow: 0 12px 28px rgb(0 0 0 / 35%);
-  backdrop-filter: blur(20px) saturate(140%);
+  background-color: var(--ui-glass-surface, rgb(18 18 18 / 86%)) !important;
+  color: var(--ui-glass-text-strong, rgb(255 255 255 / 90%));
+  box-shadow: 0 16px 40px rgb(0 0 0 / 40%);
+  backdrop-filter: var(--ui-glass-blur, blur(20px) saturate(140%));
   /* stylelint-disable-next-line property-no-vendor-prefix */
-  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  -webkit-backdrop-filter: var(--ui-glass-blur, blur(20px) saturate(140%));
   overflow: hidden;
 }
 

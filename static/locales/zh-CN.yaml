@@ -945,7 +945,7 @@ Profile:
   Create New Profile: 建立新配置文件
   Profile Manager: 配置文件管理器
   Top Nav Profile Buttons: 顶部配置文件按钮
-  Top Nav Profile Buttons Description: 选择哪些配置文件要在顶部按钮行中隐藏；这不会影响右侧下拉菜单。
+  Top Nav Profile Buttons Description: 选择哪些配置文件要在顶部按钮行中隐藏。
   Custom Color: 自定义颜色
   Color Picker: 选色器
   All Channels: 所有频道
