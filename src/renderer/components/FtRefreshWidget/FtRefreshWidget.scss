@@ -1,4 +1,7 @@
 .refreshPageShell {
+  --refresh-bar-occupied-height: 52px;
+
+  position: relative;
   display: flex;
   flex-direction: column;
   block-size: 100%;
@@ -7,16 +10,20 @@
 }
 
 .floatingRefreshSection {
-  --refresh-bar-control-height: 36px;
-  --refresh-bar-control-padding-block: 8px;
-  --refresh-bar-glass-bg: rgb(18 18 18 / 52%);
-  --refresh-bar-glass-border: rgb(255 255 255 / 10%);
-  --refresh-bar-control-bg: rgb(0 0 0 / 38%);
-  --refresh-bar-control-bg-hover: rgb(0 0 0 / 52%);
-  --refresh-bar-text: rgb(255 255 255 / 78%);
-  --refresh-bar-text-muted: rgb(255 255 255 / 55%);
+  --refresh-bar-control-height: var(--ui-control-height, 36px);
+  --refresh-bar-control-padding-block: var(--ui-control-padding-block, 8px);
+  --refresh-bar-control-radius: var(--ui-control-radius, 10px);
+  --refresh-bar-glass-bg: rgb(18 18 18 / 45%);
+  --refresh-bar-glass-border: var(--ui-glass-border, rgb(255 255 255 / 12%));
+  --refresh-bar-control-bg: var(--ui-glass-control, rgb(0 0 0 / 38%));
+  --refresh-bar-control-bg-hover: var(--ui-glass-control-hover, rgb(0 0 0 / 52%));
+  --refresh-bar-text: var(--ui-glass-text, rgb(255 255 255 / 78%));
+  --refresh-bar-text-muted: var(--ui-glass-text-muted, rgb(255 255 255 / 55%));
 
   box-sizing: border-box;
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline: 0;
   flex-shrink: 0;
   inline-size: 100%;
   padding-block: 8px;
@@ -25,14 +32,13 @@
   grid-template-columns: repeat(3, minmax(0, 1fr));
   column-gap: 12px;
   align-items: center;
-  z-index: 2;
+  z-index: 3;
   background-color: var(--refresh-bar-glass-bg);
   border-block-end: 1px solid var(--refresh-bar-glass-border);
   box-shadow: 0 10px 28px rgb(0 0 0 / 22%);
-  backdrop-filter: blur(18px) saturate(140%);
+  backdrop-filter: blur(20px) saturate(160%);
   /* stylelint-disable-next-line property-no-vendor-prefix */
-  -webkit-backdrop-filter: blur(18px) saturate(140%);
-
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
   // Keep tab buttons and search field visually locked to the same box height.
   :deep(.subscriptionsTabButton) {
     box-sizing: border-box;
@@ -40,6 +46,7 @@
     min-block-size: var(--refresh-bar-control-height);
     padding-block: var(--refresh-bar-control-padding-block);
     padding-inline: 12px;
+    border-radius: var(--refresh-bar-control-radius);
   }
 
   :deep(.sideNavSearch.compact .ft-input-component),
@@ -53,10 +60,11 @@
     padding-block: var(--refresh-bar-control-padding-block);
     padding-inline-start: 12px;
     line-height: 1.25;
+    border-radius: var(--refresh-bar-control-radius);
   }
 
   :deep(.sideNavSearch.compact .showActionButton .ft-input) {
-    padding-inline-end: calc(36px + 6px);
+    padding-inline-end: calc(var(--refresh-bar-control-height) + 6px);
   }
 
   :deep(.sideNavSearch.compact .navFilterButton) {
@@ -65,14 +73,17 @@
     inline-size: var(--refresh-bar-control-height);
     min-block-size: var(--refresh-bar-control-height);
     padding: 0;
+    border-radius: var(--refresh-bar-control-radius);
   }
 }
 
 .refreshPageBody {
   flex: 1 1 auto;
   min-block-size: 0;
+  block-size: 100%;
   overflow: hidden auto;
-  padding-block: 18px;
+  /* Leave room under the glass bar; content can still scroll beneath it for blur */
+  padding-block: calc(var(--refresh-bar-occupied-height, 52px) + 18px) 18px;
   padding-inline: 1px;
   box-sizing: border-box;
 }
@@ -141,7 +152,7 @@
   }
 
   .refreshPageBody {
-    padding-block: 18px 8px;
+    padding-block: calc(var(--refresh-bar-occupied-height, 52px) + 18px) 8px;
     padding-inline: 8px;
   }
 }

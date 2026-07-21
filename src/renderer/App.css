@@ -6,6 +6,18 @@
 .app {
   --top-nav-height: 60px;
 
+  /* Shared control standards (search bar, tabs, dialog buttons) */
+  --ui-control-radius: 10px;
+  --ui-control-height: 36px;
+  --ui-control-padding-block: 8px;
+  --ui-glass-surface: rgb(18 18 18 / 72%);
+  --ui-glass-control: rgb(0 0 0 / 38%);
+  --ui-glass-control-hover: rgb(0 0 0 / 52%);
+  --ui-glass-border: rgb(255 255 255 / 12%);
+  --ui-glass-text: rgb(255 255 255 / 78%);
+  --ui-glass-text-strong: rgb(255 255 255 / 92%);
+  --ui-glass-text-muted: rgb(255 255 255 / 55%);
+
   display: block;
   font-family: Roboto, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   block-size: 100%;

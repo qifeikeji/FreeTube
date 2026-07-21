@@ -39,6 +39,8 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 3px;
+  overflow: hidden;
 }
 
 .moreOption {
@@ -76,9 +78,11 @@
 }
 
 .navIcon {
-  block-size: 1em;
-  inline-size: 100%;
+  block-size: 1.15em;
+  inline-size: 1.15em;
+  margin-inline: auto;
   display: block;
+  flex-shrink: 0;
 }
 
 .navIcon.fa-user-check {
@@ -91,7 +95,8 @@
   inset-inline-start: 0;
   font-size: 11px;
   margin: 0;
-  line-height: 1.2;
+  line-height: 1.15;
+  flex-shrink: 0;
 }
 
 .navOption .navLabel {
@@ -187,7 +192,8 @@
 
   .opened .navIcon {
     inline-size: 1.25em;
-    margin-inline-start: 0;
+    block-size: 1.25em;
+    margin-inline: 0;
   }
 
   .opened .navIcon.fa-user-check {
@@ -197,13 +203,15 @@
   .opened .navOption,
   .opened .navChannel {
     flex-direction: row;
+    align-items: center;
     justify-content: flex-start;
+    gap: 12px;
     padding-inline: 5px;
   }
 
   .opened .navLabel {
     text-align: start;
-    margin-inline-start: 10px;
+    margin-inline-start: 0;
     font-size: 16px;
     flex: 1;
     min-inline-size: 0;
@@ -222,7 +230,6 @@
     font-size: 12px;
     flex-grow: 1;
     margin: 0;
-    margin-inline-start: 10px;
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;

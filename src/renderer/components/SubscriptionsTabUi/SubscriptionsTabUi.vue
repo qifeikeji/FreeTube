@@ -10,7 +10,10 @@
       <SubscriptionsTabsInRefreshBar />
     </template>
     <template #center>
-      <FtSideNavSearch compact />
+      <FtSideNavSearch
+        compact
+        enable-idle-paste
+      />
     </template>
 
     <FtCard class="card">

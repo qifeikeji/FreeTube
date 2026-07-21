@@ -47,8 +47,13 @@ import { debounce, openInternalPath } from '../../helpers/utils'
 import { clearLocalSearchSuggestionsSession, getLocalSearchSuggestions } from '../../helpers/api/local'
 import { getInvidiousSearchSuggestions } from '../../helpers/api/invidious'
 
-defineProps({
+const props = defineProps({
   compact: {
+    type: Boolean,
+    default: false,
+  },
+  /** When true, Ctrl/Cmd+V pastes clipboard into the search field if focus is not already in an input. */
+  enableIdlePaste: {
     type: Boolean,
     default: false,
   },
@@ -351,15 +356,47 @@ function handleKeyboardShortcuts(event) {
       searchInput.value?.focus()
       searchInput.value?.select()
     }, 0)
+    return
+  }
+
+  if (
+    props.enableIdlePaste &&
+    !hideSearchBar.value &&
+    ctrlOrCommandPressed &&
+    (event.key === 'v' || event.key === 'V') &&
+    !event.repeat
+  ) {
+    const active = document.activeElement
+    if (
+      active instanceof HTMLInputElement ||
+      active instanceof HTMLTextAreaElement ||
+      active?.isContentEditable
+    ) {
+      return
+    }
+
+    event.preventDefault()
+
+    navigator.clipboard.readText().then((text) => {
+      if (typeof text !== 'string' || text.length === 0) {
+        return
+      }
+
+      updateSearchInputText(text)
+      getSearchSuggestionsDebounce(text)
+      searchInput.value?.focus()
+    }).catch((error) => {
+      console.error('Failed to read clipboard for search paste', error)
+    })
   }
 }
 
 onMounted(() => {
   syncSearchInputFromRoute()
 
-  if (process.env.IS_ELECTRON) {
-    window.addEventListener('keydown', handleKeyboardShortcuts)
+  window.addEventListener('keydown', handleKeyboardShortcuts)
 
+  if (process.env.IS_ELECTRON) {
     window.ftElectron.handleUpdateSearchInputText((searchQueryText) => {
       if (searchQueryText) {
         updateSearchInputText(searchQueryText)
@@ -390,8 +427,9 @@ watch(() => route.path, () => {
 })
 
 onBeforeUnmount(() => {
+  window.removeEventListener('keydown', handleKeyboardShortcuts)
+
   if (process.env.IS_ELECTRON) {
-    window.removeEventListener('keydown', handleKeyboardShortcuts)
     window.ftElectron.handleUpdateSearchInputText(null)
   }
 })
@@ -415,8 +453,8 @@ onBeforeUnmount(() => {
 
 .sideNavSearch.compact :deep(.ft-input-component) {
   box-sizing: border-box;
-  block-size: 36px;
-  min-block-size: 36px;
+  block-size: var(--ui-control-height, 36px);
+  min-block-size: var(--ui-control-height, 36px);
 }
 
 .sideNavSearch.compact :deep(.inputWrapper) {
@@ -427,25 +465,25 @@ onBeforeUnmount(() => {
 
 .sideNavSearch.compact :deep(.ft-input) {
   box-sizing: border-box;
-  block-size: 36px;
-  min-block-size: 36px;
+  block-size: var(--ui-control-height, 36px);
+  min-block-size: var(--ui-control-height, 36px);
   margin-block: 0;
   margin-inline: 0;
-  padding-block: 8px;
+  padding-block: var(--ui-control-padding-block, 8px);
   padding-inline-start: 12px;
   font-size: 14px;
   line-height: 1.25;
-  border-radius: 10px;
-  border: 1px solid rgb(255 255 255 / 10%);
-  background-color: rgb(0 0 0 / 38%);
-  color: rgb(255 255 255 / 78%);
+  border-radius: var(--ui-control-radius, 10px);
+  border: 1px solid var(--ui-glass-border, rgb(255 255 255 / 10%));
+  background-color: var(--ui-glass-control, rgb(0 0 0 / 38%));
+  color: var(--ui-glass-text, rgb(255 255 255 / 78%));
   backdrop-filter: blur(10px);
   /* stylelint-disable-next-line property-no-vendor-prefix */
   -webkit-backdrop-filter: blur(10px);
 }
 
 .sideNavSearch.compact :deep(.showActionButton .ft-input) {
-  padding-inline-end: calc(36px + 6px);
+  padding-inline-end: calc(var(--ui-control-height, 36px) + 6px);
 }
 
 .sideNavSearch.compact :deep(.clearTextButtonVisible.search .ft-input),
@@ -461,8 +499,8 @@ onBeforeUnmount(() => {
 
 .sideNavSearch.compact :deep(.forceTextColor .ft-input),
 .sideNavSearch.compact :deep(.forceTextColor .ft-input:focus) {
-  background-color: rgb(0 0 0 / 38%);
-  color: rgb(255 255 255 / 78%);
+  background-color: var(--ui-glass-control, rgb(0 0 0 / 38%));
+  color: var(--ui-glass-text, rgb(255 255 255 / 78%));
   box-shadow: none;
 }
 
@@ -470,6 +508,43 @@ onBeforeUnmount(() => {
 .sideNavSearch.compact :deep(.forceTextColor .ft-input::placeholder),
 .sideNavSearch.compact :deep(.forceTextColor ::placeholder) {
   color: rgb(255 255 255 / 42%);
+}
+
+/* Search history / suggestions dropdown */
+.sideNavSearch.compact :deep(.list) {
+  box-sizing: border-box;
+  margin-block-start: 6px;
+  padding-block: 6px;
+  padding-inline: 0;
+  border-radius: var(--ui-control-radius, 10px);
+  border: 1px solid var(--ui-glass-border, rgb(255 255 255 / 12%));
+  background-color: var(--ui-glass-surface, rgb(18 18 18 / 72%));
+  color: var(--ui-glass-text-strong, rgb(255 255 255 / 92%));
+  box-shadow: 0 12px 28px rgb(0 0 0 / 35%);
+  backdrop-filter: blur(20px) saturate(140%);
+  /* stylelint-disable-next-line property-no-vendor-prefix */
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  overflow: hidden;
+}
+
+.sideNavSearch.compact :deep(.list li) {
+  color: var(--ui-glass-text, rgb(255 255 255 / 78%));
+}
+
+.sideNavSearch.compact :deep(.list .hover),
+.sideNavSearch.compact :deep(.list li:hover) {
+  background-color: rgb(255 255 255 / 10%);
+  color: var(--ui-glass-text-strong, rgb(255 255 255 / 92%));
+}
+
+.sideNavSearch.compact :deep(.list .searchResultIcon),
+.sideNavSearch.compact :deep(.list .removeButton) {
+  color: var(--ui-glass-text-muted, rgb(255 255 255 / 55%));
+}
+
+.sideNavSearch.compact :deep(.list .removeButton:hover),
+.sideNavSearch.compact :deep(.list .removeButtonSelected) {
+  color: var(--ui-glass-text-strong, rgb(255 255 255 / 92%));
 }
 
 /* Center action icons inside the compact field; keep icon colors unchanged. */
@@ -480,6 +555,7 @@ onBeforeUnmount(() => {
   transform: translateY(-50%);
   margin-block: 0;
   padding: 6px;
+  color: var(--ui-glass-text, rgb(255 255 255 / 78%));
 }
 
 .sideNavSearch.compact .navFilterButton {
@@ -488,25 +564,25 @@ onBeforeUnmount(() => {
   align-items: center;
   justify-content: center;
   align-self: center;
-  block-size: 36px;
-  inline-size: 36px;
-  min-block-size: 36px;
+  block-size: var(--ui-control-height, 36px);
+  inline-size: var(--ui-control-height, 36px);
+  min-block-size: var(--ui-control-height, 36px);
   padding: 0;
   font-size: 16px;
   line-height: 1;
-  border-radius: 10px;
-  background-color: rgb(0 0 0 / 38%);
-  border: 1px solid rgb(255 255 255 / 10%);
-  color: inherit;
+  border-radius: var(--ui-control-radius, 10px);
+  background-color: var(--ui-glass-control, rgb(0 0 0 / 38%));
+  border: 1px solid var(--ui-glass-border, rgb(255 255 255 / 10%));
+  color: var(--ui-glass-text, rgb(255 255 255 / 78%));
   backdrop-filter: blur(10px);
   /* stylelint-disable-next-line property-no-vendor-prefix */
   -webkit-backdrop-filter: blur(10px);
 }
 
 .sideNavSearch.compact .navFilterButton:hover {
-  background-color: rgb(0 0 0 / 52%);
+  background-color: var(--ui-glass-control-hover, rgb(0 0 0 / 52%));
   border-color: rgb(255 255 255 / 18%);
-  color: inherit;
+  color: var(--ui-glass-text-strong, rgb(255 255 255 / 92%));
 }
 
 .searchInput {

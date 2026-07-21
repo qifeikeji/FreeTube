@@ -2,10 +2,12 @@
   margin-block-start: 10px;
   text-align: center;
   user-select: none;
+  color: var(--ui-glass-text-strong, rgb(255 255 255 / 92%));
 }
 
 .searchRadio {
   padding: 5px;
+  color: var(--ui-glass-text, rgb(255 255 255 / 78%));
 }
 
 .radioFlexBox {
@@ -16,6 +18,32 @@
 .searchFilterCloseButtonContainer {
   display: flex;
   justify-content: center;
+  padding-block-start: 8px;
+}
+
+.searchFilterCloseButtonContainer :deep(.searchFilterCloseButton.btn),
+.searchFilterCloseButtonContainer :deep(.btn) {
+  box-sizing: border-box;
+  block-size: var(--ui-control-height, 36px);
+  min-block-size: var(--ui-control-height, 36px);
+  margin: 0;
+  padding-block: var(--ui-control-padding-block, 8px);
+  padding-inline: 16px;
+  border-width: 1px;
+  border-style: solid;
+  border-color: var(--ui-glass-border, rgb(255 255 255 / 12%));
+  border-radius: var(--ui-control-radius, 10px);
+  background-color: var(--ui-glass-control, rgb(0 0 0 / 38%)) !important;
+  color: var(--ui-glass-text-strong, rgb(255 255 255 / 92%)) !important;
+  box-shadow: none;
+  backdrop-filter: blur(10px);
+  /* stylelint-disable-next-line property-no-vendor-prefix */
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.searchFilterCloseButtonContainer :deep(.btn:hover) {
+  background-color: var(--ui-glass-control-hover, rgb(0 0 0 / 52%)) !important;
+  border-color: rgb(255 255 255 / 18%);
 }
 
 .titleContainer {
@@ -27,26 +55,35 @@
 }
 
 .clearFilterButton {
-  border-radius: 50%;
-  border-style: none;
-  background-color: transparent;
-  color: var(--primary-text-color);
+  border-radius: var(--ui-control-radius, 10px);
+  border: 1px solid var(--ui-glass-border, rgb(255 255 255 / 12%));
+  background-color: var(--ui-glass-control, rgb(0 0 0 / 38%));
+  color: var(--ui-glass-text, rgb(255 255 255 / 78%));
   cursor: pointer;
-  font-size: 20px;
-  line-height: 1em;
-  padding: 10px;
-  transition: background 0.2s ease-out;
+  font-size: 16px;
+  line-height: 1;
+  box-sizing: border-box;
+  block-size: var(--ui-control-height, 36px);
+  inline-size: var(--ui-control-height, 36px);
+  min-block-size: var(--ui-control-height, 36px);
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(10px);
+  /* stylelint-disable-next-line property-no-vendor-prefix */
+  -webkit-backdrop-filter: blur(10px);
+  transition: background 0.2s ease-out, border-color 0.2s ease-out;
 
   &:hover {
-    background-color: var(--side-nav-hover-color);
-    color: var(--side-nav-hover-text-color);
-    transition: background 0.2s ease-in;
+    background-color: var(--ui-glass-control-hover, rgb(0 0 0 / 52%));
+    border-color: rgb(255 255 255 / 18%);
+    color: var(--ui-glass-text-strong, rgb(255 255 255 / 92%));
   }
 
   &:active {
-    background-color: var(--tertiary-text-color);
-    color: var(--side-nav-active-text-color);
-    transition: background 0.2s ease-in;
+    background-color: rgb(0 0 0 / 62%);
+    color: var(--ui-glass-text-strong, rgb(255 255 255 / 92%));
   }
 }
 

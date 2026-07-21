@@ -54,21 +54,21 @@ function tabLabel(tab) {
 }
 
 .subscriptionsTabButton {
-  border: 1px solid rgb(255 255 255 / 10%);
-  border-radius: 10px;
-  background-color: rgb(0 0 0 / 38%);
-  color: rgb(255 255 255 / 78%);
+  border: 1px solid var(--ui-glass-border, rgb(255 255 255 / 10%));
+  border-radius: var(--ui-control-radius, 10px);
+  background-color: var(--ui-glass-control, rgb(0 0 0 / 38%));
+  color: var(--ui-glass-text, rgb(255 255 255 / 78%));
   cursor: pointer;
   line-height: 1;
-  padding-block: 8px;
+  padding-block: var(--ui-control-padding-block, 8px);
   padding-inline: 12px;
   white-space: nowrap;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
-  block-size: 36px;
-  min-block-size: 36px;
+  block-size: var(--ui-control-height, 36px);
+  min-block-size: var(--ui-control-height, 36px);
   backdrop-filter: blur(10px);
   /* stylelint-disable-next-line property-no-vendor-prefix */
   -webkit-backdrop-filter: blur(10px);
@@ -76,7 +76,7 @@ function tabLabel(tab) {
 }
 
 .subscriptionsTabButton:hover {
-  background-color: rgb(0 0 0 / 52%);
+  background-color: var(--ui-glass-control-hover, rgb(0 0 0 / 52%));
   border-color: rgb(255 255 255 / 18%);
   box-shadow: 0 0 0 1px rgb(255 255 255 / 8%);
 }

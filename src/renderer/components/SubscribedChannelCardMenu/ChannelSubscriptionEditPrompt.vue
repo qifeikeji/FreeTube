@@ -108,19 +108,24 @@
       </section>
       <FtFlexBox class="actions">
         <FtButton
+          class="actionButton saveButton"
           :label="t('Channels.Save Channel Notes')"
-          background-color="var(--primary-color)"
-          text-color="var(--text-with-main-color)"
+          background-color="color-mix(in srgb, var(--primary-color) 72%, transparent)"
+          text-color="var(--ui-glass-text-strong, rgb(255 255 255 / 92%))"
           @click="save"
         />
         <FtButton
+          class="actionButton cancelButton"
           :label="t('Cancel')"
+          background-color="var(--ui-glass-control, rgb(0 0 0 / 38%))"
+          text-color="var(--ui-glass-text-strong, rgb(255 255 255 / 92%))"
           @click="cancel"
         />
         <FtButton
+          class="actionButton resetButton"
           :label="t('Channels.Reset Notes Color')"
-          background-color="var(--accent-color)"
-          text-color="var(--text-with-accent-color)"
+          background-color="color-mix(in srgb, var(--accent-color) 72%, transparent)"
+          text-color="var(--ui-glass-text-strong, rgb(255 255 255 / 92%))"
           @click="resetColors"
         />
       </FtFlexBox>
@@ -383,6 +388,38 @@ function cancel() {
   flex-shrink: 0;
   padding-block-start: 4px;
 }
+
+.actions :deep(.btn) {
+  box-sizing: border-box;
+  block-size: var(--ui-control-height, 36px);
+  min-block-size: var(--ui-control-height, 36px);
+  margin: 0;
+  padding-block: var(--ui-control-padding-block, 8px);
+  padding-inline: 16px;
+  border-width: 1px;
+  border-style: solid;
+  border-radius: var(--ui-control-radius, 10px);
+  box-shadow: none;
+  backdrop-filter: blur(10px);
+  /* stylelint-disable-next-line property-no-vendor-prefix */
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.actions :deep(.cancelButton.btn) {
+  border-color: var(--ui-glass-border, rgb(255 255 255 / 12%));
+}
+
+.actions :deep(.saveButton.btn) {
+  border-color: color-mix(in srgb, var(--primary-color) 55%, transparent);
+}
+
+.actions :deep(.resetButton.btn) {
+  border-color: color-mix(in srgb, var(--accent-color) 55%, transparent);
+}
+
+.actions :deep(.btn:hover) {
+  filter: brightness(1.08);
+}
 </style>
 
 <style>
@@ -398,10 +435,10 @@ function cancel() {
   flex-direction: column;
   padding-block: 18px 20px;
   padding-inline: 20px;
-  background-color: rgb(18 18 18 / 72%) !important;
-  border: 1px solid rgb(255 255 255 / 12%);
+  background-color: var(--ui-glass-surface, rgb(18 18 18 / 72%)) !important;
+  border: 1px solid var(--ui-glass-border, rgb(255 255 255 / 12%));
   box-shadow: 0 16px 40px rgb(0 0 0 / 40%);
-  color: rgb(255 255 255 / 90%);
+  color: var(--ui-glass-text-strong, rgb(255 255 255 / 90%));
   backdrop-filter: blur(20px) saturate(140%);
   /* stylelint-disable-next-line property-no-vendor-prefix */
   -webkit-backdrop-filter: blur(20px) saturate(140%);
