@@ -134,7 +134,7 @@ function getRelativeLuminance(hex) {
     ? normalized.split('').map((c) => c + c).join('')
     : normalized
 
-  if (!/^[0-9a-fA-F]{6}$/.test(full)) {
+  if (!/^[\dA-Fa-f]{6}$/.test(full)) {
     return 0.1
   }
 
