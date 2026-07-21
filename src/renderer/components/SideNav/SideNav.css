@@ -1,13 +1,13 @@
 .sideNav {
   display: block;
   /* stylelint-disable-next-line length-zero-no-unit -- unit required for calc() fallbacks */
-  block-size: calc(100vh - 60px - var(--window-titlebar-height, 0px));
+  block-size: calc(100vh - var(--top-nav-height, 60px) - var(--window-titlebar-height, 0px));
   inline-size: 80px;
   overflow-x: hidden;
-  position: sticky;
+  position: fixed;
   inset-inline-start: 0;
   /* stylelint-disable-next-line length-zero-no-unit -- unit required for calc() fallbacks */
-  inset-block-start: calc(60px + var(--window-titlebar-height, 0px));
+  inset-block-start: calc(var(--top-nav-height, 60px) + var(--window-titlebar-height, 0px));
   z-index: 3;
   box-shadow: 1px -1px 1px -1px var(--primary-shadow-color);
   background-color: var(--side-nav-color);
@@ -30,8 +30,15 @@
 .navOption,
 .navChannel {
   position: relative;
-  padding: 5px;
-  min-block-size: 35px;
+  box-sizing: border-box;
+  block-size: 50px;
+  min-block-size: 50px;
+  max-block-size: 50px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
 .moreOption {
@@ -39,16 +46,17 @@
 }
 
 .navOption {
-  display: block;
   color: inherit;
   text-decoration: inherit;
-  padding-block: 5px;
-  padding-inline: 0;
   -webkit-user-drag: none;
 }
 
 .channelLink {
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  block-size: 100%;
+  inline-size: 100%;
   color: inherit;
   text-decoration: inherit;
 }
@@ -82,7 +90,8 @@
   text-align: center;
   inset-inline-start: 0;
   font-size: 11px;
-  margin-block-end: 0;
+  margin: 0;
+  line-height: 1.2;
 }
 
 .navOption .navLabel {
@@ -93,7 +102,7 @@
 .navChannel .navLabel {
   overflow: hidden;
   /* stylelint-disable-next-line liberty/use-logical-spec */
-  margin-left: 40px;
+  margin-left: 0;
   overflow-wrap: break-word;
   font-size: 12px;
 }
@@ -101,21 +110,25 @@
 /* stylelint-disable liberty/use-logical-spec */
 :global(body[dir='rtl'] .navChannel .navLabel) {
   margin-left: initial;
-  margin-right: 40px;
+  margin-right: 0;
 }
 /* stylelint-enable liberty/use-logical-spec */
 
 .thumbnailContainer {
   inline-size: 35px;
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   margin: 0;
   position: static;
   text-align: center;
   transform: none;
   float: none;
-  margin-inline: auto;
-  inset-block-start: 0;
-  margin-block: 0.3em;
+  flex-shrink: 0;
+}
+
+.navChannel .thumbnailContainer {
+  block-size: 35px;
 }
 
 .channelThumbnail {
@@ -174,46 +187,55 @@
 
   .opened .navIcon {
     inline-size: 1.25em;
-    margin-inline-start: 10px;
+    margin-inline-start: 0;
   }
 
   .opened .navIcon.fa-user-check {
     block-size: 1em;
   }
 
-  .opened .navOption {
+  .opened .navOption,
+  .opened .navChannel {
+    flex-direction: row;
+    justify-content: flex-start;
     padding-inline: 5px;
   }
 
   .opened .navLabel {
     text-align: start;
-    margin-inline-start: 40px;
-    margin-block-end: 16px;
+    margin-inline-start: 10px;
     font-size: 16px;
+    flex: 1;
+    min-inline-size: 0;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
   }
 
   .opened .channelLink {
     display: flex;
     align-items: center;
+    justify-content: flex-start;
   }
 
   .opened .navChannel .navLabel {
     font-size: 12px;
     flex-grow: 1;
     margin: 0;
+    margin-inline-start: 10px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
   }
 
   .opened .thumbnailContainer {
-    inset-block-start: 50%;
-    position: absolute;
-    transform: translateY(-50%);
-    margin-block: 0;
+    position: static;
+    transform: none;
+    margin: 0;
   }
 
   .opened .navChannel .thumbnailContainer {
-    position: static;
-    transform: none;
-    margin: 5px;
+    margin-inline-end: 0;
   }
 
   .opened.hiddenLabels .navLabel {
@@ -262,9 +284,9 @@
 
   .navOption {
     inline-size: 70px;
-    block-size: 40px;
+    block-size: 50px;
+    max-block-size: 50px;
     padding: 0;
-    padding-block: 10px;
   }
 
   .hiddenLabels {

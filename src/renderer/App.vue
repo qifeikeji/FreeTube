@@ -152,28 +152,19 @@ const hideLabelsSideBar = computed(() => store.getters.getHideLabelsSideBar)
 /** @type {import('vue').ComputedRef<number>} */
 const sideNavWidthPx = computed(() => store.getters.getSideNavWidthPx)
 /** @type {import('vue').ComputedRef<number>} */
-const videoGridColumns = computed(() => store.getters.getVideoGridColumns)
-/** @type {import('vue').ComputedRef<number>} */
 const videoGridMinColumnWidth = computed(() => store.getters.getVideoGridMinColumnWidth)
 
 const appStyle = computed(() => {
   const width = Number(sideNavWidthPx.value)
   const safeWidth = Number.isFinite(width) ? Math.min(Math.max(width, 180), 800) : 300
 
-  const cols = Math.round(Number(videoGridColumns.value))
-  const safeCols = Number.isFinite(cols) ? Math.min(Math.max(cols, 0), 12) : 0
-
   const minColumnWidth = Math.round(Number(videoGridMinColumnWidth.value))
   const safeMinColumnWidth = Number.isFinite(minColumnWidth)
     ? Math.min(Math.max(minColumnWidth, 180), 600)
     : 300
 
-  // auto-fill + min(100%, minWidth) keeps columns fluid without forcing horizontal overflow:
-  // columns = floor(container / minWidth), leftover width (after gaps) is shared via 1fr.
-  const autoTemplateColumns = `repeat(auto-fill, minmax(min(100%, ${safeMinColumnWidth}px), 1fr))`
-  const gridTemplateColumns = safeCols >= 1
-    ? `repeat(${safeCols}, minmax(0, 1fr))`
-    : autoTemplateColumns
+  // auto-fill + min(100%, minWidth): as many columns as fit, leftover width shared via 1fr.
+  const gridTemplateColumns = `repeat(auto-fill, minmax(min(100%, ${safeMinColumnWidth}px), 1fr))`
 
   return {
     '--side-nav-open-width': `${safeWidth}px`,

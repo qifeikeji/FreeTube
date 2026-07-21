@@ -1,8 +1,18 @@
+html {
+  block-size: 100%;
+  overflow: hidden;
+}
+
+#app {
+  block-size: 100%;
+}
+
 body {
   margin: 0;
-  min-block-size: 100vh;
+  block-size: 100%;
+  min-block-size: 100%;
   max-inline-size: 100%;
-  overflow-x: hidden;
+  overflow: hidden;
   color: var(--primary-text-color);
   background-color: var(--bg-color);
 

@@ -4,12 +4,15 @@
 }
 
 .app {
-  display: flex;
-  flex-wrap: wrap;
+  --top-nav-height: 60px;
+
+  display: block;
   font-family: Roboto, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   block-size: 100%;
   max-inline-size: 100%;
-  overflow-x: hidden;
+  overflow: hidden;
+  box-sizing: border-box;
+  position: relative;
 
   /* Value of 0 without 'px' does not work inside calc() */
   /* stylelint-disable-next-line length-zero-no-unit */
@@ -17,20 +20,31 @@
 }
 
 .app.hasCustomTitleBar {
-  --window-titlebar-height: 32px;
-
-  padding-block-start: var(--window-titlebar-height);
-  box-sizing: border-box;
+  --window-titlebar-height: 35px;
 }
 
 .routerView {
-  flex: 1 1 0%;
-  min-inline-size: 0;
-  max-inline-size: 100%;
-  margin-block: 18px;
-  margin-inline: 1px;
+  position: fixed;
+  /* stylelint-disable-next-line length-zero-no-unit -- unit required for calc() fallbacks */
+  inset-block-start: calc(var(--top-nav-height) + var(--window-titlebar-height, 0px));
+  inset-inline-start: 80px;
+  inset-block-end: 0;
+  inset-inline-end: 0;
+  margin: 0;
+  padding-block: 18px;
+  padding-inline: 1px;
   overflow-x: hidden;
+  overflow-y: auto;
   box-sizing: border-box;
+  min-inline-size: 0;
+}
+
+.isSideNavOpen .routerView {
+  inset-inline-start: var(--side-nav-open-width, 200px);
+}
+
+.hideLabelsSideBar .routerView {
+  inset-inline-start: 60px;
 }
 
 .banner {
@@ -80,17 +94,20 @@
 
 @media only screen and (width <= 680px) {
   .routerView {
-    margin-block: 68px;
-    margin-inline: 8px;
+    inset-inline-start: 0;
+    inset-block-end: 60px;
+    padding-block: 18px 8px;
+    padding-inline: 8px;
+  }
+
+  .isSideNavOpen .routerView,
+  .hideLabelsSideBar .routerView {
+    inset-inline-start: 0;
   }
 
   .banner {
     inline-size: 90%;
-    margin-block: 60px 0;
-  }
-
-  .flexBox {
-    margin-block: 60px -75px;
+    margin-block: 20px 0;
   }
 
   .changeLogText {

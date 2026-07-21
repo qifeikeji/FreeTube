@@ -13,10 +13,10 @@
   background-color: var(--card-bg-color);
   box-shadow: 0 2px 1px 0 var(--primary-shadow-color);
   display: flex;
-  block-size: 60px;
+  block-size: var(--top-nav-height, 60px);
   inset-inline: 0;
-  line-height: 60px;
-  position: sticky;
+  line-height: var(--top-nav-height, 60px);
+  position: fixed;
   /* stylelint-disable-next-line length-zero-no-unit -- unit required for calc() fallbacks */
   inset-block-start: var(--window-titlebar-height, 0px);
   inline-size: 100%;
@@ -32,8 +32,6 @@
   }
 
   @media only screen and (width <= 680px) {
-    position: fixed;
-
     &:has(+ .sideNav + .routerView .floatingRefreshSection) {
       box-shadow: none;
     }

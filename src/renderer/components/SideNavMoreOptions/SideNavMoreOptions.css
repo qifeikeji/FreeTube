@@ -4,11 +4,18 @@
 
 .navOption {
   position: relative;
-  padding: 5px;
+  box-sizing: border-box;
+  block-size: 50px;
+  min-block-size: 50px;
+  max-block-size: 50px;
+  padding: 0;
   cursor: pointer;
   color: inherit;
   text-decoration: none;
-  display: block;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
 .navOption:hover {
@@ -49,8 +56,8 @@
   .navOption,
   .closed .navOption {
     inline-size: 70px;
-    block-size: 40px;
-    padding-block: 10px;
+    block-size: 50px;
+    padding-block: 0;
     padding-inline: 0;
   }
 

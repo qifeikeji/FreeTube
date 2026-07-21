@@ -198,17 +198,19 @@ onBeforeUnmount(() => {
   z-index: 20;
   display: flex;
   align-items: stretch;
-  block-size: var(--window-titlebar-height, 32px);
+  justify-content: flex-end;
+  block-size: var(--window-titlebar-height, 35px);
   inline-size: 100%;
   user-select: none;
   box-sizing: border-box;
 }
 
 .titleDragArea {
-  flex: 1 1 auto;
-  min-inline-size: 0;
+  position: absolute;
+  inset: 0;
   display: flex;
   align-items: center;
+  justify-content: center;
   padding-inline: 12px;
   /* Electron window drag region */
   -webkit-app-region: drag;
@@ -222,9 +224,13 @@ onBeforeUnmount(() => {
   font-size: 12px;
   line-height: 1;
   opacity: 0.92;
+  text-align: center;
+  max-inline-size: calc(100% - (3 * var(--window-titlebar-height, 35px)) - 24px);
 }
 
 .windowControls {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex: 0 0 auto;
   align-items: stretch;
@@ -245,7 +251,7 @@ onBeforeUnmount(() => {
   border-radius: 0;
   block-size: 100%;
   /* Perfect square: height equals title bar height */
-  inline-size: var(--window-titlebar-height, 32px);
+  inline-size: var(--window-titlebar-height, 35px);
   background: transparent;
   color: inherit;
   cursor: default;
@@ -284,8 +290,8 @@ onBeforeUnmount(() => {
 }
 
 .controlIcon {
-  inline-size: 10px;
-  block-size: 10px;
+  inline-size: 12px;
+  block-size: 12px;
   display: block;
   pointer-events: none;
 }

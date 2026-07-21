@@ -1080,7 +1080,7 @@ Tooltips:
     Open Deep Links In New Window: URLs passed to FreeTube, such as by redirect
       browser extensions or command line arguments, are opened in a new window.
     Video Grid Columns: Set to 0 for automatic columns. Otherwise uses a fixed number of columns for grid view.
-    Video Grid Min Column Width: Minimum width for each card when automatic columns are enabled. The page fills as many columns as fit, then shares leftover width (after gaps) across cards so no horizontal scrollbar appears.
+    Video Grid Min Column Width: Minimum width for each video/channel/history card. The page fills as many columns as fit, then shares leftover width (after gaps) across cards.
   Theme Settings:
     Window Title Suffix: 'Custom text after the dash in the window title. Example: "Video Name - YourName". Leave empty to use FreeTube.'
   Player Settings:

@@ -982,7 +982,7 @@ Tooltips:
     External Link Handling: "选择单击一个无法在 FreeTube 中打开的链接时触发的默认操作。\n默认情况下，FreeTube 将在您的默认浏览器中打开所点击链接。\n"
     Open Deep Links In New Window: 在新窗口由浏览器的重定向扩展或命令行变量传递到 FreeTube 的 URL。
     Video Grid Columns: 设为 0 表示自动列数；否则网格视图使用固定列数。
-    Video Grid Min Column Width: 自动列数时每张卡片的最小宽度。页面会按容器宽度尽量排满列，再把去掉间距后的剩余宽度均分给各列卡片，避免出现横向滚动条。
+    Video Grid Min Column Width: 每张视频/频道/历史卡片的最小宽度。页面会按容器宽度尽量排满列，再把去掉间距后的剩余宽度均分给各列卡片。
   Theme Settings:
     Window Title Suffix: 自定义窗口标题中短横线后面的文字。例如：“视频名 - 你的名字”。留空则使用 FreeTube。
   External Player Settings:

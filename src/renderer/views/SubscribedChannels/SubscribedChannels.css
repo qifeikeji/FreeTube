@@ -1,5 +1,5 @@
 .card {
-  inline-size: 85%;
+  inline-size: 98.5%;
   max-inline-size: 100%;
   margin-block: 0 60px;
   margin-inline: auto;
@@ -144,7 +144,7 @@
 
 @media only screen and (width <= 680px) {
   .card {
-    inline-size: 90%;
+    inline-size: 98.5%;
   }
 
   .channels {
