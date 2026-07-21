@@ -16,8 +16,8 @@
 }
 
 .channels {
-  --channel-card-bg: #282828;
-  --channel-card-bg-hover: #1f1f1f;
+  --channel-card-bg: rgb(0 0 0 / 10%);
+  --channel-card-bg-hover: rgb(0 0 0 / 14%);
   --channel-card-icon-size: 72px;
   --channel-card-min-column: var(--video-grid-min-column, 300px);
 

@@ -123,7 +123,7 @@
         <FtButton
           class="actionButton cancelButton"
           :label="t('Cancel')"
-          background-color="rgb(255 255 255 / 22%)"
+          background-color="rgb(0 0 0 / 10%)"
           text-color="var(--ui-glass-text-strong, rgb(255 255 255 / 92%))"
           @click="cancel"
         />
@@ -282,12 +282,12 @@ function cancel() {
 
 .dialogTitle {
   margin-block: 0 6px;
-  color: rgb(255 255 255 / 92%);
+  color: var(--ui-glass-text-strong, rgb(255 255 255 / 92%));
 }
 
 .dialogChannelName {
   margin: 0;
-  color: rgb(255 255 255 / 55%);
+  color: var(--ui-glass-text-muted, rgb(255 255 255 / 55%));
   font-size: 1rem;
   font-weight: 500;
 }
@@ -311,8 +311,8 @@ function cancel() {
   box-sizing: border-box;
   padding: 14px;
   border-radius: 14px;
-  background-color: rgb(0 0 0 / 38%);
-  border: 1px solid rgb(255 255 255 / 12%);
+  background-color: rgb(0 0 0 / 10%);
+  border: 1px solid var(--ui-glass-border, rgb(255 255 255 / 12%));
   box-shadow: none;
   backdrop-filter: blur(10px);
   /* stylelint-disable-next-line property-no-vendor-prefix */
@@ -344,14 +344,14 @@ function cancel() {
 }
 
 .togglesRow :deep(.switch-label) {
-  color: rgb(255 255 255 / 86%);
+  color: var(--ui-glass-text, rgb(255 255 255 / 86%));
 }
 
 .fieldLabel {
   display: block;
   font-weight: 600;
   margin-block-end: 8px;
-  color: rgb(255 255 255 / 82%);
+  color: var(--ui-glass-text, rgb(255 255 255 / 82%));
 }
 
 .notesField {
@@ -360,24 +360,24 @@ function cancel() {
   flex: 1;
   min-block-size: 96px;
   padding: 12px;
-  border: 1px solid rgb(255 255 255 / 10%);
+  border: 1px solid var(--ui-glass-border, rgb(255 255 255 / 10%));
   border-radius: 10px;
   font-size: 15px;
   line-height: 1.45;
   font-family: inherit;
-  color: rgb(255 255 255 / 88%);
-  background-color: rgb(0 0 0 / 35%);
+  color: var(--ui-glass-text-strong, rgb(255 255 255 / 88%));
+  background-color: rgb(0 0 0 / 10%);
   resize: none;
 }
 
 .notesField::placeholder {
-  color: rgb(255 255 255 / 40%);
+  color: var(--ui-glass-text-muted, rgb(255 255 255 / 40%));
 }
 
 .notesField:focus {
   outline: none;
-  border-color: rgb(255 255 255 / 28%);
-  box-shadow: 0 0 0 1px rgb(255 255 255 / 10%);
+  border-color: color-mix(in srgb, var(--ui-glass-border, rgb(255 255 255 / 28%)) 100%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--ui-glass-border, rgb(255 255 255 / 10%)) 100%, transparent);
 }
 
 .colorSwatches {
@@ -393,7 +393,7 @@ function cancel() {
   block-size: 40px;
   min-inline-size: 0;
   border-radius: 10px;
-  border: 2px solid rgb(255 255 255 / 12%);
+  border: 2px solid var(--ui-glass-border, rgb(255 255 255 / 12%));
   box-sizing: border-box;
   cursor: pointer;
   padding: 0;
@@ -412,12 +412,12 @@ function cancel() {
 }
 
 .colorSwatch:hover {
-  border-color: rgb(255 255 255 / 45%);
+  border-color: color-mix(in srgb, var(--ui-glass-text-strong, #fff) 45%, transparent);
 }
 
 .colorSwatch.selected {
-  border-color: #fff;
-  box-shadow: 0 0 0 1px rgb(255 255 255 / 35%);
+  border-color: var(--ui-glass-text-strong, #fff);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--ui-glass-text-strong, #fff) 35%, transparent);
 }
 
 .actions {
@@ -447,13 +447,14 @@ function cancel() {
 }
 
 .actions :deep(.cancelButton.btn) {
-  border-color: rgb(255 255 255 / 28%);
-  background-color: rgb(255 255 255 / 22%) !important;
+  border-color: var(--ui-glass-border, rgb(255 255 255 / 28%));
+  background-color: rgb(0 0 0 / 10%) !important;
+  color: var(--ui-glass-text-strong, rgb(255 255 255 / 92%)) !important;
 }
 
 .actions :deep(.cancelButton.btn:hover) {
-  background-color: rgb(255 255 255 / 36%) !important;
-  border-color: rgb(255 255 255 / 48%);
+  background-color: rgb(0 0 0 / 14%) !important;
+  border-color: color-mix(in srgb, var(--ui-glass-border, rgb(255 255 255 / 48%)) 100%, transparent);
   filter: none;
 }
 
