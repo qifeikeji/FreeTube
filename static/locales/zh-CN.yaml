@@ -287,9 +287,11 @@ Settings:
       Blue: '蓝'
       Light Blue: '浅蓝'
       Cyan: '青'
-      Teal: '浅灰'
+      Teal: '蓝绿'
       Green: '绿'
       Light Green: '浅绿'
+      Light Gray: '浅灰'
+      Dark Gray: '深灰'
       Lime: '青柠绿'
       Yellow: '黄'
       Amber: '黄褐'
@@ -365,6 +367,7 @@ Settings:
       Catppuccin Latte Mauve: Catppuccin Latte Mauve
       Catppuccin Latte Red: Catppuccin Latte Red
     Secondary Color Theme: '次主题色'
+    Pick Custom Color: 选择自定义颜色
         #* Main Color Theme
     UI Scale: UI缩放
     Expand Side Bar by Default: 默认展开侧边栏

@@ -77,7 +77,7 @@
               selected: draftNotesColor === option.value,
               isDefault: option.value === defaultNotesColor
             }"
-            :style="option.value ? { backgroundColor: option.value } : undefined"
+            :style="option.display ? { backgroundColor: option.display } : undefined"
             :title="option.label"
             @click="draftNotesColor = option.value"
           />
@@ -106,7 +106,7 @@
               selected: draftHighlightColor === option.value,
               isDefault: option.value === defaultHighlightColor
             }"
-            :style="option.value ? { backgroundColor: option.value } : undefined"
+            :style="option.display ? { backgroundColor: option.display } : undefined"
             :title="option.label"
             @click="selectHighlightColor(option.value)"
           />
@@ -141,6 +141,12 @@ import FtFlexBox from '../ft-flex-box/ft-flex-box.vue'
 import FtButton from '../FtButton/FtButton.vue'
 import FtToggleSwitch from '../FtToggleSwitch/FtToggleSwitch.vue'
 
+import {
+  channelAccentColors,
+  normalizeBaseTheme,
+} from '../../helpers/colors'
+import store from '../../store/index'
+
 const props = defineProps({
   channel: {
     type: Object,
@@ -159,14 +165,29 @@ const highlightColorFieldId = useId()
 const defaultNotesColor = ''
 const defaultHighlightColor = ''
 
-const noteColorOptions = computed(() => [
-  { label: t('Channels.Note Color Red'), value: '#e53935' },
-  { label: t('Channels.Note Color Yellow'), value: '#fdd835' },
-  { label: t('Channels.Note Color Blue'), value: '#1e88e5' },
-  { label: t('Channels.Note Color Green'), value: '#43a047' },
-  { label: t('Channels.Note Color Purple'), value: '#8e24aa' },
-  { label: t('Channels.Note Color Default'), value: '' },
-])
+const isLightTheme = computed(() => {
+  const systemPreference = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+  return normalizeBaseTheme(store.getters.getBaseTheme || 'dark', systemPreference) === 'light'
+})
+
+const noteColorOptions = computed(() => {
+  const labels = {
+    red: t('Channels.Note Color Red'),
+    yellow: t('Channels.Note Color Yellow'),
+    blue: t('Channels.Note Color Blue'),
+    green: t('Channels.Note Color Green'),
+    purple: t('Channels.Note Color Purple'),
+  }
+
+  return [
+    ...channelAccentColors.map((entry) => ({
+      label: labels[entry.key],
+      value: entry.dark,
+      display: isLightTheme.value ? entry.light : entry.dark,
+    })),
+    { label: t('Channels.Note Color Default'), value: '', display: '' },
+  ]
+})
 
 const draftNotes = ref('')
 const draftNotesColor = ref(defaultNotesColor)
@@ -182,8 +203,10 @@ function normalizeStoredColor(color) {
     return ''
   }
   const normalized = color.trim().toLowerCase()
-  const match = noteColorOptions.value.find((option) => option.value.toLowerCase() === normalized)
-  return match ? match.value : ''
+  const match = channelAccentColors.find((entry) => {
+    return entry.dark.toLowerCase() === normalized || entry.light.toLowerCase() === normalized
+  })
+  return match ? match.dark : ''
 }
 
 watch(() => props.channel, (channel) => {

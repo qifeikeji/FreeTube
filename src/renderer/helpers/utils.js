@@ -1123,7 +1123,7 @@ export const FEED_REFRESH_LABEL_STALE_MS = 3 * 60 * 60 * 1000
 
 /**
  * @param {number | null | undefined} lastRefreshAtMs
- * @returns {'recent' | 'stale' | null}
+ * @returns {'recent' | 'aging' | 'stale' | null}
  */
 export function getFeedRefreshLabelTone(lastRefreshAtMs) {
   if (lastRefreshAtMs == null || !Number.isFinite(lastRefreshAtMs)) {
@@ -1137,7 +1137,7 @@ export function getFeedRefreshLabelTone(lastRefreshAtMs) {
   if (ageMs >= FEED_REFRESH_LABEL_STALE_MS) {
     return 'stale'
   }
-  return null
+  return 'aging'
 }
 
 /**

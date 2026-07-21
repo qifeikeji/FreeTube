@@ -1,12 +1,11 @@
 .settingsMenu {
-  /* top nav + margin */
-  inset-block-start: 96px;
+  inset-block-start: 0;
   position: sticky;
   display: flex;
   flex-direction: column;
   padding-inline-start: 0;
   block-size: calc(85vh - 96px);
-  max-block-size: 600px;
+  max-block-size: 650px;
 }
 
 .header {
@@ -25,6 +24,8 @@
   flex: 1 1 auto;
   display: flex;
   align-items: center;
+  box-sizing: border-box;
+  padding-inline-start: 20px;
 }
 
 /* prevent hover styling from showing on title click for mobile */

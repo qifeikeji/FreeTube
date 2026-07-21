@@ -14,6 +14,7 @@ import {
   deepCopy,
   debounce
 } from '../../helpers/utils'
+import { normalizeBaseTheme, resolveChannelAccentColor } from '../../helpers/colors'
 import { deArrowData, deArrowThumbnail } from '../../helpers/sponsorblock'
 import thumbnailPlaceholder from '../../assets/img/thumbnail_placeholder.svg'
 import { vSaferHtml } from '../../directives/vSaferHtml.js'
@@ -214,12 +215,14 @@ export default defineComponent({
 
     subscriptionChannelNameStyle: function () {
       const style = {}
+      const systemPreference = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+      const isLight = normalizeBaseTheme(this.$store.getters.getBaseTheme || 'dark', systemPreference) === 'light'
 
       if (this.highlightedSubscriptionChannelName) {
         const color = this.subscriptionChannelCustomization?.highlightColor
         style.color = (typeof color === 'string' && color.trim() !== '')
-          ? color.trim()
-          : '#1e88e5'
+          ? resolveChannelAccentColor(color, isLight)
+          : (isLight ? '#1565c0' : '#1e88e5')
       }
 
       if (this.boldSubscriptionChannelName) {

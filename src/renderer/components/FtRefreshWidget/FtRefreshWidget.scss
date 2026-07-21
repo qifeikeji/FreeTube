@@ -77,6 +77,11 @@
   }
 }
 
+:global(body.light) .floatingRefreshSection {
+  --refresh-bar-glass-bg: rgb(255 255 255 / 72%);
+  box-shadow: 0 10px 28px rgb(0 0 0 / 10%);
+}
+
 .refreshPageBody {
   flex: 1 1 auto;
   min-block-size: 0;
@@ -143,9 +148,25 @@
     color: rgb(46 160 67 / 90%);
   }
 
+  &.aging {
+    color: rgb(200 160 30 / 90%);
+  }
+
   &.stale {
     color: rgb(207 34 46 / 90%);
   }
+}
+
+:global(body.light) .lastRefreshTimestamp.recent {
+  color: rgb(30 110 45 / 88%);
+}
+
+:global(body.light) .lastRefreshTimestamp.aging {
+  color: rgb(150 115 10 / 88%);
+}
+
+:global(body.light) .lastRefreshTimestamp.stale {
+  color: rgb(170 40 45 / 88%);
 }
 
 @media only screen and (width <= 680px) {

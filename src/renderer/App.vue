@@ -132,6 +132,14 @@ import packageDetails from '../../package.json'
 import { openExternalLink, openInternalPath, showToast } from './helpers/utils'
 import { translateWindowTitle } from './helpers/strings'
 import { loadLocale } from './i18n/index'
+import {
+  applyCustomAccentColor,
+  applyCustomPrimaryColor,
+  clearCustomAccentColor,
+  clearCustomPrimaryColor,
+  normalizeBaseTheme,
+  normalizeThemeColorName,
+} from './helpers/colors'
 
 const route = useRoute()
 const router = useRouter()
@@ -281,9 +289,39 @@ const secColor = computed(() => store.getters.getSecColor)
 
 watch(secColor, updateTheme)
 
+/** @type {import('vue').ComputedRef<string>} */
+const mainColorCustomHex = computed(() => store.getters.getMainColorCustomHex)
+
+watch(mainColorCustomHex, updateTheme)
+
+/** @type {import('vue').ComputedRef<string>} */
+const secColorCustomHex = computed(() => store.getters.getSecColorCustomHex)
+
+watch(secColorCustomHex, updateTheme)
+
 function updateTheme() {
-  document.body.className = `${baseTheme.value || 'system'} main${mainColor.value || 'Red'} sec${secColor.value || 'Blue'}`
-  document.body.dataset.systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+  const systemPreference = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+  const resolvedBase = normalizeBaseTheme(baseTheme.value || 'dark', systemPreference)
+  const resolvedMain = normalizeThemeColorName(mainColor.value || 'Red', 'Red')
+  const resolvedSec = normalizeThemeColorName(secColor.value || 'Cyan', 'Cyan')
+
+  document.body.className = `${resolvedBase} main${resolvedMain} sec${resolvedSec}`
+  document.body.dataset.systemTheme = systemPreference
+
+  const customMain = typeof mainColorCustomHex.value === 'string' ? mainColorCustomHex.value.trim() : ''
+  const customSec = typeof secColorCustomHex.value === 'string' ? secColorCustomHex.value.trim() : ''
+
+  if (customMain) {
+    applyCustomPrimaryColor(document.body, customMain)
+  } else {
+    clearCustomPrimaryColor(document.body)
+  }
+
+  if (customSec) {
+    applyCustomAccentColor(document.body, customSec)
+  } else {
+    clearCustomAccentColor(document.body)
+  }
 }
 
 updateTheme()

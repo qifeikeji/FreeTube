@@ -63,6 +63,10 @@
   color: #1e88e5;
 }
 
+:global(body.light) .infoLine .channelName.highlightedSubscriptionChannel {
+  color: #1565c0;
+}
+
 .infoLine .channelName.boldSubscriptionChannel {
   font-weight: 700;
 }

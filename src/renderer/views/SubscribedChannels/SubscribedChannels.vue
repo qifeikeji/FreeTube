@@ -124,6 +124,7 @@ import ChannelSubscriptionEditPrompt from '../../components/SubscribedChannelCar
 import { invidiousGetChannelInfo, youtubeImageUrlToInvidious, invidiousImageUrlToInvidious } from '../../helpers/api/invidious'
 import { getLocalChannel, parseLocalChannelHeader } from '../../helpers/api/local'
 import { ctrlFHandler, debounce, showToast } from '../../helpers/utils'
+import { normalizeBaseTheme, resolveChannelAccentColor } from '../../helpers/colors'
 import { useI18n } from '../../composables/use-i18n-polyfill.js'
 import store from '../../store/index'
 import { MAIN_PROFILE_ID } from '../../../constants'
@@ -208,7 +209,9 @@ function getChannelNotesStyle(channel) {
   if (typeof color !== 'string' || color.trim() === '') {
     return undefined
   }
-  return { color: color.trim() }
+  const systemPreference = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+  const isLight = normalizeBaseTheme(store.getters.getBaseTheme || 'dark', systemPreference) === 'light'
+  return { color: resolveChannelAccentColor(color, isLight) }
 }
 
 /**
@@ -216,12 +219,14 @@ function getChannelNotesStyle(channel) {
  */
 function getChannelNameStyle(channel) {
   const style = {}
+  const systemPreference = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+  const isLight = normalizeBaseTheme(store.getters.getBaseTheme || 'dark', systemPreference) === 'light'
 
   if (channel.highlighted === true) {
     const color = channel.highlightColor
     style.color = (typeof color === 'string' && color.trim() !== '')
-      ? color.trim()
-      : '#1e88e5'
+      ? resolveChannelAccentColor(color, isLight)
+      : (isLight ? '#1565c0' : '#1e88e5')
   }
 
   if (channel.boldChannelName === true) {

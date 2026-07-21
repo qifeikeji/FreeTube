@@ -83,35 +83,61 @@
       </FtFlexBox>
       <br>
     </template>
-    <FtFlexBox>
+    <FtFlexBox class="themeSelectors">
       <FtSelect
         :placeholder="$t('Settings.Theme Settings.Base Theme.Base Theme')"
-        :value="baseTheme"
+        :value="resolvedBaseTheme"
         :select-names="baseThemeNames"
         :select-values="BASE_THEME_VALUES"
         :icon="['fas', 'palette']"
         @change="updateBaseTheme"
       />
+    </FtFlexBox>
+    <FtFlexBox class="themeColorRow">
       <FtSelect
         :placeholder="$t('Settings.Theme Settings.Main Color Theme.Main Color Theme')"
-        :value="mainColor"
+        :value="resolvedMainColor"
         :select-names="colorNames"
         :select-values="COLOR_VALUES"
-        :disabled="!areColorThemesEnabled"
         :icon="['fas', 'palette']"
         icon-color="var(--primary-color)"
         @change="updateMainColor"
       />
+      <label
+        class="themeColorPicker"
+        :title="$t('Settings.Theme Settings.Pick Custom Color')"
+      >
+        <span class="themeColorPickerSwatch" :style="{ backgroundColor: displayedMainColor }" />
+        <input
+          type="color"
+          class="themeColorPickerInput"
+          :value="displayedMainColor"
+          :aria-label="$t('Settings.Theme Settings.Pick Custom Color')"
+          @input="updateMainColorCustomHex($event.target.value)"
+        >
+      </label>
       <FtSelect
         :placeholder="$t('Settings.Theme Settings.Secondary Color Theme')"
-        :value="secColor"
+        :value="resolvedSecColor"
         :select-names="colorNames"
         :select-values="COLOR_VALUES"
-        :disabled="!areColorThemesEnabled"
         :icon="['fas', 'palette']"
         icon-color="var(--accent-color)"
         @change="updateSecColor"
       />
+      <label
+        class="themeColorPicker"
+        :title="$t('Settings.Theme Settings.Pick Custom Color')"
+      >
+        <span class="themeColorPickerSwatch" :style="{ backgroundColor: displayedSecColor }" />
+        <input
+          type="color"
+          class="themeColorPickerInput"
+          :value="displayedSecColor"
+          :aria-label="$t('Settings.Theme Settings.Pick Custom Color')"
+          @input="updateSecColorCustomHex($event.target.value)"
+        >
+      </label>
     </FtFlexBox>
     <FtPrompt
       v-if="showRestartPrompt"
@@ -137,72 +163,28 @@ import FtInput from './FtInput/FtInput.vue'
 
 import store from '../store/index'
 
-import { colors } from '../helpers/colors'
-import { useColorTranslations } from '../composables/colors'
+import {
+  getThemePresetColor,
+  normalizeBaseTheme,
+  normalizeThemeColorName,
+  themePresetColors,
+} from '../helpers/colors'
+import { useThemePresetColorTranslations } from '../composables/colors'
 
 const { t } = useI18n()
 
-// Themes are devided into 3 groups.
-// The first group contains the default themes.
-// The second group are themes that don't have specific primary and secondary colors.
-// The third group are themes that do have specific primary and secondary colors available.
-
 const BASE_THEME_VALUES = [
-  // First group
-  'system',
   'light',
   'dark',
-  'black',
-  // Second group
-  'nordic',
-  'hotPink',
-  'pastelPink',
-  // Third group
-  'catppuccinFrappe',
-  'catppuccinLatte',
-  'catppuccinMocha',
-  'dracula',
-  'everforestDarkHard',
-  'everforestDarkMedium',
-  'everforestDarkLow',
-  'everforestLightHard',
-  'everforestLightMedium',
-  'everforestLightLow',
-  'gruvboxDark',
-  'gruvboxLight',
-  'solarizedDark',
-  'solarizedLight'
 ]
 
 const baseThemeNames = computed(() => [
-  // First group
-  t('Settings.Theme Settings.Base Theme.System Default'),
   t('Settings.Theme Settings.Base Theme.Light'),
   t('Settings.Theme Settings.Base Theme.Dark'),
-  t('Settings.Theme Settings.Base Theme.Black'),
-  // Second group
-  t('Settings.Theme Settings.Base Theme.Nordic'),
-  t('Settings.Theme Settings.Base Theme.Hot Pink'),
-  t('Settings.Theme Settings.Base Theme.Pastel Pink'),
-  // Third group
-  t('Settings.Theme Settings.Base Theme.Catppuccin Frappe'),
-  t('Settings.Theme Settings.Base Theme.Catppuccin Latte'),
-  t('Settings.Theme Settings.Base Theme.Catppuccin Mocha'),
-  t('Settings.Theme Settings.Base Theme.Dracula'),
-  t('Settings.Theme Settings.Base Theme.Everforest Dark Hard'),
-  t('Settings.Theme Settings.Base Theme.Everforest Dark Medium'),
-  t('Settings.Theme Settings.Base Theme.Everforest Dark Low'),
-  t('Settings.Theme Settings.Base Theme.Everforest Light Hard'),
-  t('Settings.Theme Settings.Base Theme.Everforest Light Medium'),
-  t('Settings.Theme Settings.Base Theme.Everforest Light Low'),
-  t('Settings.Theme Settings.Base Theme.Gruvbox Dark'),
-  t('Settings.Theme Settings.Base Theme.Gruvbox Light'),
-  t('Settings.Theme Settings.Base Theme.Solarized Dark'),
-  t('Settings.Theme Settings.Base Theme.Solarized Light')
 ])
 
-const COLOR_VALUES = colors.map(color => color.name)
-const colorNames = useColorTranslations()
+const COLOR_VALUES = themePresetColors.map(color => color.name)
+const colorNames = useThemePresetColorTranslations()
 
 /** @type {import('vue').ComputedRef<boolean>} */
 const barColor = computed(() => {
@@ -221,6 +203,11 @@ const baseTheme = computed(() => {
   return store.getters.getBaseTheme
 })
 
+const resolvedBaseTheme = computed(() => {
+  const systemPreference = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+  return normalizeBaseTheme(baseTheme.value || 'dark', systemPreference)
+})
+
 /**
  * @param {string} value
  */
@@ -228,18 +215,39 @@ function updateBaseTheme(value) {
   store.dispatch('updateBaseTheme', value)
 }
 
-const areColorThemesEnabled = computed(() => baseTheme.value !== 'hotPink')
-
 /** @type {import('vue').ComputedRef<string>} */
 const mainColor = computed(() => {
   return store.getters.getMainColor
+})
+
+const resolvedMainColor = computed(() => normalizeThemeColorName(mainColor.value || 'Red', 'Red'))
+
+/** @type {import('vue').ComputedRef<string>} */
+const mainColorCustomHex = computed(() => {
+  const value = store.getters.getMainColorCustomHex
+  return typeof value === 'string' ? value.trim() : ''
+})
+
+const displayedMainColor = computed(() => {
+  if (mainColorCustomHex.value) {
+    return mainColorCustomHex.value
+  }
+  return getThemePresetColor(resolvedMainColor.value).value
 })
 
 /**
  * @param {string} value
  */
 function updateMainColor(value) {
+  store.dispatch('updateMainColorCustomHex', '')
   store.dispatch('updateMainColor', value)
+}
+
+/**
+ * @param {string} value
+ */
+function updateMainColorCustomHex(value) {
+  store.dispatch('updateMainColorCustomHex', value)
 }
 
 /** @type {import('vue').ComputedRef<string>} */
@@ -247,11 +255,34 @@ const secColor = computed(() => {
   return store.getters.getSecColor
 })
 
+const resolvedSecColor = computed(() => normalizeThemeColorName(secColor.value || 'Cyan', 'Cyan'))
+
+/** @type {import('vue').ComputedRef<string>} */
+const secColorCustomHex = computed(() => {
+  const value = store.getters.getSecColorCustomHex
+  return typeof value === 'string' ? value.trim() : ''
+})
+
+const displayedSecColor = computed(() => {
+  if (secColorCustomHex.value) {
+    return secColorCustomHex.value
+  }
+  return getThemePresetColor(resolvedSecColor.value).value
+})
+
 /**
  * @param {string} value
  */
 function updateSecColor(value) {
+  store.dispatch('updateSecColorCustomHex', '')
   store.dispatch('updateSecColor', value)
+}
+
+/**
+ * @param {string} value
+ */
+function updateSecColorCustomHex(value) {
+  store.dispatch('updateSecColorCustomHex', value)
 }
 
 /** @type {import('vue').ComputedRef<boolean>} */
@@ -413,5 +444,45 @@ function handleSmoothScrolling(value) {
 
 .titleBarColorValue {
   min-inline-size: 120px;
+}
+
+.themeSelectors,
+.themeColorRow {
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.themeColorPicker {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  block-size: var(--ui-control-height, 36px);
+  inline-size: var(--ui-control-height, 36px);
+  margin-block-end: 4px;
+  border: 1px solid var(--primary-text-color);
+  border-radius: var(--ui-control-radius, 10px);
+  overflow: hidden;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.themeColorPickerSwatch {
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+}
+
+.themeColorPickerInput {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+  border: 0;
+  padding: 0;
+  inline-size: 100%;
+  block-size: 100%;
 }
 </style>

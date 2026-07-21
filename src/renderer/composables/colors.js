@@ -1,5 +1,29 @@
 import { computed } from 'vue'
 import { useI18n } from './use-i18n-polyfill'
+import { themePresetColors } from '../helpers/colors'
+
+export function useThemePresetColorTranslations() {
+  const { t } = useI18n()
+
+  return computed(() => themePresetColors.map((color) => {
+    switch (color.name) {
+      case 'LightBlue':
+        return t('Settings.Theme Settings.Main Color Theme.Light Blue')
+      case 'LightGreen':
+        return t('Settings.Theme Settings.Main Color Theme.Light Green')
+      case 'Cyan':
+        return t('Settings.Theme Settings.Main Color Theme.Cyan')
+      case 'Red':
+        return t('Settings.Theme Settings.Main Color Theme.Red')
+      case 'LightGray':
+        return t('Settings.Theme Settings.Main Color Theme.Light Gray')
+      case 'DarkGray':
+        return t('Settings.Theme Settings.Main Color Theme.Dark Gray')
+      default:
+        return color.name
+    }
+  }))
+}
 
 export function useColorTranslations() {
   const { t } = useI18n()

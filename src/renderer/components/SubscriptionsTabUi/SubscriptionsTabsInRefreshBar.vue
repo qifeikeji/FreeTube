@@ -81,6 +81,11 @@ function tabLabel(tab) {
   box-shadow: 0 0 0 1px rgb(255 255 255 / 8%);
 }
 
+:global(body.light) .subscriptionsTabButton:hover {
+  border-color: rgb(0 0 0 / 18%);
+  box-shadow: 0 0 0 1px rgb(0 0 0 / 6%);
+}
+
 .subscriptionsTabButton.selected {
   background-color: color-mix(in srgb, var(--primary-color) 82%, transparent);
   border-color: color-mix(in srgb, var(--primary-color) 70%, white 12%);

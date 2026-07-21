@@ -381,6 +381,8 @@ Settings:
       Teal: Teal
       Green: Green
       Light Green: Light Green
+      Light Gray: Light Gray
+      Dark Gray: Dark Gray
       Lime: Lime
       Yellow: Yellow
       Amber: Amber
@@ -456,6 +458,7 @@ Settings:
       Everforest Light Blue: Everforest Light Blue
       Everforest Light Purple: Everforest Light Purple
     Secondary Color Theme: Secondary Color Theme
+    Pick Custom Color: Pick custom color
         #* Main Color Theme
   Player Settings:
     Player Settings: Player

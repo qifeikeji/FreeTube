@@ -90,6 +90,189 @@ export const colors = [
   { name: 'SolarizedGreen', value: '#859900' },
 ]
 
+/** Preset colors shown in Theme Settings (main + secondary). */
+export const themePresetColors = [
+  { name: 'LightBlue', value: '#03a9f4', hover: '#039be5', active: '#0277bd' },
+  { name: 'LightGreen', value: '#8bc34a', hover: '#7cb342', active: '#558b2f' },
+  { name: 'Cyan', value: '#00bcd4', hover: '#00acc1', active: '#00838f' },
+  { name: 'Red', value: '#f44336', hover: '#e53935', active: '#c62828' },
+  { name: 'LightGray', value: '#bdbdbd', hover: '#9e9e9e', active: '#757575' },
+  { name: 'DarkGray', value: '#616161', hover: '#424242', active: '#212121' },
+]
+
+export const ALLOWED_BASE_THEMES = ['light', 'dark']
+export const ALLOWED_THEME_COLOR_NAMES = themePresetColors.map((color) => color.name)
+
+const LIGHT_BASE_THEME_ALIASES = new Set([
+  'light',
+  'pastelPink',
+  'catppuccinLatte',
+  'gruvboxLight',
+  'solarizedLight',
+  'everforestLightHard',
+  'everforestLightMedium',
+  'everforestLightLow',
+])
+
+/**
+ * @param {string} theme
+ * @param {'light' | 'dark'} [systemPreference='dark']
+ * @returns {'light' | 'dark'}
+ */
+export function normalizeBaseTheme(theme, systemPreference = 'dark') {
+  if (theme === 'light' || theme === 'dark') {
+    return theme
+  }
+  if (theme === 'system') {
+    return systemPreference === 'light' ? 'light' : 'dark'
+  }
+  return LIGHT_BASE_THEME_ALIASES.has(theme) ? 'light' : 'dark'
+}
+
+/**
+ * @param {string} colorName
+ * @param {string} [fallback='Red']
+ * @returns {string}
+ */
+export function normalizeThemeColorName(colorName, fallback = 'Red') {
+  if (ALLOWED_THEME_COLOR_NAMES.includes(colorName)) {
+    return colorName
+  }
+  return fallback
+}
+
+/**
+ * @param {string} colorName
+ */
+export function getThemePresetColor(colorName) {
+  return themePresetColors.find((color) => color.name === colorName) ?? themePresetColors[3]
+}
+
+/**
+ * Channel note / highlight swatch colors (dark + light theme variants).
+ * Light variants use lower lightness for readability on pale backgrounds.
+ */
+export const channelAccentColors = [
+  { key: 'red', dark: '#e53935', light: '#c62828' },
+  { key: 'yellow', dark: '#fdd835', light: '#f9a825' },
+  { key: 'blue', dark: '#1e88e5', light: '#1565c0' },
+  { key: 'green', dark: '#43a047', light: '#2e7d32' },
+  { key: 'purple', dark: '#8e24aa', light: '#6a1b9a' },
+]
+
+/**
+ * @param {string} storedColor
+ * @param {boolean} isLightTheme
+ * @returns {string}
+ */
+export function resolveChannelAccentColor(storedColor, isLightTheme) {
+  if (typeof storedColor !== 'string' || storedColor.trim() === '') {
+    return ''
+  }
+  const normalized = storedColor.trim().toLowerCase()
+  const match = channelAccentColors.find((entry) => {
+    return entry.dark.toLowerCase() === normalized || entry.light.toLowerCase() === normalized
+  })
+  if (!match) {
+    return storedColor.trim()
+  }
+  return isLightTheme ? match.light : match.dark
+}
+
+/**
+ * @param {string} hex
+ * @returns {{ r: number, g: number, b: number } | null}
+ */
+export function parseHexColor(hex) {
+  if (typeof hex !== 'string') {
+    return null
+  }
+  const value = hex.trim()
+  const match = /^#([\da-f]{3}|[\da-f]{6})$/i.exec(value)
+  if (!match) {
+    return null
+  }
+  const raw = match[1].length === 3
+    ? match[1].split('').map((ch) => ch + ch).join('')
+    : match[1]
+  return {
+    r: parseInt(raw.slice(0, 2), 16),
+    g: parseInt(raw.slice(2, 4), 16),
+    b: parseInt(raw.slice(4, 6), 16),
+  }
+}
+
+/**
+ * @param {string} hex
+ * @param {number} amount positive = darker
+ * @returns {string}
+ */
+export function adjustHexBrightness(hex, amount) {
+  const rgb = parseHexColor(hex)
+  if (!rgb) {
+    return hex
+  }
+  const clamp = (n) => Math.max(0, Math.min(255, Math.round(n)))
+  const toHex = (n) => clamp(n).toString(16).padStart(2, '0')
+  return `#${toHex(rgb.r - amount)}${toHex(rgb.g - amount)}${toHex(rgb.b - amount)}`
+}
+
+/**
+ * @param {HTMLElement} target
+ * @param {string} hex
+ */
+export function applyCustomPrimaryColor(target, hex) {
+  const rgb = parseHexColor(hex)
+  if (!rgb) {
+    return
+  }
+  const text = calculateColorLuminance(hex)
+  target.style.setProperty('--primary-color', hex)
+  target.style.setProperty('--primary-color-hover', adjustHexBrightness(hex, 12))
+  target.style.setProperty('--primary-color-active', adjustHexBrightness(hex, 28))
+  target.style.setProperty('--text-with-main-color', text)
+}
+
+/**
+ * @param {HTMLElement} target
+ * @param {string} hex
+ */
+export function applyCustomAccentColor(target, hex) {
+  const rgb = parseHexColor(hex)
+  if (!rgb) {
+    return
+  }
+  const text = calculateColorLuminance(hex)
+  target.style.setProperty('--accent-color-rgb', `${rgb.r} ${rgb.g} ${rgb.b}`)
+  target.style.setProperty('--accent-color-hover', adjustHexBrightness(hex, 12))
+  target.style.setProperty('--accent-color-active', adjustHexBrightness(hex, 28))
+  target.style.setProperty('--accent-color-light', adjustHexBrightness(hex, -40))
+  target.style.setProperty('--accent-color-visited', adjustHexBrightness(hex, 40))
+  target.style.setProperty('--text-with-accent-color', text)
+}
+
+/**
+ * @param {HTMLElement} target
+ */
+export function clearCustomPrimaryColor(target) {
+  target.style.removeProperty('--primary-color')
+  target.style.removeProperty('--primary-color-hover')
+  target.style.removeProperty('--primary-color-active')
+  target.style.removeProperty('--text-with-main-color')
+}
+
+/**
+ * @param {HTMLElement} target
+ */
+export function clearCustomAccentColor(target) {
+  target.style.removeProperty('--accent-color-rgb')
+  target.style.removeProperty('--accent-color-hover')
+  target.style.removeProperty('--accent-color-active')
+  target.style.removeProperty('--accent-color-light')
+  target.style.removeProperty('--accent-color-visited')
+  target.style.removeProperty('--text-with-accent-color')
+}
+
 export function getRandomColorClass() {
   return 'main' + getRandomColor().name
 }

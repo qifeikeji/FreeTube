@@ -591,7 +591,8 @@ it can be safely elided. This looks quite pleasant on this theme. */
 .mainLightBlue,
 .mainCyan,
 .mainTeal,
-.mainGreen {
+.mainGreen,
+.mainDarkGray {
   --text-with-main-color: #fff;
   --logo-icon-bar-color: url('../../_icons/iconWhiteSmall.svg');
   --logo-text-bar-color: url('../../_icons/textWhiteSmall.svg');
@@ -599,6 +600,7 @@ it can be safely elided. This looks quite pleasant on this theme. */
 
 /* light primary theme colors */
 .mainLightGreen,
+.mainLightGray,
 .mainLime,
 .mainYellow,
 .mainAmber,
@@ -673,6 +675,18 @@ it can be safely elided. This looks quite pleasant on this theme. */
   --primary-color: #8bc34a;
   --primary-color-hover: #7cb342;
   --primary-color-active: #558b2f;
+}
+
+.mainLightGray {
+  --primary-color: #bdbdbd;
+  --primary-color-hover: #9e9e9e;
+  --primary-color-active: #757575;
+}
+
+.mainDarkGray {
+  --primary-color: #616161;
+  --primary-color-hover: #424242;
+  --primary-color-active: #212121;
 }
 
 .mainLime {
@@ -1259,12 +1273,14 @@ it can be safely elided. This looks quite pleasant on this theme. */
 .secLightBlue,
 .secCyan,
 .secTeal,
-.secGreen {
+.secGreen,
+.secDarkGray {
   --text-with-accent-color: #fff;
 }
 
 /* light secondary theme colors */
 .secLightGreen,
+.secLightGray,
 .secLime,
 .secYellow,
 .secAmber,
@@ -1359,6 +1375,22 @@ it can be safely elided. This looks quite pleasant on this theme. */
   --accent-color-active: #558b2f;
   --accent-color-light: #c5e1a5;
   --accent-color-visited: #33691e;
+}
+
+.secLightGray {
+  --accent-color-rgb: 189 189 189;
+  --accent-color-hover: #9e9e9e;
+  --accent-color-active: #757575;
+  --accent-color-light: #e0e0e0;
+  --accent-color-visited: #616161;
+}
+
+.secDarkGray {
+  --accent-color-rgb: 97 97 97;
+  --accent-color-hover: #424242;
+  --accent-color-active: #212121;
+  --accent-color-light: #9e9e9e;
+  --accent-color-visited: #212121;
 }
 
 .secLime {

@@ -32,6 +32,17 @@
   --window-titlebar-height: 0px;
 }
 
+/* Light theme glass / control surfaces */
+body.light .app {
+  --ui-glass-surface: rgb(255 255 255 / 90%);
+  --ui-glass-control: rgb(0 0 0 / 6%);
+  --ui-glass-control-hover: rgb(0 0 0 / 12%);
+  --ui-glass-border: rgb(0 0 0 / 12%);
+  --ui-glass-text: rgb(0 0 0 / 72%);
+  --ui-glass-text-strong: rgb(0 0 0 / 88%);
+  --ui-glass-text-muted: rgb(0 0 0 / 52%);
+}
+
 .app.hasCustomTitleBar {
   --window-titlebar-height: 35px;
 }

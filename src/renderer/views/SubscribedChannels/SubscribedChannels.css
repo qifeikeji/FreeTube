@@ -121,6 +121,10 @@
   color: #1e88e5;
 }
 
+:global(body.light) .channelName.highlightedChannelName {
+  color: #1565c0;
+}
+
 .channelName.boldChannelName {
   font-weight: 700;
 }

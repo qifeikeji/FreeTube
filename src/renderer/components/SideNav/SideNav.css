@@ -89,6 +89,17 @@
   background-color: color-mix(in srgb, var(--side-nav-hover-color) 40%, #000 60%);
 }
 
+/* Light theme: softer selected emphasis */
+:global(body.light) .navOption.router-link-active,
+:global(body.light) .navChannel.router-link-active {
+  background-color: color-mix(in srgb, var(--side-nav-hover-color) 78%, #000 10%);
+}
+
+:global(body.light) .navOption.router-link-active:hover,
+:global(body.light) .navChannel.router-link-active:hover {
+  background-color: color-mix(in srgb, var(--side-nav-hover-color) 68%, #000 16%);
+}
+
 .navIcon {
   block-size: 1.15em;
   inline-size: 1.15em;

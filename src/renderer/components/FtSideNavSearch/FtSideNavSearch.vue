@@ -510,6 +510,21 @@ onBeforeUnmount(() => {
   color: rgb(255 255 255 / 42%);
 }
 
+:global(body.light) .sideNavSearch.compact :deep(.ft-input::placeholder),
+:global(body.light) .sideNavSearch.compact :deep(.forceTextColor .ft-input::placeholder),
+:global(body.light) .sideNavSearch.compact :deep(.forceTextColor ::placeholder) {
+  color: rgb(0 0 0 / 42%);
+}
+
+:global(body.light) .sideNavSearch.compact :deep(.ft-input:focus) {
+  border-color: rgb(0 0 0 / 22%);
+  box-shadow: 0 0 0 1px rgb(0 0 0 / 8%);
+}
+
+:global(body.light) .sideNavSearch.compact .navFilterButton:hover {
+  border-color: rgb(0 0 0 / 18%);
+}
+
 /* Search history / suggestions dropdown — match search-filter glass standard */
 .sideNavSearch.compact :deep(.list) {
   box-sizing: border-box;
