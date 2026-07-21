@@ -1,18 +1,65 @@
 @use '../../scss-partials/utils';
 
 .floatingRefreshSection {
+  --refresh-bar-control-height: 36px;
+  --refresh-bar-control-padding-block: 8px;
+  --refresh-bar-glass-bg: rgb(18 18 18 / 52%);
+  --refresh-bar-glass-border: rgb(255 255 255 / 10%);
+  --refresh-bar-control-bg: rgb(0 0 0 / 38%);
+  --refresh-bar-control-bg-hover: rgb(0 0 0 / 52%);
+  --refresh-bar-text: rgb(255 255 255 / 78%);
+  --refresh-bar-text-muted: rgb(255 255 255 / 55%);
+
   box-sizing: border-box;
-  padding-block: 5px;
-  padding-inline: 10px;
-  box-shadow: 0 2px 1px 0 var(--primary-shadow-color);
-  background-color: var(--card-bg-color);
-  border-inline-start: 2px solid var(--primary-shadow-color);
+  padding-block: 8px;
+  padding-inline: 12px;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  column-gap: 10px;
+  column-gap: 12px;
   align-items: center;
+  background-color: var(--refresh-bar-glass-bg);
+  border-block-end: 1px solid var(--refresh-bar-glass-border);
+  border-inline-start: 1px solid var(--refresh-bar-glass-border);
+  box-shadow: 0 10px 28px rgb(0 0 0 / 22%);
+  backdrop-filter: blur(18px) saturate(140%);
+  // stylelint-disable-next-line property-no-vendor-prefix
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
 
   @include utils.fixed-top-bar;
+
+  // Keep tab buttons and search field visually locked to the same box height.
+  :deep(.subscriptionsTabButton) {
+    box-sizing: border-box;
+    block-size: var(--refresh-bar-control-height);
+    min-block-size: var(--refresh-bar-control-height);
+    padding-block: var(--refresh-bar-control-padding-block);
+    padding-inline: 12px;
+  }
+
+  :deep(.sideNavSearch.compact .ft-input-component),
+  :deep(.sideNavSearch.compact .ft-input) {
+    box-sizing: border-box;
+    block-size: var(--refresh-bar-control-height);
+    min-block-size: var(--refresh-bar-control-height);
+  }
+
+  :deep(.sideNavSearch.compact .ft-input) {
+    padding-block: var(--refresh-bar-control-padding-block);
+    padding-inline-start: 12px;
+    line-height: 1.25;
+  }
+
+  :deep(.sideNavSearch.compact .showActionButton .ft-input) {
+    padding-inline-end: calc(36px + 6px);
+  }
+
+  :deep(.sideNavSearch.compact .navFilterButton) {
+    box-sizing: border-box;
+    block-size: var(--refresh-bar-control-height);
+    inline-size: var(--refresh-bar-control-height);
+    min-block-size: var(--refresh-bar-control-height);
+    padding: 0;
+  }
 }
 
 .left {
@@ -23,7 +70,7 @@
   display: flex;
   flex-wrap: nowrap;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   min-inline-size: 0;
   overflow-x: auto;
   scrollbar-width: thin;
@@ -55,20 +102,21 @@
 .lastRefreshTimestamp {
   margin-block: 0;
   text-align: start;
-  font-size: 14px;
+  font-size: 13px;
   line-height: 1.2;
   min-inline-size: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   flex-shrink: 1;
+  color: var(--refresh-bar-text-muted);
 
   &.recent {
-    color: #2ea043;
+    color: rgb(46 160 67 / 90%);
   }
 
   &.stale {
-    color: #cf222e;
+    color: rgb(207 34 46 / 90%);
   }
 }
 

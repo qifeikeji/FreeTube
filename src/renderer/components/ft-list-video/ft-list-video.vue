@@ -146,7 +146,11 @@
         <router-link
           v-if="channelId !== null"
           class="channelName"
-          :class="{ highlightedSubscriptionChannel: highlightedSubscriptionChannelName }"
+          :class="{
+            highlightedSubscriptionChannel: highlightedSubscriptionChannelName,
+            boldSubscriptionChannel: boldSubscriptionChannelName
+          }"
+          :style="subscriptionChannelNameStyle"
           dir="auto"
           :to="`/channel/${channelId}`"
         >
@@ -155,7 +159,11 @@
         <bdi
           v-else-if="channelName !== null"
           class="channelName"
-          :class="{ highlightedSubscriptionChannel: highlightedSubscriptionChannelName }"
+          :class="{
+            highlightedSubscriptionChannel: highlightedSubscriptionChannelName,
+            boldSubscriptionChannel: boldSubscriptionChannelName
+          }"
+          :style="subscriptionChannelNameStyle"
         >
           {{ channelName }}
         </bdi>

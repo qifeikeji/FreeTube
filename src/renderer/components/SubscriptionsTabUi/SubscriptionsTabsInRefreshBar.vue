@@ -54,32 +54,37 @@ function tabLabel(tab) {
 }
 
 .subscriptionsTabButton {
-  border: 1px solid var(--primary-shadow-color);
-  border-radius: 8px;
-  background-color: rgb(0 0 0 / 10%);
-  color: var(--primary-text-color);
+  border: 1px solid rgb(255 255 255 / 10%);
+  border-radius: 10px;
+  background-color: rgb(0 0 0 / 38%);
+  color: rgb(255 255 255 / 78%);
   cursor: pointer;
   line-height: 1;
-  padding-block: 6px;
-  padding-inline: 10px;
+  padding-block: 8px;
+  padding-inline: 12px;
   white-space: nowrap;
   display: inline-flex;
   align-items: center;
-  min-block-size: 32px;
+  justify-content: center;
   box-sizing: border-box;
-  transition: box-shadow 0.15s ease-out, background-color 0.15s ease-out, transform 0.15s ease-out;
+  block-size: 36px;
+  min-block-size: 36px;
+  backdrop-filter: blur(10px);
+  // stylelint-disable-next-line property-no-vendor-prefix
+  -webkit-backdrop-filter: blur(10px);
+  transition: background-color 0.15s ease-out, border-color 0.15s ease-out, box-shadow 0.15s ease-out;
 }
 
 .subscriptionsTabButton:hover {
-  background-color: var(--card-bg-color);
-  box-shadow:
-    0 0 0 2px var(--primary-color),
-    0 6px 18px rgb(0 0 0 / 18%);
-  transform: translateY(-1px);
+  background-color: rgb(0 0 0 / 52%);
+  border-color: rgb(255 255 255 / 18%);
+  box-shadow: 0 0 0 1px rgb(255 255 255 / 8%);
 }
 
 .subscriptionsTabButton.selected {
-  background-color: var(--primary-color);
+  background-color: color-mix(in srgb, var(--primary-color) 82%, transparent);
+  border-color: color-mix(in srgb, var(--primary-color) 70%, white 12%);
   color: var(--text-with-main-color);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--primary-color) 45%, transparent);
 }
 </style>

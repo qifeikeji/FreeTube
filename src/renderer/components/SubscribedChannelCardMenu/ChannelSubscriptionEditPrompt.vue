@@ -38,6 +38,22 @@
           :placeholder="t('Channels.Channel Notes Placeholder')"
         />
       </section>
+      <section class="formSection togglesSection">
+        <div class="togglesRow">
+          <FtToggleSwitch
+            :label="t('Channels.Highlight Channel')"
+            :default-value="draftHighlighted"
+            :compact="true"
+            @change="draftHighlighted = $event"
+          />
+          <FtToggleSwitch
+            :label="t('Channels.Bold Channel Name')"
+            :default-value="draftBoldChannelName"
+            :compact="true"
+            @change="draftBoldChannelName = $event"
+          />
+        </div>
+      </section>
       <section class="formSection">
         <span
           :id="colorFieldId"
@@ -45,33 +61,49 @@
         >
           {{ t('Channels.Notes Color') }}
         </span>
-        <div class="colorAndHighlightRow">
-          <div
-            class="colorSwatches"
-            role="radiogroup"
-            :aria-labelledby="colorFieldId"
-          >
-            <button
-              v-for="option in noteColorOptions"
-              :key="option.value"
-              type="button"
-              class="colorSwatch"
-              role="radio"
-              :aria-checked="draftNotesColor === option.value"
-              :class="{ selected: draftNotesColor === option.value }"
-              :style="{ backgroundColor: option.value }"
-              :title="option.label"
-              @click="draftNotesColor = option.value"
-            />
-          </div>
-          <label class="highlightControl">
-            <input
-              v-model="draftHighlighted"
-              class="highlightCheckbox"
-              type="checkbox"
-            >
-            <span class="highlightLabel">{{ t('Channels.Highlight Channel') }}</span>
-          </label>
+        <div
+          class="colorSwatches"
+          role="radiogroup"
+          :aria-labelledby="colorFieldId"
+        >
+          <button
+            v-for="option in noteColorOptions"
+            :key="`notes-${option.value}`"
+            type="button"
+            class="colorSwatch"
+            role="radio"
+            :aria-checked="draftNotesColor === option.value"
+            :class="{ selected: draftNotesColor === option.value }"
+            :style="{ backgroundColor: option.value }"
+            :title="option.label"
+            @click="draftNotesColor = option.value"
+          />
+        </div>
+      </section>
+      <section class="formSection">
+        <span
+          :id="highlightColorFieldId"
+          class="fieldLabel"
+        >
+          {{ t('Channels.Highlight Color') }}
+        </span>
+        <div
+          class="colorSwatches"
+          role="radiogroup"
+          :aria-labelledby="highlightColorFieldId"
+        >
+          <button
+            v-for="option in noteColorOptions"
+            :key="`highlight-${option.value}`"
+            type="button"
+            class="colorSwatch"
+            role="radio"
+            :aria-checked="draftHighlightColor === option.value"
+            :class="{ selected: draftHighlightColor === option.value }"
+            :style="{ backgroundColor: option.value }"
+            :title="option.label"
+            @click="draftHighlightColor = option.value"
+          />
         </div>
       </section>
       <FtFlexBox class="actions">
@@ -89,7 +121,7 @@
           :label="t('Channels.Reset Notes Color')"
           background-color="var(--accent-color)"
           text-color="var(--text-with-accent-color)"
-          @click="resetNotesColor"
+          @click="resetColors"
         />
       </FtFlexBox>
     </div>
@@ -103,6 +135,7 @@ import { useI18n } from '../../composables/use-i18n-polyfill'
 import FtPrompt from '../FtPrompt/FtPrompt.vue'
 import FtFlexBox from '../ft-flex-box/ft-flex-box.vue'
 import FtButton from '../FtButton/FtButton.vue'
+import FtToggleSwitch from '../FtToggleSwitch/FtToggleSwitch.vue'
 
 const props = defineProps({
   channel: {
@@ -117,8 +150,10 @@ const { t } = useI18n()
 
 const notesFieldId = useId()
 const colorFieldId = useId()
+const highlightColorFieldId = useId()
 
 const defaultNotesColor = ''
+const defaultHighlightColor = ''
 
 const noteColorOptions = computed(() => [
   { label: t('Channels.Note Color Red'), value: '#e53935' },
@@ -130,18 +165,20 @@ const noteColorOptions = computed(() => [
 
 const draftNotes = ref('')
 const draftNotesColor = ref(defaultNotesColor)
+const draftHighlightColor = ref(defaultHighlightColor)
 const draftHighlighted = ref(false)
+const draftBoldChannelName = ref(false)
 
 /**
  * @param {string} color
  */
-function normalizeStoredNotesColor(color) {
+function normalizeStoredColor(color) {
   if (typeof color !== 'string' || color.trim() === '') {
-    return defaultNotesColor
+    return ''
   }
   const normalized = color.trim().toLowerCase()
   const match = noteColorOptions.value.find((option) => option.value.toLowerCase() === normalized)
-  return match ? match.value : defaultNotesColor
+  return match ? match.value : ''
 }
 
 watch(() => props.channel, (channel) => {
@@ -150,8 +187,10 @@ watch(() => props.channel, (channel) => {
   const rawNotes = channel.notes ?? channel.note ?? ''
   draftNotes.value = typeof rawNotes === 'string' ? rawNotes : ''
 
-  draftNotesColor.value = normalizeStoredNotesColor(channel.notesColor ?? '')
+  draftNotesColor.value = normalizeStoredColor(channel.notesColor ?? '')
+  draftHighlightColor.value = normalizeStoredColor(channel.highlightColor ?? '')
   draftHighlighted.value = channel.highlighted === true
+  draftBoldChannelName.value = channel.boldChannelName === true
 }, { immediate: true })
 
 /**
@@ -167,12 +206,15 @@ function save() {
   emit('save', {
     notes: draftNotes.value,
     notesColor: draftNotesColor.value === defaultNotesColor ? '' : draftNotesColor.value,
+    highlightColor: draftHighlightColor.value === defaultHighlightColor ? '' : draftHighlightColor.value,
     highlighted: draftHighlighted.value,
+    boldChannelName: draftBoldChannelName.value,
   })
 }
 
-function resetNotesColor() {
+function resetColors() {
   draftNotesColor.value = defaultNotesColor
+  draftHighlightColor.value = defaultHighlightColor
 }
 
 function cancel() {
@@ -201,7 +243,7 @@ function cancel() {
   display: flex;
   flex: 1;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
   margin-block: 8px 4px;
   inline-size: 100%;
   min-block-size: 0;
@@ -221,6 +263,23 @@ function cancel() {
   flex: 1;
   flex-direction: column;
   min-block-size: 0;
+}
+
+.togglesSection {
+  padding-block: 8px;
+}
+
+.togglesRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 24px;
+}
+
+.togglesRow :deep(.switch-ctn) {
+  flex: 1 1 140px;
+  min-inline-size: 0;
 }
 
 .fieldLabel {
@@ -250,57 +309,18 @@ function cancel() {
   outline-offset: 1px;
 }
 
-.colorAndHighlightRow {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-
 .colorSwatches {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 12px;
-}
-
-.highlightControl {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  user-select: none;
-  flex-shrink: 0;
-}
-
-.highlightCheckbox {
-  appearance: none;
-  box-sizing: border-box;
-  inline-size: 20px;
-  block-size: 20px;
-  margin: 0;
-  border: 2px solid var(--primary-text-color);
-  border-radius: 4px;
-  background-color: transparent;
-  cursor: pointer;
-}
-
-.highlightCheckbox:checked {
-  background-color: var(--primary-color);
-  border-color: var(--primary-color);
-  box-shadow: inset 0 0 0 2px var(--card-bg-color);
-}
-
-.highlightLabel {
-  font-size: 15px;
-  font-weight: 600;
-  line-height: 1;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  gap: 10px;
+  inline-size: 100%;
 }
 
 .colorSwatch {
+  flex: 1 1 0;
   block-size: 40px;
-  inline-size: 40px;
+  min-inline-size: 0;
   border-radius: 8px;
   border: 2px solid transparent;
   box-sizing: border-box;
@@ -329,9 +349,9 @@ function cancel() {
 .channelSubscriptionEditDialog.ft-card.promptCard {
   box-sizing: border-box;
   inline-size: 500px;
-  block-size: 560px;
+  block-size: 640px;
   max-inline-size: min(500px, 95vw) !important;
-  max-block-size: min(560px, 95vh);
+  max-block-size: min(640px, 95vh);
   border-radius: 16px;
   overflow: hidden;
   display: flex;

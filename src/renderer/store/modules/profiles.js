@@ -206,9 +206,9 @@ const actions = {
   },
 
   /**
-   * @param {{ channelId: string, notes?: string, notesColor?: string, highlighted?: boolean }} payload
+   * @param {{ channelId: string, notes?: string, notesColor?: string, highlightColor?: string, highlighted?: boolean, boldChannelName?: boolean }} payload
    */
-  async updateChannelSubscriptionCustomization({ dispatch, state }, { channelId, notes, notesColor, highlighted }) {
+  async updateChannelSubscriptionCustomization({ dispatch, state }, { channelId, notes, notesColor, highlightColor, highlighted, boldChannelName }) {
     for (const profile of state.profileList) {
       const index = profile.subscriptions.findIndex((channel) => channel.id === channelId)
       if (index === -1) { continue }
@@ -231,11 +231,28 @@ const actions = {
         }
       }
 
+      if (highlightColor !== undefined) {
+        const color = typeof highlightColor === 'string' ? highlightColor.trim() : ''
+        if (color === '') {
+          delete channel.highlightColor
+        } else {
+          channel.highlightColor = color
+        }
+      }
+
       if (highlighted !== undefined) {
         if (highlighted) {
           channel.highlighted = true
         } else {
           delete channel.highlighted
+        }
+      }
+
+      if (boldChannelName !== undefined) {
+        if (boldChannelName) {
+          channel.boldChannelName = true
+        } else {
+          delete channel.boldChannelName
         }
       }
 

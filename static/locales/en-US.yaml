@@ -144,6 +144,7 @@ Channels:
   Channel Notes: Channel notes
   Channel Notes Placeholder: Notes (optional)
   Notes Color: Notes color
+  Highlight Color: Highlight color
   Reset Notes Color: Reset to default color
   Save Channel Notes: Save
   Note Color Red: Red
@@ -152,6 +153,7 @@ Channels:
   Note Color Green: Green
   Note Color Purple: Purple
   Highlight Channel: Key
+  Bold Channel Name: Bold title
 Trending:
   Trending: Trending
   Gaming: Gaming

@@ -191,15 +191,38 @@ export default defineComponent({
       return this.$route.name === 'subscriptions' || this.$route.name === 'default'
     },
 
-    highlightedSubscriptionChannelName: function () {
+    subscriptionChannelCustomization: function () {
       if (!this.inSubscriptions || this.channelId == null) {
-        return false
+        return null
       }
 
       const subscriptions = this.$store.getters.getActiveProfile.subscriptions
-      const entry = subscriptions.find((channel) => channel.id === this.channelId)
+      return subscriptions.find((channel) => channel.id === this.channelId) ?? null
+    },
 
-      return entry?.highlighted === true
+    highlightedSubscriptionChannelName: function () {
+      return this.subscriptionChannelCustomization?.highlighted === true
+    },
+
+    boldSubscriptionChannelName: function () {
+      return this.subscriptionChannelCustomization?.boldChannelName === true
+    },
+
+    subscriptionChannelNameStyle: function () {
+      const style = {}
+
+      if (this.highlightedSubscriptionChannelName) {
+        const color = this.subscriptionChannelCustomization?.highlightColor
+        style.color = (typeof color === 'string' && color.trim() !== '')
+          ? color.trim()
+          : '#1e88e5'
+      }
+
+      if (this.boldSubscriptionChannelName) {
+        style.fontWeight = '700'
+      }
+
+      return style
     },
 
     inUserPlaylist: function () {

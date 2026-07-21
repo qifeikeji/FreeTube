@@ -414,22 +414,99 @@ onBeforeUnmount(() => {
 }
 
 .sideNavSearch.compact :deep(.ft-input-component) {
-  min-block-size: 32px;
+  box-sizing: border-box;
+  block-size: 36px;
+  min-block-size: 36px;
+}
+
+.sideNavSearch.compact :deep(.inputWrapper) {
+  block-size: 100%;
+  display: flex;
+  align-items: center;
 }
 
 .sideNavSearch.compact :deep(.ft-input) {
-  margin-block-end: 0;
-  padding-block: 5px;
-  padding-inline: 10px;
+  box-sizing: border-box;
+  block-size: 36px;
+  min-block-size: 36px;
+  margin-block: 0;
+  margin-inline: 0;
+  padding-block: 8px;
+  padding-inline-start: 12px;
   font-size: 14px;
-  line-height: 1.2;
+  line-height: 1.25;
+  border-radius: 10px;
+  border: 1px solid rgb(255 255 255 / 10%);
+  background-color: rgb(0 0 0 / 38%);
+  color: rgb(255 255 255 / 78%);
+  backdrop-filter: blur(10px);
+  // stylelint-disable-next-line property-no-vendor-prefix
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.sideNavSearch.compact :deep(.showActionButton .ft-input) {
+  padding-inline-end: calc(36px + 6px);
+}
+
+.sideNavSearch.compact :deep(.clearTextButtonVisible.search .ft-input),
+.sideNavSearch.compact :deep(.showClearTextButton:focus-within .ft-input) {
+  padding-inline-start: 46px;
+}
+
+.sideNavSearch.compact :deep(.ft-input:focus) {
+  outline: none;
+  border-color: rgb(255 255 255 / 22%);
+  box-shadow: 0 0 0 1px rgb(255 255 255 / 8%);
+}
+
+.sideNavSearch.compact :deep(.forceTextColor .ft-input),
+.sideNavSearch.compact :deep(.forceTextColor .ft-input:focus) {
+  background-color: rgb(0 0 0 / 38%);
+  color: rgb(255 255 255 / 78%);
+  box-shadow: none;
+}
+
+.sideNavSearch.compact :deep(.ft-input::placeholder),
+.sideNavSearch.compact :deep(.forceTextColor .ft-input::placeholder),
+.sideNavSearch.compact :deep(.forceTextColor ::placeholder) {
+  color: rgb(255 255 255 / 42%);
+}
+
+/* Center action icons inside the compact field; keep icon colors unchanged. */
+.sideNavSearch.compact :deep(.inputAction),
+.sideNavSearch.compact :deep(.clearInputTextButton),
+.sideNavSearch.compact :deep(.search .clearInputTextButton) {
+  inset-block-start: 50%;
+  transform: translateY(-50%);
+  margin-block: 0;
+  padding: 6px;
 }
 
 .sideNavSearch.compact .navFilterButton {
-  padding: 6px;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
+  block-size: 36px;
+  inline-size: 36px;
+  min-block-size: 36px;
+  padding: 0;
   font-size: 16px;
   line-height: 1;
-  align-self: center;
+  border-radius: 10px;
+  background-color: rgb(0 0 0 / 38%);
+  border: 1px solid rgb(255 255 255 / 10%);
+  color: inherit;
+  backdrop-filter: blur(10px);
+  // stylelint-disable-next-line property-no-vendor-prefix
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.sideNavSearch.compact .navFilterButton:hover {
+  background-color: rgb(0 0 0 / 52%);
+  border-color: rgb(255 255 255 / 18%);
+  color: inherit;
 }
 
 .searchInput {
