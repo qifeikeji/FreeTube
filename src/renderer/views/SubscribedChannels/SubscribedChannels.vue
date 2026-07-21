@@ -60,6 +60,11 @@
               <div class="channelText">
                 <router-link
                   class="channelName"
+                  :class="{
+                    highlightedChannelName: channel.highlighted === true,
+                    boldChannelName: channel.boldChannelName === true
+                  }"
+                  :style="getChannelNameStyle(channel)"
                   dir="auto"
                   :title="channel.name"
                   :to="`/channel/${channel.id}`"
@@ -204,6 +209,26 @@ function getChannelNotesStyle(channel) {
     return undefined
   }
   return { color: color.trim() }
+}
+
+/**
+ * @param {object} channel
+ */
+function getChannelNameStyle(channel) {
+  const style = {}
+
+  if (channel.highlighted === true) {
+    const color = channel.highlightColor
+    style.color = (typeof color === 'string' && color.trim() !== '')
+      ? color.trim()
+      : '#1e88e5'
+  }
+
+  if (channel.boldChannelName === true) {
+    style.fontWeight = '700'
+  }
+
+  return style
 }
 
 /**

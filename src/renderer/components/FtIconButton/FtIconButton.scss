@@ -140,6 +140,40 @@
   user-select: none;
   z-index: 3;
 
+  &.glass {
+    background-color: rgb(18 18 18 / 72%);
+    border: 1px solid rgb(255 255 255 / 12%);
+    border-radius: 12px;
+    box-shadow: 0 12px 32px rgb(0 0 0 / 35%);
+    color: rgb(255 255 255 / 90%);
+    overflow: hidden;
+    backdrop-filter: blur(18px) saturate(140%);
+    /* stylelint-disable-next-line property-no-vendor-prefix */
+    -webkit-backdrop-filter: blur(18px) saturate(140%);
+
+    .listItem {
+      color: rgb(255 255 255 / 90%);
+
+      &:hover,
+      &:focus-visible,
+      &.pressed,
+      &.active {
+        background-color: rgb(255 255 255 / 10%);
+        color: #fff;
+      }
+
+      &:active {
+        background-color: rgb(255 255 255 / 16%);
+        color: #fff;
+      }
+    }
+
+    .listItemDivider {
+      border-block-start-color: rgb(255 255 255 / 16%);
+      opacity: 1;
+    }
+  }
+
   &.left {
     inset-inline-end: calc(50% - 10px);
   }

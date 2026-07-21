@@ -7,9 +7,13 @@
       hideOutlines: outlinesHidden,
       isLocaleRightToLeft: isLocaleRightToLeft,
       isSideNavOpen: isSideNavOpen,
-      hideLabelsSideBar: hideLabelsSideBar && !isSideNavOpen
+      hideLabelsSideBar: hideLabelsSideBar && !isSideNavOpen,
+      hasCustomTitleBar: USING_ELECTRON
     }"
   >
+    <FtWindowTitleBar
+      v-if="USING_ELECTRON"
+    />
     <TopNav
       :inert="isAnyPromptOpen"
     />
@@ -114,6 +118,7 @@ import { useRoute, useRouter } from 'vue-router'
 import FtFlexBox from './components/ft-flex-box/ft-flex-box.vue'
 import TopNav from './components/TopNav/TopNav.vue'
 import SideNav from './components/SideNav/SideNav.vue'
+import FtWindowTitleBar from './components/FtWindowTitleBar/FtWindowTitleBar.vue'
 import FtNotificationBanner from './components/FtNotificationBanner/FtNotificationBanner.vue'
 import FtPrompt from './components/FtPrompt/FtPrompt.vue'
 import FtButton from './components/FtButton/FtButton.vue'
@@ -136,6 +141,8 @@ const route = useRoute()
 const router = useRouter()
 const { locale, t } = useI18n()
 
+const USING_ELECTRON = process.env.IS_ELECTRON
+
 /** @type {import('vue').ComputedRef<boolean>} */
 const isSideNavOpen = computed(() => store.getters.getIsSideNavOpen)
 
@@ -146,6 +153,8 @@ const hideLabelsSideBar = computed(() => store.getters.getHideLabelsSideBar)
 const sideNavWidthPx = computed(() => store.getters.getSideNavWidthPx)
 /** @type {import('vue').ComputedRef<number>} */
 const videoGridColumns = computed(() => store.getters.getVideoGridColumns)
+/** @type {import('vue').ComputedRef<number>} */
+const videoGridMinColumnWidth = computed(() => store.getters.getVideoGridMinColumnWidth)
 
 const appStyle = computed(() => {
   const width = Number(sideNavWidthPx.value)
@@ -153,11 +162,22 @@ const appStyle = computed(() => {
 
   const cols = Math.round(Number(videoGridColumns.value))
   const safeCols = Number.isFinite(cols) ? Math.min(Math.max(cols, 0), 12) : 0
+
+  const minColumnWidth = Math.round(Number(videoGridMinColumnWidth.value))
+  const safeMinColumnWidth = Number.isFinite(minColumnWidth)
+    ? Math.min(Math.max(minColumnWidth, 180), 600)
+    : 300
+
+  // auto-fill + min(100%, minWidth) keeps columns fluid without forcing horizontal overflow:
+  // columns = floor(container / minWidth), leftover width (after gaps) is shared via 1fr.
+  const autoTemplateColumns = `repeat(auto-fill, minmax(min(100%, ${safeMinColumnWidth}px), 1fr))`
   const gridTemplateColumns = safeCols >= 1
     ? `repeat(${safeCols}, minmax(0, 1fr))`
-    : 'repeat(auto-fill, minmax(262px, 1fr))'
+    : autoTemplateColumns
+
   return {
     '--side-nav-open-width': `${safeWidth}px`,
+    '--video-grid-min-column': `${safeMinColumnWidth}px`,
     '--video-grid-template-columns': gridTemplateColumns,
   }
 })
@@ -575,11 +595,18 @@ const windowTitle = computed(() => {
 /** @type {import('vue').ComputedRef<string>} */
 const appTitle = computed(() => store.getters.getAppTitle)
 
-watch(appTitle, (value) => {
+/** @type {import('vue').ComputedRef<string>} */
+const windowTitleSuffix = computed(() => {
+  const suffix = store.getters.getWindowTitleSuffix
+  const trimmed = typeof suffix === 'string' ? suffix.trim() : ''
+  return trimmed !== '' ? trimmed : packageDetails.productName
+})
+
+watch([appTitle, windowTitleSuffix], ([value, suffix]) => {
   if (value.length > 0) {
-    document.title = `${value} - ${packageDetails.productName}`
+    document.title = `${value} - ${suffix}`
   } else {
-    document.title = packageDetails.productName
+    document.title = suffix
   }
 })
 

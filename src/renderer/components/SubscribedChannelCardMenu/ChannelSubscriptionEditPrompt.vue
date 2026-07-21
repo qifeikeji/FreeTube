@@ -44,13 +44,13 @@
             :label="t('Channels.Highlight Channel')"
             :default-value="draftHighlighted"
             :compact="true"
-            @change="draftHighlighted = $event"
+            @change="onHighlightChange"
           />
           <FtToggleSwitch
             :label="t('Channels.Bold Channel Name')"
             :default-value="draftBoldChannelName"
             :compact="true"
-            @change="draftBoldChannelName = $event"
+            @change="onBoldChange"
           />
         </div>
       </section>
@@ -202,6 +202,23 @@ function handlePromptClick(value) {
   }
 }
 
+/**
+ * @param {boolean} value
+ */
+function onHighlightChange(value) {
+  draftHighlighted.value = value
+}
+
+/**
+ * @param {boolean} value
+ */
+function onBoldChange(value) {
+  draftBoldChannelName.value = value
+  if (value) {
+    draftHighlighted.value = true
+  }
+}
+
 function save() {
   emit('save', {
     notes: draftNotes.value,
@@ -226,15 +243,17 @@ function cancel() {
 .dialogHeader {
   text-align: center;
   margin-block-end: 4px;
+  flex-shrink: 0;
 }
 
 .dialogTitle {
   margin-block: 0 6px;
+  color: rgb(255 255 255 / 92%);
 }
 
 .dialogChannelName {
   margin: 0;
-  color: var(--tertiary-text-color);
+  color: rgb(255 255 255 / 55%);
   font-size: 1rem;
   font-weight: 500;
 }
@@ -247,26 +266,34 @@ function cancel() {
   margin-block: 8px 4px;
   inline-size: 100%;
   min-block-size: 0;
-  overflow: hidden;
+  overflow-x: visible;
+  overflow-y: auto;
   box-sizing: border-box;
+  padding-inline: 2px;
+  padding-block: 2px;
 }
 
 .formSection {
+  box-sizing: border-box;
   padding: 14px;
-  border-radius: 12px;
-  background-color: #282828;
-  box-shadow: 0 0 0 1px var(--primary-shadow-color);
+  border-radius: 14px;
+  background-color: rgb(0 0 0 / 38%);
+  border: 1px solid rgb(255 255 255 / 12%);
+  box-shadow: none;
+  backdrop-filter: blur(10px);
+  /* stylelint-disable-next-line property-no-vendor-prefix */
+  -webkit-backdrop-filter: blur(10px);
 }
 
 .notesSection {
   display: flex;
   flex: 1;
   flex-direction: column;
-  min-block-size: 0;
+  min-block-size: 120px;
 }
 
 .togglesSection {
-  padding-block: 8px;
+  padding-block: 10px;
 }
 
 .togglesRow {
@@ -282,31 +309,41 @@ function cancel() {
   min-inline-size: 0;
 }
 
+.togglesRow :deep(.switch-label) {
+  color: rgb(255 255 255 / 86%);
+}
+
 .fieldLabel {
   display: block;
   font-weight: 600;
   margin-block-end: 8px;
+  color: rgb(255 255 255 / 82%);
 }
 
 .notesField {
   box-sizing: border-box;
   inline-size: 100%;
   flex: 1;
-  min-block-size: 0;
+  min-block-size: 96px;
   padding: 12px;
-  border: 0;
-  border-radius: 8px;
+  border: 1px solid rgb(255 255 255 / 10%);
+  border-radius: 10px;
   font-size: 15px;
   line-height: 1.45;
   font-family: inherit;
-  color: var(--secondary-text-color);
-  background-color: var(--search-bar-color);
+  color: rgb(255 255 255 / 88%);
+  background-color: rgb(0 0 0 / 35%);
   resize: none;
 }
 
+.notesField::placeholder {
+  color: rgb(255 255 255 / 40%);
+}
+
 .notesField:focus {
-  outline: 2px solid var(--primary-color);
-  outline-offset: 1px;
+  outline: none;
+  border-color: rgb(255 255 255 / 28%);
+  box-shadow: 0 0 0 1px rgb(255 255 255 / 10%);
 }
 
 .colorSwatches {
@@ -321,12 +358,12 @@ function cancel() {
   flex: 1 1 0;
   block-size: 40px;
   min-inline-size: 0;
-  border-radius: 8px;
-  border: 2px solid transparent;
+  border-radius: 10px;
+  border: 2px solid rgb(255 255 255 / 12%);
   box-sizing: border-box;
   cursor: pointer;
   padding: 0;
-  transition: border-color 0.12s ease-out;
+  transition: border-color 0.12s ease-out, box-shadow 0.12s ease-out;
 }
 
 .colorSwatch:hover {
@@ -335,6 +372,7 @@ function cancel() {
 
 .colorSwatch.selected {
   border-color: #fff;
+  box-shadow: 0 0 0 1px rgb(255 255 255 / 35%);
 }
 
 .actions {
@@ -342,6 +380,8 @@ function cancel() {
   justify-content: center;
   flex-wrap: wrap;
   gap: 8px;
+  flex-shrink: 0;
+  padding-block-start: 4px;
 }
 </style>
 
@@ -349,20 +389,22 @@ function cancel() {
 .channelSubscriptionEditDialog.ft-card.promptCard {
   box-sizing: border-box;
   inline-size: 500px;
-  block-size: 640px;
+  block-size: auto;
   max-inline-size: min(500px, 95vw) !important;
-  max-block-size: min(640px, 95vh);
-  border-radius: 16px;
-  overflow: hidden;
+  max-block-size: min(680px, 95vh);
+  border-radius: 18px;
+  overflow: visible;
   display: flex;
   flex-direction: column;
-  padding-block: 16px 20px;
+  padding-block: 18px 20px;
   padding-inline: 20px;
-  scrollbar-width: none;
-}
-
-.channelSubscriptionEditDialog.ft-card.promptCard::-webkit-scrollbar {
-  display: none;
-  inline-size: 0;
+  background-color: rgb(18 18 18 / 72%) !important;
+  border: 1px solid rgb(255 255 255 / 12%);
+  box-shadow: 0 16px 40px rgb(0 0 0 / 40%);
+  color: rgb(255 255 255 / 90%);
+  backdrop-filter: blur(20px) saturate(140%);
+  /* stylelint-disable-next-line property-no-vendor-prefix */
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  scrollbar-width: thin;
 }
 </style>

@@ -314,5 +314,36 @@ export default {
     ipcRenderer.on(IpcChannels.SYNC_SUBSCRIPTION_CACHE, (_, { event, data }) => {
       handler(event, data)
     })
+  },
+
+  minimizeWindow: () => {
+    ipcRenderer.send(IpcChannels.WINDOW_MINIMIZE)
+  },
+
+  toggleMaximizeWindow: () => {
+    ipcRenderer.send(IpcChannels.WINDOW_TOGGLE_MAXIMIZE)
+  },
+
+  closeWindow: () => {
+    ipcRenderer.send(IpcChannels.WINDOW_CLOSE)
+  },
+
+  /**
+   * @returns {Promise<boolean>}
+   */
+  isWindowMaximized: () => {
+    return ipcRenderer.invoke(IpcChannels.WINDOW_IS_MAXIMIZED)
+  },
+
+  /**
+   * @param {((maximized: boolean) => void) | null} handler
+   */
+  handleWindowMaximizedChange: (handler) => {
+    ipcRenderer.removeAllListeners(IpcChannels.WINDOW_MAXIMIZED_CHANGE)
+    if (handler) {
+      ipcRenderer.on(IpcChannels.WINDOW_MAXIMIZED_CHANGE, (_, maximized) => {
+        handler(maximized)
+      })
+    }
   }
 }

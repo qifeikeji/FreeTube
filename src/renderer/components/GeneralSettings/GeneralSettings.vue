@@ -87,6 +87,17 @@
         :tooltip="t('Tooltips.General Settings.Video Grid Columns')"
         @input="handleVideoGridColumnsInput"
       />
+      <FtInput
+        :placeholder="t('Settings.General Settings.Video Grid Min Column Width')"
+        :show-action-button="false"
+        :show-label="true"
+        input-type="number"
+        :min="180"
+        :max="600"
+        :value="videoGridMinColumnWidthString"
+        :tooltip="t('Tooltips.General Settings.Video Grid Min Column Width')"
+        @input="handleVideoGridMinColumnWidthInput"
+      />
       <FtSelect
         :placeholder="t('Settings.General Settings.Thumbnail Preference.Thumbnail Preference')"
         :value="thumbnailPreference"
@@ -245,6 +256,24 @@ function handleVideoGridColumnsInput(value) {
   if (!Number.isFinite(parsed)) { return }
   const clamped = Math.min(Math.max(parsed, 0), 12)
   videoGridColumnsDebouncedUpdate(clamped)
+}
+
+/** @type {import('vue').ComputedRef<number>} */
+const videoGridMinColumnWidth = computed(() => store.getters.getVideoGridMinColumnWidth)
+const videoGridMinColumnWidthString = computed(() => String(videoGridMinColumnWidth.value ?? 300))
+
+const videoGridMinColumnWidthDebouncedUpdate = debounce((value) => {
+  store.dispatch('updateVideoGridMinColumnWidth', value)
+}, 250)
+
+/**
+ * @param {string} value
+ */
+function handleVideoGridMinColumnWidthInput(value) {
+  const parsed = Math.round(Number(value))
+  if (!Number.isFinite(parsed)) { return }
+  const clamped = Math.min(Math.max(parsed, 180), 600)
+  videoGridMinColumnWidthDebouncedUpdate(clamped)
 }
 
 /** @type {import('vue').ComputedRef<boolean>} */

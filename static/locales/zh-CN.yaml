@@ -16,6 +16,8 @@ Zoom out: '缩小'
 Toggle fullscreen: '切换全屏'
 Window: '窗口'
 Minimize: '最小化'
+Maximize: 最大化
+Restore: 还原
 Close: '关闭'
 Back: '后退'
 Forward: '前进'
@@ -225,6 +227,7 @@ Settings:
       Blur: 模糊
     Side Nav Width (px): 左侧栏宽度(px)
     Video Grid Columns: 视频网格列数
+    Video Grid Min Column Width: 视频卡片最小宽度(px)
     Region for Trending: '热门区域'
         #! List countries
     Check for Updates: 检查更新
@@ -366,6 +369,8 @@ Settings:
     Disable Smooth Scrolling: 禁用平滑滚动
     Hide Side Bar Labels: 隐藏侧边栏标签
     Hide FreeTube Header Logo: 隐藏 FreeTube 标题徽标
+    Window Title Bar Color: 窗口标题栏颜色
+    Window Title Suffix: 窗口标题名称
   Player Settings:
     Player Settings: '播放器'
     Play Next Video: '自动播放推荐的视频'
@@ -708,6 +713,9 @@ Channel:
 Video:
   Open in YouTube: '在YouTube中打开'
   Copy YouTube Link: '复制YouTube链接'
+  Copy Video Link: 复制视频链接
+  Copy Channel Link: 复制频道链接
+  Copy Thumbnail Link: 复制缩略图链接
   Open YouTube Embedded Player: '打开YouTube内嵌播放器'
   Copy YouTube Embedded Player Link: '复制YouTube内嵌播放器链接'
   Open in Invidious: '在Invidious中打开'
@@ -867,6 +875,7 @@ Share:
   Invidious Channel URL copied to clipboard: Invidious频道URL已复制到剪贴板
   Share Channel: 分享频道
   Share Post: 分享帖子
+  Thumbnail URL copied to clipboard: 缩略图链接已复制到剪贴板
 Mini Player: '迷你播放器'
 Comments:
   Comments: '评论'
@@ -973,6 +982,9 @@ Tooltips:
     External Link Handling: "选择单击一个无法在 FreeTube 中打开的链接时触发的默认操作。\n默认情况下，FreeTube 将在您的默认浏览器中打开所点击链接。\n"
     Open Deep Links In New Window: 在新窗口由浏览器的重定向扩展或命令行变量传递到 FreeTube 的 URL。
     Video Grid Columns: 设为 0 表示自动列数；否则网格视图使用固定列数。
+    Video Grid Min Column Width: 自动列数时每张卡片的最小宽度。页面会按容器宽度尽量排满列，再把去掉间距后的剩余宽度均分给各列卡片，避免出现横向滚动条。
+  Theme Settings:
+    Window Title Suffix: 自定义窗口标题中短横线后面的文字。例如：“视频名 - 你的名字”。留空则使用 FreeTube。
   External Player Settings:
     External Player: 选择一个外部播放器将在缩略图上显示一个图标，用于在外部播放器中打开视频(播放列表，如果支持)。警告，Invidious 设置不影响外部播放器。
     Custom External Player Executable: 默认情况下，FreeTube 假设选择的外部播放器可以通过 PATH 环境变量找到。如果需要，可以在这里设置自定义路径。

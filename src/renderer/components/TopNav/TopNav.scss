@@ -17,7 +17,7 @@
   inset-inline: 0;
   line-height: 60px;
   position: sticky;
-  inset-block-start: 0;
+  inset-block-start: var(--window-titlebar-height, 0px);
   inline-size: 100%;
   z-index: 4;
 

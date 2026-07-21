@@ -182,6 +182,9 @@ const state = {
   // UI layout
   sideNavWidthPx: 300,
   videoGridColumns: 0,
+  videoGridMinColumnWidth: 300,
+  windowTitleBarColor: '#202020',
+  windowTitleSuffix: 'FreeTube',
   expandSideBar: false,
   hideActiveSubscriptions: false,
   hideChannelCommunity: false,

@@ -973,6 +973,8 @@ function runApp() {
       icon: process.env.NODE_ENV === 'development'
         ? path.join(__dirname, '../../_icons/iconColor.png')
         : path.join(__dirname, '../_icons/iconColor.png'),
+      // Custom Win10-style title bar is drawn in the renderer.
+      frame: false,
       autoHideMenuBar: true,
       // useContentSize: true,
       webPreferences: {
@@ -996,6 +998,14 @@ function runApp() {
             height: 800
           }
     })
+
+    const emitMaximizedState = () => {
+      if (!newWindow.isDestroyed()) {
+        newWindow.webContents.send(IpcChannels.WINDOW_MAXIMIZED_CHANGE, newWindow.isMaximized())
+      }
+    }
+    newWindow.on('maximize', emitMaximizedState)
+    newWindow.on('unmaximize', emitMaximizedState)
 
     // region Ensure child windows use same options since electron 14
 
@@ -1221,6 +1231,32 @@ function runApp() {
     if (isFreeTubeUrl(event.senderFrame.url) && typeof title === 'string') {
       BrowserWindow.fromWebContents(event.sender)?.setTitle(title)
     }
+  })
+
+  ipcMain.on(IpcChannels.WINDOW_MINIMIZE, (event) => {
+    if (!isFreeTubeUrl(event.senderFrame.url)) { return }
+    BrowserWindow.fromWebContents(event.sender)?.minimize()
+  })
+
+  ipcMain.on(IpcChannels.WINDOW_TOGGLE_MAXIMIZE, (event) => {
+    if (!isFreeTubeUrl(event.senderFrame.url)) { return }
+    const window = BrowserWindow.fromWebContents(event.sender)
+    if (window == null) { return }
+    if (window.isMaximized()) {
+      window.unmaximize()
+    } else {
+      window.maximize()
+    }
+  })
+
+  ipcMain.on(IpcChannels.WINDOW_CLOSE, (event) => {
+    if (!isFreeTubeUrl(event.senderFrame.url)) { return }
+    BrowserWindow.fromWebContents(event.sender)?.close()
+  })
+
+  ipcMain.handle(IpcChannels.WINDOW_IS_MAXIMIZED, (event) => {
+    if (!isFreeTubeUrl(event.senderFrame.url)) { return false }
+    return BrowserWindow.fromWebContents(event.sender)?.isMaximized() ?? false
   })
 
   function relaunch() {

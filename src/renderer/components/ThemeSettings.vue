@@ -52,6 +52,36 @@
         />
       </FtFlexBox>
       <br>
+      <FtFlexBox class="titleBarSettings">
+        <div class="titleBarColorSection">
+          <label for="windowTitleBarColorPicker">{{ $t('Settings.Theme Settings.Window Title Bar Color') }}</label>
+          <div class="titleBarColorControls">
+            <input
+              id="windowTitleBarColorPicker"
+              type="color"
+              :value="windowTitleBarColor"
+              @input="updateWindowTitleBarColor($event.target.value)"
+            >
+            <FtInput
+              class="titleBarColorValue"
+              placeholder=""
+              :value="windowTitleBarColor"
+              :show-action-button="false"
+              :disabled="true"
+            />
+          </div>
+        </div>
+        <FtInput
+          :placeholder="$t('Settings.Theme Settings.Window Title Suffix')"
+          :show-action-button="false"
+          :show-label="true"
+          :value="windowTitleSuffix"
+          :maxlength="64"
+          :tooltip="$t('Tooltips.Theme Settings.Window Title Suffix')"
+          @input="updateWindowTitleSuffix"
+        />
+      </FtFlexBox>
+      <br>
     </template>
     <FtFlexBox>
       <FtSelect
@@ -103,6 +133,7 @@ import FtToggleSwitch from './FtToggleSwitch/FtToggleSwitch.vue'
 import FtSlider from './FtSlider/FtSlider.vue'
 import FtFlexBox from './ft-flex-box/ft-flex-box.vue'
 import FtPrompt from './FtPrompt/FtPrompt.vue'
+import FtInput from './FtInput/FtInput.vue'
 
 import store from '../store/index'
 
@@ -278,6 +309,32 @@ function updateUiScale(value) {
   store.dispatch('updateUiScale', value)
 }
 
+/** @type {import('vue').ComputedRef<string>} */
+const windowTitleBarColor = computed(() => {
+  const color = store.getters.getWindowTitleBarColor
+  return typeof color === 'string' && color.trim() !== '' ? color.trim() : '#202020'
+})
+
+/**
+ * @param {string} value
+ */
+function updateWindowTitleBarColor(value) {
+  store.dispatch('updateWindowTitleBarColor', value)
+}
+
+/** @type {import('vue').ComputedRef<string>} */
+const windowTitleSuffix = computed(() => {
+  const suffix = store.getters.getWindowTitleSuffix
+  return typeof suffix === 'string' ? suffix : 'FreeTube'
+})
+
+/**
+ * @param {string} value
+ */
+function updateWindowTitleSuffix(value) {
+  store.dispatch('updateWindowTitleSuffix', value)
+}
+
 /** @type {boolean} */
 const usingElectron = process.env.IS_ELECTRON
 
@@ -323,3 +380,38 @@ function handleSmoothScrolling(value) {
   }
 }
 </script>
+
+<style scoped>
+.titleBarSettings {
+  flex-wrap: wrap;
+  gap: 24px;
+  align-items: flex-end;
+  justify-content: flex-start;
+}
+
+.titleBarColorSection {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.titleBarColorControls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.titleBarColorControls input[type='color'] {
+  inline-size: 42px;
+  block-size: 36px;
+  padding: 0;
+  border: 1px solid var(--primary-shadow-color);
+  border-radius: 6px;
+  background: transparent;
+  cursor: pointer;
+}
+
+.titleBarColorValue {
+  min-inline-size: 120px;
+}
+</style>

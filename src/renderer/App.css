@@ -8,12 +8,25 @@
   flex-wrap: wrap;
   font-family: Roboto, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   block-size: 100%;
+  max-inline-size: 100%;
+  overflow-x: hidden;
+  --window-titlebar-height: 0px;
+}
+
+.app.hasCustomTitleBar {
+  --window-titlebar-height: 32px;
+  padding-block-start: var(--window-titlebar-height);
+  box-sizing: border-box;
 }
 
 .routerView {
   flex: 1 1 0%;
+  min-inline-size: 0;
+  max-inline-size: 100%;
   margin-block: 18px;
   margin-inline: 1px;
+  overflow-x: hidden;
+  box-sizing: border-box;
 }
 
 .banner {

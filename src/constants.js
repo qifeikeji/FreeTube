@@ -11,6 +11,11 @@ const IpcChannels = {
   APP_READY: 'app-ready',
   RELAUNCH_REQUEST: 'relaunch-request',
   SET_WINDOW_TITLE: 'set-window-title',
+  WINDOW_MINIMIZE: 'window-minimize',
+  WINDOW_TOGGLE_MAXIMIZE: 'window-toggle-maximize',
+  WINDOW_CLOSE: 'window-close',
+  WINDOW_IS_MAXIMIZED: 'window-is-maximized',
+  WINDOW_MAXIMIZED_CHANGE: 'window-maximized-change',
 
   SEARCH_INPUT_HANDLING_READY: 'search-input-handling-ready',
   UPDATE_SEARCH_INPUT_TEXT: 'update-search-input-text',

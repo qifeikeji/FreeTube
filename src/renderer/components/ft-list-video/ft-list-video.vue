@@ -26,6 +26,7 @@
         tabindex="-1"
         :to="watchVideoRouterLink"
         @click.capture="handleWatchPageLinkClick($event)"
+        @contextmenu="handleSubscriptionContextMenu($event)"
       >
         <img
           :src="thumbnail"
@@ -134,6 +135,7 @@
         class="title"
         :to="watchVideoRouterLink"
         @click.capture="handleWatchPageLinkClick($event)"
+        @contextmenu="handleSubscriptionContextMenu($event)"
       >
         <h3
           class="h3Title"
@@ -153,6 +155,7 @@
           :style="subscriptionChannelNameStyle"
           dir="auto"
           :to="`/channel/${channelId}`"
+          @contextmenu="handleSubscriptionContextMenu($event)"
         >
           {{ channelName }}
         </router-link>
@@ -164,6 +167,7 @@
             boldSubscriptionChannel: boldSubscriptionChannelName
           }"
           :style="subscriptionChannelNameStyle"
+          @contextmenu="handleSubscriptionContextMenu($event)"
         >
           {{ channelName }}
         </bdi>
@@ -253,6 +257,7 @@
           :size="16"
           :use-shadow="false"
           dropdown-position-x="left"
+          :glass="inSubscriptions"
           :dropdown-options="dropdownOptions"
           @click="handleOptionsClick"
         />
@@ -282,6 +287,13 @@
         &nbsp;
       </div>
     </div>
+    <FtGlassContextMenu
+      :visible="subscriptionContextMenuVisible"
+      :position="subscriptionContextMenuPosition"
+      :items="subscriptionContextMenuItems"
+      @select="handleSubscriptionContextMenuSelect"
+      @close="closeSubscriptionContextMenu"
+    />
   </div>
 </template>
 

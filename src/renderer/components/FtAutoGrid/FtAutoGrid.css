@@ -1,11 +1,30 @@
 .grid {
   display: grid;
   gap: 8px;
-  grid-template-columns: var(--video-grid-template-columns, repeat(auto-fill, minmax(262px, 1fr)));
-  justify-content: space-evenly;
+  grid-template-columns: var(
+    --video-grid-template-columns,
+    repeat(auto-fill, minmax(min(100%, var(--video-grid-min-column, 300px)), 1fr))
+  );
+  justify-content: stretch;
+  inline-size: 100%;
+  max-inline-size: 100%;
+  box-sizing: border-box;
+}
+
+.grid > * {
+  min-inline-size: 0;
+  max-inline-size: 100%;
 }
 
 .list {
   display: grid;
   gap: 4px;
+  inline-size: 100%;
+  max-inline-size: 100%;
+  box-sizing: border-box;
+}
+
+.list > * {
+  min-inline-size: 0;
+  max-inline-size: 100%;
 }

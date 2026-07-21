@@ -1,7 +1,10 @@
 .card {
   inline-size: 85%;
+  max-inline-size: 100%;
   margin-block: 0 60px;
   margin-inline: auto;
+  box-sizing: border-box;
+  overflow-x: hidden;
 }
 
 .message {
@@ -16,13 +19,20 @@
   --channel-card-bg: #282828;
   --channel-card-bg-hover: #1f1f1f;
   --channel-card-icon-size: 72px;
-  --channel-card-min-column: 260px;
+  --channel-card-min-column: var(--video-grid-min-column, 300px);
 
   inline-size: 100%;
+  max-inline-size: 100%;
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(min(100%, var(--channel-card-min-column)), 1fr));
   gap: 12px;
   margin-block-start: 2rem;
+  box-sizing: border-box;
+}
+
+.channels > * {
+  min-inline-size: 0;
+  max-inline-size: 100%;
 }
 
 .channelCard {
@@ -105,6 +115,14 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.channelName.highlightedChannelName {
+  color: #1e88e5;
+}
+
+.channelName.boldChannelName {
+  font-weight: 700;
 }
 
 .channelNotes {

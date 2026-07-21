@@ -21,6 +21,8 @@ Zoom out: Zoom out
 Toggle fullscreen: Toggle fullscreen
 Window: Window
 Minimize: Minimize
+Maximize: Maximize
+Restore: Restore
 Close: Close
 Compact side navigation: Compact side navigation
 Expand side navigation: Expand side navigation
@@ -315,6 +317,7 @@ Settings:
       Blur: Blur
     Side Nav Width (px): Side nav width (px)
     Video Grid Columns: Video grid columns
+    Video Grid Min Column Width: Video card min width (px)
     Current Invidious Instance: Current Invidious Instance
     The currently set default instance is {instance}: The currently set default instance is {instance}
     No default instance has been set: No default instance has been set
@@ -337,6 +340,8 @@ Settings:
     UI Scale: UI Scale
     Hide Side Bar Labels: Hide Side Bar Labels
     Hide FreeTube Header Logo: Hide FreeTube Header Logo
+    Window Title Bar Color: Window title bar color
+    Window Title Suffix: Window title name
     Base Theme:
       Base Theme: Base Theme
       Black: Black
@@ -862,6 +867,9 @@ Video:
   Video has been removed from your saved list: Video has been removed from your saved list
   Open in YouTube: Open in YouTube
   Copy YouTube Link: Copy YouTube Link
+  Copy Video Link: Copy Video Link
+  Copy Channel Link: Copy Channel Link
+  Copy Thumbnail Link: Copy Thumbnail Link
   Open YouTube Embedded Player: Open YouTube Embedded Player
   Copy YouTube Embedded Player Link: Copy YouTube Embedded Player Link
   Open in Invidious: Open in Invidious
@@ -1014,6 +1022,7 @@ Share:
   YouTube URL copied to clipboard: YouTube URL copied to clipboard
   YouTube Embed URL copied to clipboard: YouTube Embed URL copied to clipboard
   YouTube Channel URL copied to clipboard: YouTube Channel URL copied to clipboard
+  Thumbnail URL copied to clipboard: Thumbnail URL copied to clipboard
 Clipboard:
   Copy failed: Copy to clipboard failed
   Cannot access clipboard without a secure connection: Cannot access clipboard without a secure connection
@@ -1071,6 +1080,9 @@ Tooltips:
     Open Deep Links In New Window: URLs passed to FreeTube, such as by redirect
       browser extensions or command line arguments, are opened in a new window.
     Video Grid Columns: Set to 0 for automatic columns. Otherwise uses a fixed number of columns for grid view.
+    Video Grid Min Column Width: Minimum width for each card when automatic columns are enabled. The page fills as many columns as fit, then shares leftover width (after gaps) across cards so no horizontal scrollbar appears.
+  Theme Settings:
+    Window Title Suffix: Custom text after the dash in the window title. Example: "Video Name - YourName". Leave empty to use FreeTube.
   Player Settings:
     Proxy Videos Through Invidious: Will connect to Invidious to serve videos instead
       of making a direct connection to YouTube.

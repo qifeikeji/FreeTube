@@ -75,7 +75,8 @@
           right: dropdownPositionX === 'right',
           center: dropdownPositionX === 'center',
           bottom: dropdownPositionY === 'bottom',
-          top: dropdownPositionY === 'top'
+          top: dropdownPositionY === 'top',
+          glass
         }"
         @keydown.esc.stop="handleDropdownEscape"
       >
@@ -171,6 +172,10 @@ const props = defineProps({
     // - (OPTIONAL) active: Number (if type === 'labelValue')
     type: Array,
     default: () => []
+  },
+  glass: {
+    type: Boolean,
+    default: false
   },
   dropdownModalOnMobile: {
     type: Boolean,

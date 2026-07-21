@@ -1,5 +1,6 @@
 import { defineComponent } from 'vue'
 import FtIconButton from '../FtIconButton/FtIconButton.vue'
+import FtGlassContextMenu from '../FtGlassContextMenu/FtGlassContextMenu.vue'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import { mapActions } from 'vuex'
 import {
@@ -22,6 +23,7 @@ export default defineComponent({
   components: {
     'ft-icon-button': FtIconButton,
     'ft-awesome-icon': FontAwesomeIcon,
+    FtGlassContextMenu,
   },
   directives: {
     'safer-html': vSaferHtml
@@ -130,6 +132,8 @@ export default defineComponent({
       deArrowTogglePinned: false,
       showDeArrowTitle: false,
       showDeArrowThumbnail: false,
+      subscriptionContextMenuVisible: false,
+      subscriptionContextMenuPosition: { x: 0, y: 0 },
     }
   },
   computed: {
@@ -299,6 +303,29 @@ export default defineComponent({
     },
 
     dropdownOptions: function () {
+      if (this.inSubscriptions) {
+        const options = [
+          {
+            label: this.$t('Video.Copy Video Link'),
+            value: 'copyYoutube'
+          }
+        ]
+
+        if (this.channelId !== null) {
+          options.push({
+            label: this.$t('Video.Copy Channel Link'),
+            value: 'copyYoutubeChannel'
+          })
+        }
+
+        options.push({
+          label: this.$t('Video.Copy Thumbnail Link'),
+          value: 'copyThumbnail'
+        })
+
+        return options
+      }
+
       const options = [
         {
           label: this.historyEntryExists
@@ -398,6 +425,29 @@ export default defineComponent({
       }
 
       return options
+    },
+
+    subscriptionContextMenuItems: function () {
+      const items = [
+        {
+          label: this.$t('Video.Copy Video Link'),
+          value: 'copyYoutube'
+        }
+      ]
+
+      if (this.channelId !== null) {
+        items.push({
+          label: this.$t('Video.Copy Channel Link'),
+          value: 'copyYoutubeChannel'
+        })
+      }
+
+      items.push({
+        label: this.$t('Video.Copy Thumbnail Link'),
+        value: 'copyThumbnail'
+      })
+
+      return items
     },
 
     thumbnail: function () {
@@ -767,6 +817,9 @@ export default defineComponent({
         case 'openInvidiousChannel':
           openExternalLink(this.invidiousChannelUrl)
           break
+        case 'copyThumbnail':
+          copyToClipboard(this.thumbnail, { messageOnSuccess: this.$t('Share.Thumbnail URL copied to clipboard') })
+          break
         case 'hideChannel':
           this.hideChannel(this.channelName, this.channelId)
           break
@@ -774,6 +827,26 @@ export default defineComponent({
           this.unhideChannel(this.channelName, this.channelId)
           break
       }
+    },
+
+    handleSubscriptionContextMenu: function (event) {
+      if (!this.inSubscriptions) {
+        return
+      }
+
+      event.preventDefault()
+      event.stopPropagation()
+      this.subscriptionContextMenuPosition = { x: event.clientX, y: event.clientY }
+      this.subscriptionContextMenuVisible = true
+    },
+
+    closeSubscriptionContextMenu: function () {
+      this.subscriptionContextMenuVisible = false
+    },
+
+    handleSubscriptionContextMenuSelect: function (option) {
+      this.closeSubscriptionContextMenu()
+      this.handleOptionsClick(option)
     },
 
     parseVideoData: function () {
