@@ -82,6 +82,7 @@
   min-block-size: 0;
   block-size: 100%;
   overflow: hidden auto;
+
   /* Leave room under the glass bar; content can still scroll beneath it for blur */
   padding-block: calc(var(--refresh-bar-occupied-height, 52px) + 18px) 18px;
   padding-inline: 1px;
