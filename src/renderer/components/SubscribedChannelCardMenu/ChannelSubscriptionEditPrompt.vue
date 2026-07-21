@@ -68,13 +68,16 @@
         >
           <button
             v-for="option in noteColorOptions"
-            :key="`notes-${option.value}`"
+            :key="`notes-${option.value || 'default'}`"
             type="button"
             class="colorSwatch"
             role="radio"
             :aria-checked="draftNotesColor === option.value"
-            :class="{ selected: draftNotesColor === option.value }"
-            :style="{ backgroundColor: option.value }"
+            :class="{
+              selected: draftNotesColor === option.value,
+              isDefault: option.value === defaultNotesColor
+            }"
+            :style="option.value ? { backgroundColor: option.value } : undefined"
             :title="option.label"
             @click="draftNotesColor = option.value"
           />
@@ -94,15 +97,18 @@
         >
           <button
             v-for="option in noteColorOptions"
-            :key="`highlight-${option.value}`"
+            :key="`highlight-${option.value || 'default'}`"
             type="button"
             class="colorSwatch"
             role="radio"
             :aria-checked="draftHighlightColor === option.value"
-            :class="{ selected: draftHighlightColor === option.value }"
-            :style="{ backgroundColor: option.value }"
+            :class="{
+              selected: draftHighlightColor === option.value,
+              isDefault: option.value === defaultHighlightColor
+            }"
+            :style="option.value ? { backgroundColor: option.value } : undefined"
             :title="option.label"
-            @click="draftHighlightColor = option.value"
+            @click="selectHighlightColor(option.value)"
           />
         </div>
       </section>
@@ -110,23 +116,16 @@
         <FtButton
           class="actionButton saveButton"
           :label="t('Channels.Save Channel Notes')"
-          background-color="color-mix(in srgb, var(--primary-color) 72%, transparent)"
+          background-color="color-mix(in srgb, var(--primary-color) 78%, transparent)"
           text-color="var(--ui-glass-text-strong, rgb(255 255 255 / 92%))"
           @click="save"
         />
         <FtButton
           class="actionButton cancelButton"
           :label="t('Cancel')"
-          background-color="var(--ui-glass-control, rgb(0 0 0 / 38%))"
+          background-color="rgb(255 255 255 / 22%)"
           text-color="var(--ui-glass-text-strong, rgb(255 255 255 / 92%))"
           @click="cancel"
-        />
-        <FtButton
-          class="actionButton resetButton"
-          :label="t('Channels.Reset Notes Color')"
-          background-color="color-mix(in srgb, var(--accent-color) 72%, transparent)"
-          text-color="var(--ui-glass-text-strong, rgb(255 255 255 / 92%))"
-          @click="resetColors"
         />
       </FtFlexBox>
     </div>
@@ -166,6 +165,7 @@ const noteColorOptions = computed(() => [
   { label: t('Channels.Note Color Blue'), value: '#1e88e5' },
   { label: t('Channels.Note Color Green'), value: '#43a047' },
   { label: t('Channels.Note Color Purple'), value: '#8e24aa' },
+  { label: t('Channels.Note Color Default'), value: '' },
 ])
 
 const draftNotes = ref('')
@@ -212,6 +212,9 @@ function handlePromptClick(value) {
  */
 function onHighlightChange(value) {
   draftHighlighted.value = value
+  if (!value) {
+    draftBoldChannelName.value = false
+  }
 }
 
 /**
@@ -224,6 +227,14 @@ function onBoldChange(value) {
   }
 }
 
+/**
+ * @param {string} value
+ */
+function selectHighlightColor(value) {
+  draftHighlightColor.value = value
+  draftHighlighted.value = true
+}
+
 function save() {
   emit('save', {
     notes: draftNotes.value,
@@ -232,11 +243,6 @@ function save() {
     highlighted: draftHighlighted.value,
     boldChannelName: draftBoldChannelName.value,
   })
-}
-
-function resetColors() {
-  draftNotesColor.value = defaultNotesColor
-  draftHighlightColor.value = defaultHighlightColor
 }
 
 function cancel() {
@@ -371,6 +377,17 @@ function cancel() {
   transition: border-color 0.12s ease-out, box-shadow 0.12s ease-out;
 }
 
+.colorSwatch.isDefault {
+  background-color: var(--primary-text-color, #eee);
+  background-image:
+    linear-gradient(45deg, rgb(0 0 0 / 18%) 25%, transparent 25%),
+    linear-gradient(-45deg, rgb(0 0 0 / 18%) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, rgb(0 0 0 / 18%) 75%),
+    linear-gradient(-45deg, transparent 75%, rgb(0 0 0 / 18%) 75%);
+  background-position: 0 0, 0 6px, 6px -6px, -6px 0;
+  background-size: 12px 12px;
+}
+
 .colorSwatch:hover {
   border-color: rgb(255 255 255 / 45%);
 }
@@ -403,22 +420,28 @@ function cancel() {
   backdrop-filter: blur(10px);
   /* stylelint-disable-next-line property-no-vendor-prefix */
   -webkit-backdrop-filter: blur(10px);
+  transition: background-color 0.15s ease-out, border-color 0.15s ease-out, filter 0.15s ease-out;
 }
 
 .actions :deep(.cancelButton.btn) {
-  border-color: var(--ui-glass-border, rgb(255 255 255 / 12%));
+  border-color: rgb(255 255 255 / 28%);
+  background-color: rgb(255 255 255 / 22%) !important;
+}
+
+.actions :deep(.cancelButton.btn:hover) {
+  background-color: rgb(255 255 255 / 36%) !important;
+  border-color: rgb(255 255 255 / 48%);
+  filter: none;
 }
 
 .actions :deep(.saveButton.btn) {
-  border-color: color-mix(in srgb, var(--primary-color) 55%, transparent);
+  border-color: color-mix(in srgb, var(--primary-color) 62%, white 18%);
 }
 
-.actions :deep(.resetButton.btn) {
-  border-color: color-mix(in srgb, var(--accent-color) 55%, transparent);
-}
-
-.actions :deep(.btn:hover) {
-  filter: brightness(1.08);
+.actions :deep(.saveButton.btn:hover) {
+  background-color: color-mix(in srgb, var(--primary-color) 92%, white 12%) !important;
+  border-color: color-mix(in srgb, var(--primary-color) 70%, white 30%);
+  filter: none;
 }
 </style>
 

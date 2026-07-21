@@ -6,16 +6,21 @@
 }
 
 .ft-list-video.grid {
-  --video-card-radius: 14px;
-  --video-card-padding: 10px;
-  --video-thumb-radius: calc(var(--video-card-radius) - 4px);
+  /* Customizable via settings (set on .app); text paddings stay fixed. */
+  --video-card-radius: var(--video-card-border-radius, 14px);
+  --video-thumb-padding: var(--video-card-thumb-padding, 10px);
+  --video-text-padding-inline: 10px;
+  --video-text-gap: 10px;
+  --video-text-padding-block-end: 10px;
+  /* Concentric corners: thumb radius = card radius − thumb↔card padding */
+  --video-thumb-radius: max(0px, calc(var(--video-card-radius) - var(--video-thumb-padding)));
 
   background-color: rgb(0 0 0 / 10%);
   border-radius: var(--video-card-radius);
   box-shadow: 0 0 0 1px var(--primary-shadow-color);
   transition: box-shadow 0.15s ease-out, background-color 0.15s ease-out, transform 0.15s ease-out;
-  padding: var(--video-card-padding);
-  padding-block-end: calc(var(--video-card-padding) + 10px);
+  padding: 0;
+  padding-block-end: var(--video-text-padding-block-end);
 
   &:hover,
   &:focus-within {
@@ -27,7 +32,10 @@
   }
 
   .videoThumbnail {
-    margin-block-end: 10px;
+    margin-block-start: var(--video-thumb-padding);
+    margin-inline: var(--video-thumb-padding);
+    margin-block-end: var(--video-text-gap);
+    padding-block-end: 0;
 
     .thumbnailLink {
       border-radius: var(--video-thumb-radius);
@@ -36,6 +44,10 @@
     .thumbnailImage {
       border-radius: var(--video-thumb-radius);
     }
+  }
+
+  .info {
+    padding-inline: var(--video-text-padding-inline);
   }
 
   .h3Title {

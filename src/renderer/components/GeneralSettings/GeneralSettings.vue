@@ -87,6 +87,32 @@
         :tooltip="t('Tooltips.General Settings.Video Grid Min Column Width')"
         @input="handleVideoGridMinColumnWidthInput"
       />
+    </div>
+    <FtFlexBox class="cardStyleSettings">
+      <FtInput
+        :placeholder="t('Settings.General Settings.Video Card Border Radius')"
+        :show-action-button="false"
+        :show-label="true"
+        input-type="number"
+        :min="0"
+        :max="40"
+        :value="videoCardBorderRadiusString"
+        :tooltip="t('Tooltips.General Settings.Video Card Border Radius')"
+        @input="handleVideoCardBorderRadiusInput"
+      />
+      <FtInput
+        :placeholder="t('Settings.General Settings.Video Card Thumbnail Padding')"
+        :show-action-button="false"
+        :show-label="true"
+        input-type="number"
+        :min="0"
+        :max="30"
+        :value="videoCardThumbPaddingString"
+        :tooltip="t('Tooltips.General Settings.Video Card Thumbnail Padding')"
+        @input="handleVideoCardThumbPaddingInput"
+      />
+    </FtFlexBox>
+    <div class="switchGrid">
       <FtSelect
         :placeholder="t('Settings.General Settings.Thumbnail Preference.Thumbnail Preference')"
         :value="thumbnailPreference"
@@ -245,6 +271,42 @@ function handleVideoGridMinColumnWidthInput(value) {
   if (!Number.isFinite(parsed)) { return }
   const clamped = Math.min(Math.max(parsed, 180), 600)
   videoGridMinColumnWidthDebouncedUpdate(clamped)
+}
+
+/** @type {import('vue').ComputedRef<number>} */
+const videoCardBorderRadius = computed(() => store.getters.getVideoCardBorderRadius)
+const videoCardBorderRadiusString = computed(() => String(videoCardBorderRadius.value ?? 14))
+
+const videoCardBorderRadiusDebouncedUpdate = debounce((value) => {
+  store.dispatch('updateVideoCardBorderRadius', value)
+}, 250)
+
+/**
+ * @param {string} value
+ */
+function handleVideoCardBorderRadiusInput(value) {
+  const parsed = Math.round(Number(value))
+  if (!Number.isFinite(parsed)) { return }
+  const clamped = Math.min(Math.max(parsed, 0), 40)
+  videoCardBorderRadiusDebouncedUpdate(clamped)
+}
+
+/** @type {import('vue').ComputedRef<number>} */
+const videoCardThumbPadding = computed(() => store.getters.getVideoCardThumbPadding)
+const videoCardThumbPaddingString = computed(() => String(videoCardThumbPadding.value ?? 10))
+
+const videoCardThumbPaddingDebouncedUpdate = debounce((value) => {
+  store.dispatch('updateVideoCardThumbPadding', value)
+}, 250)
+
+/**
+ * @param {string} value
+ */
+function handleVideoCardThumbPaddingInput(value) {
+  const parsed = Math.round(Number(value))
+  if (!Number.isFinite(parsed)) { return }
+  const clamped = Math.min(Math.max(parsed, 0), 30)
+  videoCardThumbPaddingDebouncedUpdate(clamped)
 }
 
 /** @type {import('vue').ComputedRef<boolean>} */

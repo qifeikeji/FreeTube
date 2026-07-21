@@ -228,6 +228,8 @@ Settings:
     Side Nav Width (px): 左侧栏宽度(px)
     Video Grid Columns: 视频网格列数
     Video Grid Min Column Width: 视频卡片最小宽度(px)
+    Video Card Border Radius: 视频卡片圆角(px)
+    Video Card Thumbnail Padding: 缩略图与卡片边距(px)
     Region for Trending: '热门区域'
         #! List countries
     Check for Updates: 检查更新
@@ -565,6 +567,10 @@ Settings:
     Ip: IP地址
     Your Info: 你的信息
     Test Proxy: 测试代理
+    New Proxy: 新建代理
+    Delete Proxy: 删除代理
+    Use This Proxy: 选用
+    Select a proxy module first: 请先选用一个代理模块
     Clicking on Test Proxy will send a request to: 点击测试代理将会发送一个请求给
     Proxy Port Number: 代理端口号
     Proxy Host: 代理主机
@@ -590,12 +596,15 @@ Settings:
     Custom External Player Arguments: 定制外部播放器的参数
     Open Videos In External Player On Click: 点击视频时用外部播放器打开
     Custom External Player Executable: 自定义外部播放器的可执行文件
+    Custom Command: 自定义命令（任意可执行文件 / 命令行）
     Ignore Unsupported Action Warnings: 忽略不支持的行为的警告
     External Player: 外部播放器
     External Player Settings: 外部播放器
     Players:
       None:
         Name: 无
+      Custom:
+        Name: 自定义
     Ignore Default Arguments: 忽略默认变量
   Parental Control Settings:
     Parental Control Settings: 家长控制
@@ -983,11 +992,14 @@ Tooltips:
     Open Deep Links In New Window: 在新窗口由浏览器的重定向扩展或命令行变量传递到 FreeTube 的 URL。
     Video Grid Columns: 设为 0 表示自动列数；否则网格视图使用固定列数。
     Video Grid Min Column Width: 每张视频/频道/历史卡片的最小宽度。页面会按容器宽度尽量排满列，再把去掉间距后的剩余宽度均分给各列卡片。
+    Video Card Border Radius: 网格视频卡片外框圆角。缩略图圆角会自动按同心圆关系减小（差值等于缩略图边距）。
+    Video Card Thumbnail Padding: 卡片外框与缩略图之间的间距。只影响缩略图区域，标题等文字区域的内边距保持不变。
   Theme Settings:
     Window Title Suffix: 自定义窗口标题中短横线后面的文字。例如：“视频名 - 你的名字”。留空则使用 FreeTube。
   External Player Settings:
     External Player: 选择一个外部播放器将在缩略图上显示一个图标，用于在外部播放器中打开视频(播放列表，如果支持)。警告，Invidious 设置不影响外部播放器。
-    Custom External Player Executable: 默认情况下，FreeTube 假设选择的外部播放器可以通过 PATH 环境变量找到。如果需要，可以在这里设置自定义路径。
+    Custom External Player Executable: 默认情况下，FreeTube 假设选择的外部播放器可以通过 PATH 环境变量找到。如果需要，可以在这里设置自定义路径。当外部播放器选择「自定义」时，可填写任意命令或可执行文件（可带参数）；FreeTube 会原样运行并追加视频/播放列表 URL。
+    Custom Command: 填写任意可执行文件或完整命令行（例如 `mpv --fs`、`flatpak run org.videolan.VLC` 或脚本路径）。FreeTube 会追加可选的自定义参数和媒体 URL，不会套用特定播放器的参数模板。
     Ignore Warnings: 当前外部播放器不支持当前操作时(例如，颠倒播放列表文件顺序)，抑制警告。
     DefaultCustomArgumentsTemplate: "(默认: '{defaultCustomArguments}')"
     Custom External Player Arguments: 任何你希望传递给外部播放器的自定义命令行参数。
@@ -1035,6 +1047,7 @@ Channels:
   Note Color Blue: 蓝
   Note Color Green: 绿
   Note Color Purple: 紫
+  Note Color Default: 默认
   Highlight Channel: 重点
   Bold Channel Name: 加粗标题
 Clipboard:

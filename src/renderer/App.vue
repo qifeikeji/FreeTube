@@ -149,6 +149,10 @@ const hideLabelsSideBar = computed(() => store.getters.getHideLabelsSideBar)
 const sideNavWidthPx = computed(() => store.getters.getSideNavWidthPx)
 /** @type {import('vue').ComputedRef<number>} */
 const videoGridMinColumnWidth = computed(() => store.getters.getVideoGridMinColumnWidth)
+/** @type {import('vue').ComputedRef<number>} */
+const videoCardBorderRadius = computed(() => store.getters.getVideoCardBorderRadius)
+/** @type {import('vue').ComputedRef<number>} */
+const videoCardThumbPadding = computed(() => store.getters.getVideoCardThumbPadding)
 
 const appStyle = computed(() => {
   const width = Number(sideNavWidthPx.value)
@@ -159,6 +163,16 @@ const appStyle = computed(() => {
     ? Math.min(Math.max(minColumnWidth, 180), 600)
     : 300
 
+  const borderRadius = Math.round(Number(videoCardBorderRadius.value))
+  const safeBorderRadius = Number.isFinite(borderRadius)
+    ? Math.min(Math.max(borderRadius, 0), 40)
+    : 14
+
+  const thumbPadding = Math.round(Number(videoCardThumbPadding.value))
+  const safeThumbPadding = Number.isFinite(thumbPadding)
+    ? Math.min(Math.max(thumbPadding, 0), 30)
+    : 10
+
   // auto-fill + min(100%, minWidth): as many columns as fit, leftover width shared via 1fr.
   const gridTemplateColumns = `repeat(auto-fill, minmax(min(100%, ${safeMinColumnWidth}px), 1fr))`
 
@@ -166,6 +180,8 @@ const appStyle = computed(() => {
     '--side-nav-open-width': `${safeWidth}px`,
     '--video-grid-min-column': `${safeMinColumnWidth}px`,
     '--video-grid-template-columns': gridTemplateColumns,
+    '--video-card-border-radius': `${safeBorderRadius}px`,
+    '--video-card-thumb-padding': `${safeThumbPadding}px`,
   }
 })
 

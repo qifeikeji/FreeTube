@@ -154,6 +154,7 @@ Channels:
   Note Color Blue: Blue
   Note Color Green: Green
   Note Color Purple: Purple
+  Note Color Default: Default
   Highlight Channel: Key
   Bold Channel Name: Bold title
 Trending:
@@ -318,6 +319,8 @@ Settings:
     Side Nav Width (px): Side nav width (px)
     Video Grid Columns: Video grid columns
     Video Grid Min Column Width: Video card min width (px)
+    Video Card Border Radius: Video card corner radius (px)
+    Video Card Thumbnail Padding: Thumbnail inset from card edge (px)
     Current Invidious Instance: Current Invidious Instance
     The currently set default instance is {instance}: The currently set default instance is {instance}
     No default instance has been set: No default instance has been set
@@ -520,11 +523,14 @@ Settings:
     Ignore Unsupported Action Warnings: Ignore Unsupported Action Warnings
     Ignore Default Arguments: Ignore Default Arguments
     Custom External Player Executable: Custom External Player Executable
+    Custom Command: Custom Command (any executable / command line)
     Custom External Player Arguments: Custom External Player Arguments
     Open Videos In External Player On Click: Open videos in external player on click
     Players:
       None:
         Name: None
+      Custom:
+        Name: Custom
   Privacy Settings:
     Privacy Settings: Privacy
     Remember History: Remember Watch History
@@ -668,6 +674,10 @@ Settings:
     Proxy Password: Proxy Password
     Clicking on Test Proxy will send a request to: Clicking on Test Proxy will send a request to
     Test Proxy: Test Proxy
+    New Proxy: New Proxy
+    Delete Proxy: Delete Proxy
+    Use This Proxy: Use
+    Select a proxy module first: Select a proxy module first
     Your Info: Your Info
     Ip: Ip
     Country: Country
@@ -1081,6 +1091,8 @@ Tooltips:
       browser extensions or command line arguments, are opened in a new window.
     Video Grid Columns: Set to 0 for automatic columns. Otherwise uses a fixed number of columns for grid view.
     Video Grid Min Column Width: Minimum width for each video/channel/history card. The page fills as many columns as fit, then shares leftover width (after gaps) across cards.
+    Video Card Border Radius: Corner radius of grid video cards. Thumbnail corners shrink concentrically (difference equals the thumbnail inset).
+    Video Card Thumbnail Padding: Gap between the card edge and the thumbnail only. Text area padding stays fixed.
   Theme Settings:
     Window Title Suffix: 'Custom text after the dash in the window title. Example: "Video Name - YourName". Leave empty to use FreeTube.'
   Player Settings:
@@ -1099,7 +1111,11 @@ Tooltips:
       video (playlist if supported) in the external player, on the thumbnail. Warning, Invidious settings do not affect external players.
     Custom External Player Executable: By default, FreeTube will assume that the chosen external
       player can be found via the PATH environment variable. If needed, a custom path can
-      be set here.
+      be set here. When External Player is set to Custom, enter any command or executable
+      (arguments allowed); FreeTube will run it as-is and append the video/playlist URL.
+    Custom Command: Enter any executable or full command line (for example `mpv --fs`,
+      `flatpak run org.videolan.VLC`, or a script path). FreeTube appends optional custom
+      arguments and the media URL; no player-specific templates are applied.
     Ignore Warnings: Suppress warnings for when the current external player does not support
       the current action (e.g. reversing playlists, etc.).
     Ignore Default Arguments: Do not send any default arguments to the external player

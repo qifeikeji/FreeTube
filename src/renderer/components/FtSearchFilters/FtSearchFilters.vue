@@ -67,8 +67,8 @@
       <FtButton
         class="searchFilterCloseButton"
         :label="$t('Close')"
-        background-color="var(--ui-glass-control)"
-        text-color="var(--ui-glass-text-strong)"
+        background-color="rgb(255 255 255 / 22%)"
+        text-color="var(--ui-glass-text-strong, rgb(255 255 255 / 92%))"
         @click="hideSearchFilters"
       />
     </div>

@@ -77,6 +77,18 @@
   transition: background 0.2s ease-in;
 }
 
+/* Current route: darker than hover */
+.navOption.router-link-active,
+.navChannel.router-link-active {
+  background-color: color-mix(in srgb, var(--side-nav-hover-color) 55%, #000 45%);
+  color: var(--side-nav-active-text-color, var(--side-nav-hover-text-color));
+}
+
+.navOption.router-link-active:hover,
+.navChannel.router-link-active:hover {
+  background-color: color-mix(in srgb, var(--side-nav-hover-color) 40%, #000 60%);
+}
+
 .navIcon {
   block-size: 1.15em;
   inline-size: 1.15em;
@@ -308,9 +320,10 @@
   }
 }
 
+/* Do not set display:block here — that overrides .navOption's flex row layout when opened. */
 @media only screen and (width > 400px) {
   .smallMobileOnlyHidden {
-    display: block;
+    display: flex;
   }
 }
 

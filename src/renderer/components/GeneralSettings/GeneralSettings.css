@@ -7,3 +7,11 @@
   gap: 10px;
   margin-block-end: 12px;
 }
+
+.cardStyleSettings {
+  flex-wrap: wrap;
+  gap: 24px;
+  align-items: flex-end;
+  justify-content: center;
+  margin-block: 8px 12px;
+}

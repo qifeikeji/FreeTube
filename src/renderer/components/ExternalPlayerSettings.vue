@@ -63,11 +63,15 @@
       class="settingsFlexStart460px"
     >
       <FtInput
-        :placeholder="$t('Settings.External Player Settings.Custom External Player Executable')"
+        :placeholder="externalPlayer === 'custom'
+          ? $t('Settings.External Player Settings.Custom Command')
+          : $t('Settings.External Player Settings.Custom External Player Executable')"
         :show-action-button="false"
         :show-label="true"
         :value="externalPlayerExecutable"
-        :tooltip="$t('Tooltips.External Player Settings.Custom External Player Executable')"
+        :tooltip="externalPlayer === 'custom'
+          ? $t('Tooltips.External Player Settings.Custom Command')
+          : $t('Tooltips.External Player Settings.Custom External Player Executable')"
         @input="updateExternalPlayerExecutable"
       />
     </FtFlexBox>
@@ -156,9 +160,13 @@ const externalPlayer = computed(() => getSelectedExternalPlayerSettings().player
 /** @type {import('vue').ComputedRef<string[]>} */
 const externalPlayerNames = computed(() => {
   return store.getters.getExternalPlayerNames.map((name) => {
-    return name === 'None'
-      ? t('Settings.External Player Settings.Players.None.Name')
-      : name
+    if (name === 'None') {
+      return t('Settings.External Player Settings.Players.None.Name')
+    }
+    if (name === 'Custom') {
+      return t('Settings.External Player Settings.Players.Custom.Name')
+    }
+    return name
   })
 })
 

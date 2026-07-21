@@ -183,6 +183,8 @@ const state = {
   sideNavWidthPx: 300,
   videoGridColumns: 0,
   videoGridMinColumnWidth: 300,
+  videoCardBorderRadius: 14,
+  videoCardThumbPadding: 10,
   windowTitleBarColor: '#202020',
   windowTitleSuffix: 'FreeTube',
   expandSideBar: false,
@@ -239,6 +241,8 @@ const state = {
   proxyUsername: '',
   proxyPassword: '',
   proxyProtocol: 'socks5',
+  // JSON array: [{ id, protocol, hostname, port, selected }]
+  proxyList: '[]',
   proxyVideos: !process.env.SUPPORTS_LOCAL_API,
   region: 'US',
   rememberHistory: true,

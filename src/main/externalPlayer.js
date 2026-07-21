@@ -76,6 +76,59 @@ export async function handleOpenInExternalPlayer(event, payload) {
     return
   }
 
+  /** @type {string} */
+  const externalPlayerExecutable = profileExternalPlayerSettings?.executable ??
+    ((await settings._findOne('externalPlayerExecutable'))?.value || '')
+
+  // Custom player: run any command/executable with optional custom args + media URL.
+  // This intentionally bypasses mpv/vlc/etc. argument templates.
+  if (externalPlayer === 'custom') {
+    const command = typeof externalPlayerExecutable === 'string' ? externalPlayerExecutable.trim() : ''
+    if (command.length === 0) {
+      return
+    }
+
+    /** @type {string[]} */
+    const customArgs = []
+    const rawCustomArgs = profileExternalPlayerSettings?.customArgs ??
+      ((await settings._findOne('externalPlayerCustomArgs'))?.value || '[]')
+
+    if (Array.isArray(rawCustomArgs) && rawCustomArgs.length > 0) {
+      customArgs.push(...rawCustomArgs)
+    } else if (typeof rawCustomArgs === 'string' && rawCustomArgs !== '[]') {
+      customArgs.push(...JSON.parse(rawCustomArgs))
+    }
+
+    let mediaUrl = ''
+    if (hasValidVideoId) {
+      mediaUrl = `https://www.youtube.com/watch?v=${payload.videoId}`
+    } else if (hasValidPlaylistId) {
+      mediaUrl = `https://www.youtube.com/playlist?list=${payload.playlistId}`
+    }
+
+    const commandParts = splitCommandLine(command)
+    if (commandParts.length === 0) {
+      return
+    }
+
+    const executable = commandParts[0]
+    const args = [...commandParts.slice(1), ...customArgs]
+    if (mediaUrl.length > 0) {
+      args.push(mediaUrl)
+    }
+
+    event.reply(
+      IpcChannels.OPEN_IN_EXTERNAL_PLAYER_RESULT,
+      externalPlayer,
+      [],
+      hasValidPlaylistId
+    )
+
+    const child = spawn(executable, args, { detached: true, stdio: 'ignore' })
+    child.unref()
+    return
+  }
+
   const args = []
   /** @type {import('../constants').UnsupportedPlayerAction[]} */
   const unsupportedActions = []
@@ -196,14 +249,40 @@ export async function handleOpenInExternalPlayer(event, payload) {
     hasValidPlaylistId
   )
 
-  /** @type {string} */
-  const externalPlayerExecutable = profileExternalPlayerSettings?.executable ??
-    ((await settings._findOne('externalPlayerExecutable'))?.value || '')
+  const commandParts = splitCommandLine(
+    externalPlayerExecutable.length > 0 ? externalPlayerExecutable : cmdArgs.defaultExecutable
+  )
+  if (commandParts.length === 0) {
+    return
+  }
 
-  const executable = externalPlayerExecutable.length > 0 ? externalPlayerExecutable : cmdArgs.defaultExecutable
+  const executable = commandParts[0]
+  const finalArgs = [...commandParts.slice(1), ...args]
 
-  const child = spawn(executable, args, { detached: true, stdio: 'ignore' })
+  const child = spawn(executable, finalArgs, { detached: true, stdio: 'ignore' })
   child.unref()
+}
+
+/**
+ * Split a command line into executable + args, respecting simple single/double quotes.
+ * @param {string} command
+ * @returns {string[]}
+ */
+function splitCommandLine(command) {
+  const matches = command.match(/(?:[^\s"']+|"[^"]*"|'[^']*')+/g)
+  if (matches == null) {
+    return []
+  }
+
+  return matches.map((part) => {
+    if (
+      (part.startsWith('"') && part.endsWith('"')) ||
+      (part.startsWith("'") && part.endsWith("'"))
+    ) {
+      return part.slice(1, -1)
+    }
+    return part
+  })
 }
 
 async function loadExternalPlayerData() {

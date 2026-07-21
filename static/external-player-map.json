@@ -163,5 +163,21 @@
           "playlistShuffle": null,
           "playlistLoop": null
         }
+    },
+    {
+      "name": "Custom",
+      "value": "custom",
+      "cmdArguments": {
+          "defaultExecutable": "",
+          "defaultCustomArguments": null,
+          "videoUrl": "",
+          "playlistUrl": "",
+          "startOffset": null,
+          "playbackRate": null,
+          "playlistIndex": null,
+          "playlistReverse": null,
+          "playlistShuffle": null,
+          "playlistLoop": null
+        }
     }
 ]

@@ -386,7 +386,7 @@ function handleSmoothScrolling(value) {
   flex-wrap: wrap;
   gap: 24px;
   align-items: flex-end;
-  justify-content: flex-start;
+  justify-content: center;
 }
 
 .titleBarColorSection {
