@@ -40,6 +40,7 @@
   overflow: hidden auto;
   box-sizing: border-box;
   min-inline-size: 0;
+
   /* Below title bar (20) and TopNav (4); above page content */
   z-index: 1;
 }
