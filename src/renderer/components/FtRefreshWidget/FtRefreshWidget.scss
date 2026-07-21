@@ -1,4 +1,10 @@
-@use '../../scss-partials/utils';
+.refreshPageShell {
+  display: flex;
+  flex-direction: column;
+  block-size: 100%;
+  min-block-size: 0;
+  overflow: hidden;
+}
 
 .floatingRefreshSection {
   --refresh-bar-control-height: 36px;
@@ -11,21 +17,21 @@
   --refresh-bar-text-muted: rgb(255 255 255 / 55%);
 
   box-sizing: border-box;
+  flex-shrink: 0;
+  inline-size: 100%;
   padding-block: 8px;
   padding-inline: 12px;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   column-gap: 12px;
   align-items: center;
+  z-index: 2;
   background-color: var(--refresh-bar-glass-bg);
   border-block-end: 1px solid var(--refresh-bar-glass-border);
-  border-inline-start: 1px solid var(--refresh-bar-glass-border);
   box-shadow: 0 10px 28px rgb(0 0 0 / 22%);
   backdrop-filter: blur(18px) saturate(140%);
   /* stylelint-disable-next-line property-no-vendor-prefix */
   -webkit-backdrop-filter: blur(18px) saturate(140%);
-
-  @include utils.fixed-top-bar;
 
   // Keep tab buttons and search field visually locked to the same box height.
   :deep(.subscriptionsTabButton) {
@@ -60,6 +66,15 @@
     min-block-size: var(--refresh-bar-control-height);
     padding: 0;
   }
+}
+
+.refreshPageBody {
+  flex: 1 1 auto;
+  min-block-size: 0;
+  overflow: hidden auto;
+  padding-block: 18px;
+  padding-inline: 1px;
+  box-sizing: border-box;
 }
 
 .left {
@@ -121,10 +136,12 @@
 }
 
 @media only screen and (width <= 680px) {
-  .floatingRefreshSection,
-  .floatingRefreshSection.sideNavOpen,
-  .floatingRefreshSection.hideLabelsSideBar {
-    inline-size: 100%;
+  .floatingRefreshSection {
     border-inline-start: none;
+  }
+
+  .refreshPageBody {
+    padding-block: 18px 8px;
+    padding-inline: 8px;
   }
 }

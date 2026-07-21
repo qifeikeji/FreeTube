@@ -20,9 +20,8 @@
     <SideNav
       :inert="isAnyPromptOpen"
     />
-    <FtFlexBox
-      class="flexBox routerView"
-      role="main"
+    <main
+      class="mainContent routerView"
       :inert="isAnyPromptOpen"
     >
       <div
@@ -37,10 +36,7 @@
           @click="handleUpdateBannerClick"
         />
       </div>
-      <RouterView
-        v-slot="{ Component }"
-        class="routerView"
-      >
+      <RouterView v-slot="{ Component }">
         <Transition
           mode="out-in"
           name="fade"
@@ -48,7 +44,7 @@
           <component :is="Component" />
         </Transition>
       </RouterView>
-    </FtFlexBox>
+    </main>
     <FtPrompt
       v-if="showReleaseNotes"
       theme="readable-width"
@@ -765,3 +761,29 @@ function handleDragStart(event) {
 
 <style src="./themes.css" />
 <style scoped src="./App.css" />
+<!-- Unscoped: :has(.refreshPageShell) must match nested route roots -->
+<style>
+.app > .mainContent.routerView:has(.refreshPageShell) {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 0;
+}
+
+.app > .mainContent.routerView:has(.refreshPageShell) > .banner-wrapper {
+  flex-shrink: 0;
+}
+
+.app > .mainContent.routerView:has(.refreshPageShell) > :not(.banner-wrapper) {
+  flex: 1 1 auto;
+  min-block-size: 0;
+  block-size: 100%;
+  overflow: hidden;
+}
+
+@media only screen and (width <= 680px) {
+  .app > .mainContent.routerView:has(.refreshPageShell) {
+    padding: 0;
+  }
+}
+</style>

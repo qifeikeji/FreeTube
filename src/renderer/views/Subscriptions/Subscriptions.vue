@@ -1,40 +1,38 @@
 <template>
-  <div>
-    <FtCard class="card">
-      <SubscriptionsVideos
-        v-if="currentTab === 'videos'"
-        id="subscriptionsPanel"
-        role="tabpanel"
-      />
-      <SubscriptionsShorts
-        v-else-if="currentTab === 'shorts'"
-        id="subscriptionsPanel"
-        role="tabpanel"
-      />
-      <SubscriptionsLive
-        v-else-if="currentTab === 'live'"
-        id="subscriptionsPanel"
-        role="tabpanel"
-      />
-      <SubscriptionsPosts
-        v-else-if="currentTab === 'community'"
-        id="subscriptionsPanel"
-        role="tabpanel"
-      />
-      <p v-else>
-        {{ $t("Subscriptions.All Subscription Tabs Hidden", {
-          subsection: $t('Settings.Distraction Free Settings.Sections.Subscriptions Page'),
-          settingsSection: $t('Settings.Distraction Free Settings.Distraction Free Settings')
-        }) }}
-      </p>
-    </FtCard>
-  </div>
+  <SubscriptionsVideos
+    v-if="currentTab === 'videos'"
+    id="subscriptionsPanel"
+    role="tabpanel"
+  />
+  <SubscriptionsShorts
+    v-else-if="currentTab === 'shorts'"
+    id="subscriptionsPanel"
+    role="tabpanel"
+  />
+  <SubscriptionsLive
+    v-else-if="currentTab === 'live'"
+    id="subscriptionsPanel"
+    role="tabpanel"
+  />
+  <SubscriptionsPosts
+    v-else-if="currentTab === 'community'"
+    id="subscriptionsPanel"
+    role="tabpanel"
+  />
+  <p
+    v-else
+    class="allTabsHiddenMessage"
+  >
+    {{ $t("Subscriptions.All Subscription Tabs Hidden", {
+      subsection: $t('Settings.Distraction Free Settings.Sections.Subscriptions Page'),
+      settingsSection: $t('Settings.Distraction Free Settings.Distraction Free Settings')
+    }) }}
+  </p>
 </template>
 
 <script setup>
 import { computed, provide, ref, watch } from 'vue'
 
-import FtCard from '../../components/ft-card/ft-card.vue'
 import SubscriptionsVideos from '../../components/SubscriptionsVideos.vue'
 import SubscriptionsLive from '../../components/SubscriptionsLive.vue'
 import SubscriptionsShorts from '../../components/SubscriptionsShorts.vue'

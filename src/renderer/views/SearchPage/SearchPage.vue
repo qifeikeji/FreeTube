@@ -1,10 +1,9 @@
 <template>
-  <div>
-    <FtRefreshWidget :show-refresh-button="false">
-      <template #center>
-        <FtSideNavSearch compact />
-      </template>
-    </FtRefreshWidget>
+  <FtRefreshWidget :show-refresh-button="false">
+    <template #center>
+      <FtSideNavSearch compact />
+    </template>
+
     <FtLoader
       v-if="isLoading"
       :fullscreen="true"
@@ -38,7 +37,7 @@
         </div>
       </FtAutoLoadNextPageWrapper>
     </FtCard>
-  </div>
+  </FtRefreshWidget>
 </template>
 
 <script setup>

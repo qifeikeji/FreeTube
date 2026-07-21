@@ -23,27 +23,32 @@
   --window-titlebar-height: 35px;
 }
 
-.routerView {
+/*
+  Sole vertical scroll container: below custom title bar + TopNav.
+  Title bar and TopNav are position:fixed outside this element, so the
+  scrollbar track cannot enter those regions.
+  Pages with .refreshPageShell scroll inside that shell instead (see App.vue).
+*/
+.mainContent.routerView {
   position: fixed;
   /* stylelint-disable-next-line length-zero-no-unit -- unit required for calc() fallbacks */
-  inset-block-start: calc(var(--top-nav-height) + var(--window-titlebar-height, 0px));
-  inset-inline-start: 80px;
-  inset-block-end: 0;
-  inset-inline-end: 0;
+  inset-block: calc(var(--top-nav-height, 60px) + var(--window-titlebar-height, 0px)) 0;
+  inset-inline: 80px 0;
   margin: 0;
   padding-block: 18px;
   padding-inline: 1px;
-  overflow-x: hidden;
-  overflow-y: auto;
+  overflow: hidden auto;
   box-sizing: border-box;
   min-inline-size: 0;
+  /* Below title bar (20) and TopNav (4); above page content */
+  z-index: 1;
 }
 
-.isSideNavOpen .routerView {
+.isSideNavOpen .mainContent.routerView {
   inset-inline-start: var(--side-nav-open-width, 200px);
 }
 
-.hideLabelsSideBar .routerView {
+.hideLabelsSideBar .mainContent.routerView {
   inset-inline-start: 60px;
 }
 
@@ -60,11 +65,6 @@
 .banner-wrapper {
   margin-block: 0;
   margin-inline: 10px;
-}
-
-.flexBox {
-  display: block;
-  user-select: unset;
 }
 
 .changeLogTitle {
@@ -93,15 +93,15 @@
 }
 
 @media only screen and (width <= 680px) {
-  .routerView {
+  .mainContent.routerView {
     inset-inline-start: 0;
     inset-block-end: 60px;
     padding-block: 18px 8px;
     padding-inline: 8px;
   }
 
-  .isSideNavOpen .routerView,
-  .hideLabelsSideBar .routerView {
+  .isSideNavOpen .mainContent.routerView,
+  .hideLabelsSideBar .mainContent.routerView {
     inset-inline-start: 0;
   }
 

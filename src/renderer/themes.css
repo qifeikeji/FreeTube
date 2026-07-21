@@ -3,6 +3,7 @@ html {
   overflow: hidden;
 }
 
+/* stylelint-disable-next-line selector-max-id -- Vue mount root */
 #app {
   block-size: 100%;
 }

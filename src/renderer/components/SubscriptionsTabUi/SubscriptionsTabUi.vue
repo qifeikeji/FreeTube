@@ -1,99 +1,99 @@
 <template>
-  <div>
-    <FtLoader
-      v-if="isLoading"
-    />
-    <div
-      v-if="!isLoading && errorChannels.length !== 0"
-    >
-      <div class="errorChannelsSummary">
-        <button
-          class="errorChannelsToggle"
-          type="button"
-          :aria-expanded="errorChannelsExpanded"
-          @click="toggleErrorChannelsExpanded"
-        >
-          <h3 class="errorChannelsTitle">
-            {{ $t('Subscriptions.Error Channels With Count', { count: errorChannels.length }) }}
-          </h3>
-        </button>
-        <FtIconButton
-          :title="$t('Video.More Options')"
-          :icon="['fas', 'chevron-down']"
-          theme="base-no-default"
-          :use-shadow="false"
-          dropdown-position-x="left"
-          :dropdown-options="errorChannelDropdownOptions"
-          @click="handleErrorChannelDropdownClick"
-        />
-      </div>
-      <FtFlexBox v-if="errorChannelsExpanded">
-        <FtChannelBubble
-          v-for="channel in errorChannels"
-          :key="channel.id"
-          :channel-name="channel.name"
-          :channel-id="channel.id"
-          :channel-thumbnail="channel.thumbnail"
-        />
-      </FtFlexBox>
-    </div>
-    <FtFlexBox
-      v-if="!isLoading && activeVideoList.length === 0"
-    >
-      <p
-        v-if="!activeProfileHasSubscriptions"
-        class="message"
-      >
-        {{ $t("Subscriptions['Your Subscription list is currently empty. Start adding subscriptions to see them here.']") }}
-      </p>
-      <p
-        v-else-if="!fetchSubscriptionsAutomatically && !attemptedFetch"
-        class="message"
-      >
-        {{ $t("Subscriptions.Disabled Automatic Fetching") }}
-      </p>
-      <p
-        v-else
-        class="message"
-      >
-        {{ isCommunity ? $t("Subscriptions.Empty Posts") : $t("Subscriptions.Empty Channels") }}
-      </p>
-    </FtFlexBox>
-    <FtElementList
-      v-if="!isLoading && activeVideoList.length > 0"
-      :data="activeVideoList"
-      :use-channels-hidden-preference="false"
-      :display="isCommunity ? 'list' : ''"
-    />
-    <FtAutoLoadNextPageWrapper
-      v-if="!isLoading && videoList.length > dataLimit"
-      @load-next-page="increaseLimit"
-    >
-      <FtFlexBox>
-        <FtButton
-          :label="isCommunity ? $t('Subscriptions.Load More Posts') : $t('Subscriptions.Load More Videos')"
-          background-color="var(--primary-color)"
-          text-color="var(--text-with-main-color)"
-          @click="increaseLimit"
-        />
-      </FtFlexBox>
-    </FtAutoLoadNextPageWrapper>
+  <FtRefreshWidget
+    :disable-refresh="isLoading || !activeProfileHasSubscriptions"
+    :last-refresh-timestamp="lastRefreshTimestamp"
+    :last-refresh-at-ms="lastRefreshAtMs"
+    :title="title"
+    @click="refresh"
+  >
+    <template #left>
+      <SubscriptionsTabsInRefreshBar />
+    </template>
+    <template #center>
+      <FtSideNavSearch compact />
+    </template>
 
-    <FtRefreshWidget
-      :disable-refresh="isLoading || !activeProfileHasSubscriptions"
-      :last-refresh-timestamp="lastRefreshTimestamp"
-      :last-refresh-at-ms="lastRefreshAtMs"
-      :title="title"
-      @click="refresh"
-    >
-      <template #left>
-        <SubscriptionsTabsInRefreshBar />
-      </template>
-      <template #center>
-        <FtSideNavSearch compact />
-      </template>
-    </FtRefreshWidget>
-  </div>
+    <FtCard class="card">
+      <FtLoader
+        v-if="isLoading"
+      />
+      <div
+        v-if="!isLoading && errorChannels.length !== 0"
+      >
+        <div class="errorChannelsSummary">
+          <button
+            class="errorChannelsToggle"
+            type="button"
+            :aria-expanded="errorChannelsExpanded"
+            @click="toggleErrorChannelsExpanded"
+          >
+            <h3 class="errorChannelsTitle">
+              {{ $t('Subscriptions.Error Channels With Count', { count: errorChannels.length }) }}
+            </h3>
+          </button>
+          <FtIconButton
+            :title="$t('Video.More Options')"
+            :icon="['fas', 'chevron-down']"
+            theme="base-no-default"
+            :use-shadow="false"
+            dropdown-position-x="left"
+            :dropdown-options="errorChannelDropdownOptions"
+            @click="handleErrorChannelDropdownClick"
+          />
+        </div>
+        <FtFlexBox v-if="errorChannelsExpanded">
+          <FtChannelBubble
+            v-for="channel in errorChannels"
+            :key="channel.id"
+            :channel-name="channel.name"
+            :channel-id="channel.id"
+            :channel-thumbnail="channel.thumbnail"
+          />
+        </FtFlexBox>
+      </div>
+      <FtFlexBox
+        v-if="!isLoading && activeVideoList.length === 0"
+      >
+        <p
+          v-if="!activeProfileHasSubscriptions"
+          class="message"
+        >
+          {{ $t("Subscriptions['Your Subscription list is currently empty. Start adding subscriptions to see them here.']") }}
+        </p>
+        <p
+          v-else-if="!fetchSubscriptionsAutomatically && !attemptedFetch"
+          class="message"
+        >
+          {{ $t("Subscriptions.Disabled Automatic Fetching") }}
+        </p>
+        <p
+          v-else
+          class="message"
+        >
+          {{ isCommunity ? $t("Subscriptions.Empty Posts") : $t("Subscriptions.Empty Channels") }}
+        </p>
+      </FtFlexBox>
+      <FtElementList
+        v-if="!isLoading && activeVideoList.length > 0"
+        :data="activeVideoList"
+        :use-channels-hidden-preference="false"
+        :display="isCommunity ? 'list' : ''"
+      />
+      <FtAutoLoadNextPageWrapper
+        v-if="!isLoading && videoList.length > dataLimit"
+        @load-next-page="increaseLimit"
+      >
+        <FtFlexBox>
+          <FtButton
+            :label="isCommunity ? $t('Subscriptions.Load More Posts') : $t('Subscriptions.Load More Videos')"
+            background-color="var(--primary-color)"
+            text-color="var(--text-with-main-color)"
+            @click="increaseLimit"
+          />
+        </FtFlexBox>
+      </FtAutoLoadNextPageWrapper>
+    </FtCard>
+  </FtRefreshWidget>
 </template>
 
 <script setup>
@@ -102,6 +102,7 @@ import { useRouter } from 'vue-router'
 
 import FtAutoLoadNextPageWrapper from '../FtAutoLoadNextPageWrapper.vue'
 import FtButton from '../FtButton/FtButton.vue'
+import FtCard from '../ft-card/ft-card.vue'
 import FtChannelBubble from '../FtChannelBubble/FtChannelBubble.vue'
 import FtElementList from '../FtElementList/FtElementList.vue'
 import FtFlexBox from '../ft-flex-box/ft-flex-box.vue'
@@ -140,13 +141,13 @@ const props = defineProps({
     type: Number,
     default: 100
   },
+  lastRefreshAtMs: {
+    type: Number,
+    default: null,
+  },
   lastRefreshTimestamp: {
     type: String,
     required: true
-  },
-  lastRefreshAtMs: {
-    type: Number,
-    default: null
   },
   title: {
     type: String,

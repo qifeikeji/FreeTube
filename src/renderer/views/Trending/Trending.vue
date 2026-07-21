@@ -1,5 +1,10 @@
 <template>
-  <div>
+  <FtRefreshWidget
+    :disable-refresh="isLoading[currentTab]"
+    :last-refresh-timestamp="lastTrendingRefreshTimestamp"
+    :title="$t('Trending.Trending')"
+    @click="getTrendingInfo(true)"
+  >
     <FtCard
       class="card"
     >
@@ -89,13 +94,7 @@
         />
       </div>
     </FtCard>
-    <FtRefreshWidget
-      :disable-refresh="isLoading[currentTab]"
-      :last-refresh-timestamp="lastTrendingRefreshTimestamp"
-      :title="$t('Trending.Trending')"
-      @click="getTrendingInfo(true)"
-    />
-  </div>
+  </FtRefreshWidget>
 </template>
 
 <script setup>

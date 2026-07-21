@@ -1,33 +1,36 @@
 <template>
-  <div
-    class="floatingRefreshSection"
-  >
-    <div class="left">
-      <div class="leftMainRow">
-        <slot name="left" />
-        <p
-          v-if="lastRefreshTimestamp"
-          class="lastRefreshTimestamp"
-          :class="lastRefreshTimestampTone"
-        >
-          {{ t('Feed.Feed Last Updated', { feedName: title, date: lastRefreshTimestamp }) }}
-        </p>
+  <div class="refreshPageShell">
+    <div class="floatingRefreshSection">
+      <div class="left">
+        <div class="leftMainRow">
+          <slot name="left" />
+          <p
+            v-if="lastRefreshTimestamp"
+            class="lastRefreshTimestamp"
+            :class="lastRefreshTimestampTone"
+          >
+            {{ t('Feed.Feed Last Updated', { feedName: title, date: lastRefreshTimestamp }) }}
+          </p>
+        </div>
+      </div>
+      <div class="center">
+        <slot name="center" />
+      </div>
+      <div class="right">
+        <FtIconButton
+          v-if="showRefreshButton"
+          :disabled="disableRefresh"
+          :icon="['fas', 'sync']"
+          class="refreshButton"
+          :title="refreshFeedButtonTitle"
+          :size="12"
+          theme="primary"
+          @click="click"
+        />
       </div>
     </div>
-    <div class="center">
-      <slot name="center" />
-    </div>
-    <div class="right">
-      <FtIconButton
-        v-if="showRefreshButton"
-        :disabled="disableRefresh"
-        :icon="['fas', 'sync']"
-        class="refreshButton"
-        :title="refreshFeedButtonTitle"
-        :size="12"
-        theme="primary"
-        @click="click"
-      />
+    <div class="refreshPageBody">
+      <slot />
     </div>
   </div>
 </template>

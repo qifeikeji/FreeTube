@@ -1,10 +1,15 @@
 <template>
-  <div>
-    <ft-loader
+  <FtRefreshWidget
+    :disable-refresh="isLoading"
+    :last-refresh-timestamp="lastPopularRefreshTimestamp"
+    :title="$t('Most Popular')"
+    @click="fetchPopularInfo"
+  >
+    <FtLoader
       v-if="isLoading"
       :fullscreen="true"
     />
-    <ft-card
+    <FtCard
       v-else
       class="card"
     >
@@ -15,17 +20,11 @@
         />
         {{ $t("Most Popular") }}
       </h2>
-      <ft-element-list
+      <FtElementList
         :data="shownResults"
       />
-    </ft-card>
-    <ft-refresh-widget
-      :disable-refresh="isLoading"
-      :last-refresh-timestamp="lastPopularRefreshTimestamp"
-      :title="$t('Most Popular')"
-      @click="fetchPopularInfo"
-    />
-  </div>
+    </FtCard>
+  </FtRefreshWidget>
 </template>
 
 <script setup>
