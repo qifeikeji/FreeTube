@@ -10,13 +10,9 @@
   --ui-control-radius: 10px;
   --ui-control-height: 36px;
   --ui-control-padding-block: 8px;
-  --ui-glass-surface: rgb(18 18 18 / 86%);
-  --ui-glass-control: rgb(0 0 0 / 38%);
-  --ui-glass-control-hover: rgb(0 0 0 / 52%);
-  --ui-glass-border: rgb(255 255 255 / 12%);
-  --ui-glass-text: rgb(255 255 255 / 78%);
-  --ui-glass-text-strong: rgb(255 255 255 / 92%);
-  --ui-glass-text-muted: rgb(255 255 255 / 55%);
+
+  /* Glass tokens live on body theme classes in themes.css (.light / .dark)
+     so light overrides are not blocked by this scoped .app rule. */
   --ui-glass-blur: blur(20px) saturate(140%);
 
   display: block;
@@ -30,17 +26,6 @@
   /* Value of 0 without 'px' does not work inside calc() */
   /* stylelint-disable-next-line length-zero-no-unit */
   --window-titlebar-height: 0px;
-}
-
-/* Light theme glass / control surfaces */
-.light .app {
-  --ui-glass-surface: rgb(255 255 255 / 90%);
-  --ui-glass-control: rgb(0 0 0 / 6%);
-  --ui-glass-control-hover: rgb(0 0 0 / 12%);
-  --ui-glass-border: rgb(0 0 0 / 12%);
-  --ui-glass-text: rgb(0 0 0 / 72%);
-  --ui-glass-text-strong: rgb(0 0 0 / 88%);
-  --ui-glass-text-muted: rgb(0 0 0 / 52%);
 }
 
 .app.hasCustomTitleBar {

@@ -87,8 +87,6 @@
         :tooltip="t('Tooltips.General Settings.Video Grid Min Column Width')"
         @input="handleVideoGridMinColumnWidthInput"
       />
-    </div>
-    <FtFlexBox class="cardStyleSettings">
       <FtInput
         :placeholder="t('Settings.General Settings.Video Card Border Radius')"
         :show-action-button="false"
@@ -111,8 +109,6 @@
         :tooltip="t('Tooltips.General Settings.Video Card Thumbnail Padding')"
         @input="handleVideoCardThumbPaddingInput"
       />
-    </FtFlexBox>
-    <div class="switchGrid">
       <FtSelect
         :placeholder="t('Settings.General Settings.Thumbnail Preference.Thumbnail Preference')"
         :value="thumbnailPreference"

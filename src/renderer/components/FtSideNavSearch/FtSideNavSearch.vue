@@ -491,10 +491,16 @@ onBeforeUnmount(() => {
   padding-inline-start: 46px;
 }
 
+.sideNavSearch.compact :deep(.ft-input::placeholder),
+.sideNavSearch.compact :deep(.forceTextColor .ft-input::placeholder),
+.sideNavSearch.compact :deep(.forceTextColor ::placeholder) {
+  color: color-mix(in srgb, var(--ui-glass-text-muted, rgb(255 255 255 / 55%)) 85%, transparent);
+}
+
 .sideNavSearch.compact :deep(.ft-input:focus) {
   outline: none;
-  border-color: rgb(255 255 255 / 22%);
-  box-shadow: 0 0 0 1px rgb(255 255 255 / 8%);
+  border-color: var(--ui-glass-border, rgb(255 255 255 / 22%));
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--ui-glass-border, rgb(255 255 255 / 8%)) 100%, transparent);
 }
 
 .sideNavSearch.compact :deep(.forceTextColor .ft-input),
@@ -502,27 +508,6 @@ onBeforeUnmount(() => {
   background-color: var(--ui-glass-control, rgb(0 0 0 / 38%));
   color: var(--ui-glass-text, rgb(255 255 255 / 78%));
   box-shadow: none;
-}
-
-.sideNavSearch.compact :deep(.ft-input::placeholder),
-.sideNavSearch.compact :deep(.forceTextColor .ft-input::placeholder),
-.sideNavSearch.compact :deep(.forceTextColor ::placeholder) {
-  color: rgb(255 255 255 / 42%);
-}
-
-:global(body.light) .sideNavSearch.compact :deep(.ft-input::placeholder),
-:global(body.light) .sideNavSearch.compact :deep(.forceTextColor .ft-input::placeholder),
-:global(body.light) .sideNavSearch.compact :deep(.forceTextColor ::placeholder) {
-  color: rgb(0 0 0 / 42%);
-}
-
-:global(body.light) .sideNavSearch.compact :deep(.ft-input:focus) {
-  border-color: rgb(0 0 0 / 22%);
-  box-shadow: 0 0 0 1px rgb(0 0 0 / 8%);
-}
-
-:global(body.light) .sideNavSearch.compact .navFilterButton:hover {
-  border-color: rgb(0 0 0 / 18%);
 }
 
 /* Search history / suggestions dropdown — match search-filter glass standard */
@@ -548,7 +533,7 @@ onBeforeUnmount(() => {
 
 .sideNavSearch.compact :deep(.list .hover),
 .sideNavSearch.compact :deep(.list li:hover) {
-  background-color: rgb(255 255 255 / 10%);
+  background-color: color-mix(in srgb, var(--ui-glass-text, rgb(255 255 255 / 78%)) 8%, transparent);
   color: var(--ui-glass-text-strong, rgb(255 255 255 / 92%));
 }
 
@@ -596,7 +581,7 @@ onBeforeUnmount(() => {
 
 .sideNavSearch.compact .navFilterButton:hover {
   background-color: var(--ui-glass-control-hover, rgb(0 0 0 / 52%));
-  border-color: rgb(255 255 255 / 18%);
+  border-color: var(--ui-glass-border, rgb(255 255 255 / 18%));
   color: var(--ui-glass-text-strong, rgb(255 255 255 / 92%));
 }
 

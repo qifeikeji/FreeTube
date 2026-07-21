@@ -77,13 +77,8 @@ function tabLabel(tab) {
 
 .subscriptionsTabButton:hover {
   background-color: var(--ui-glass-control-hover, rgb(0 0 0 / 52%));
-  border-color: rgb(255 255 255 / 18%);
-  box-shadow: 0 0 0 1px rgb(255 255 255 / 8%);
-}
-
-:global(body.light) .subscriptionsTabButton:hover {
-  border-color: rgb(0 0 0 / 18%);
-  box-shadow: 0 0 0 1px rgb(0 0 0 / 6%);
+  border-color: var(--ui-glass-border, rgb(255 255 255 / 18%));
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--ui-glass-border, rgb(255 255 255 / 8%)) 100%, transparent);
 }
 
 .subscriptionsTabButton.selected {
