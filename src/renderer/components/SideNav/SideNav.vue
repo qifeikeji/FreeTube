@@ -1,5 +1,5 @@
 <template>
-  <FtFlexBox
+  <nav
     class="sideNav"
     :class="[{opened: isOpen}, applyHiddenLabels]"
     role="navigation"
@@ -200,8 +200,8 @@
             <img
               v-if="channel.thumbnail != null"
               class="channelThumbnail"
-              height="26"
-              width="26"
+              height="35"
+              width="35"
               loading="lazy"
               :src="channel.thumbnail"
               :alt="isOpen ? '' : channel.name"
@@ -222,7 +222,7 @@
         </router-link>
       </div>
     </div>
-  </FtFlexBox>
+  </nav>
 </template>
 
 <script setup>
@@ -230,7 +230,6 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import { computed } from 'vue'
 import { useI18n } from '../../composables/use-i18n-polyfill'
 
-import FtFlexBox from '../ft-flex-box/ft-flex-box.vue'
 import SideNavMoreOptions from '../SideNavMoreOptions/SideNavMoreOptions.vue'
 
 import store from '../../store/index'

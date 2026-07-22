@@ -815,13 +815,45 @@ function handleDragStart(event) {
 
 <style src="./themes.css" />
 <style scoped src="./App.css" />
-<!-- Unscoped: :has(.refreshPageShell) must match nested route roots -->
+<!-- Unscoped: glass side nav + under-nav paint must not be blocked by scoped selectors -->
 <style>
+/* Full-bleed main content under the side nav (needed for frosted glass) */
+.app > .mainContent.routerView {
+  --main-inline-offset: 80px;
+
+  inset-inline: 0;
+  padding-inline-start: var(--main-inline-offset);
+  background-color: var(--bg-color);
+  background-image: linear-gradient(
+    to right,
+    color-mix(in srgb, var(--card-bg-color) 70%, var(--primary-color) 30%) 0 var(--main-inline-offset),
+    var(--bg-color) var(--main-inline-offset)
+  );
+}
+
+.app.isSideNavOpen > .mainContent.routerView {
+  --main-inline-offset: var(--side-nav-open-width, 200px);
+}
+
+.app.hideLabelsSideBar > .mainContent.routerView {
+  --main-inline-offset: 60px;
+}
+
+/* Frosted side nav — unscoped so it always applies over FtFlexBox root */
+.app > .sideNav {
+  background-color: var(--side-nav-color, rgb(255 255 255 / 52%)) !important;
+  backdrop-filter: var(--ui-glass-blur-strong, blur(80px) saturate(200%)) !important;
+  /* stylelint-disable-next-line property-no-vendor-prefix */
+  -webkit-backdrop-filter: var(--ui-glass-blur-strong, blur(80px) saturate(200%)) !important;
+}
+
 .app > .mainContent.routerView:has(.refreshPageShell) {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  padding: 0;
+  padding-block: 0;
+  padding-inline-end: 0;
+  padding-inline-start: var(--main-inline-offset, 80px);
 }
 
 .app > .mainContent.routerView:has(.refreshPageShell) > .banner-wrapper {
@@ -836,6 +868,13 @@ function handleDragStart(event) {
 }
 
 @media only screen and (width <= 680px) {
+  .app > .mainContent.routerView {
+    --main-inline-offset: 0px;
+
+    padding-inline: 8px;
+    background-image: none;
+  }
+
   .app > .mainContent.routerView:has(.refreshPageShell) {
     padding: 0;
   }

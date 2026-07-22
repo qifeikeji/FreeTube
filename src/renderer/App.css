@@ -37,29 +37,43 @@
   Title bar and TopNav are position:fixed outside this element, so the
   scrollbar track cannot enter those regions.
   Pages with .refreshPageShell scroll inside that shell instead (see App.vue).
+
+  Full-bleed under the side nav (inset-inline: 0) so frosted glass has
+  something to sample. Readable content is offset with padding.
 */
 .mainContent.routerView {
+  --main-inline-offset: 80px;
+
   position: fixed;
   /* stylelint-disable-next-line length-zero-no-unit -- unit required for calc() fallbacks */
   inset-block: calc(var(--top-nav-height, 60px) + var(--window-titlebar-height, 0px)) 0;
-  inset-inline: 80px 0;
+  inset-inline: 0;
   margin: 0;
   padding-block: 18px;
-  padding-inline: 1px;
+  padding-inline-end: 1px;
+  padding-inline-start: var(--main-inline-offset);
   overflow: hidden auto;
   box-sizing: border-box;
   min-inline-size: 0;
+
+  /* Paint under the side nav — backdrop-filter needs real pixels behind it */
+  background-color: var(--bg-color);
+  background-image: linear-gradient(
+    to right,
+    color-mix(in srgb, var(--card-bg-color) 70%, var(--primary-color) 30%) 0 var(--main-inline-offset),
+    var(--bg-color) var(--main-inline-offset)
+  );
 
   /* Below title bar (20) and TopNav (4); above page content */
   z-index: 1;
 }
 
 .isSideNavOpen .mainContent.routerView {
-  inset-inline-start: var(--side-nav-open-width, 200px);
+  --main-inline-offset: var(--side-nav-open-width, 200px);
 }
 
 .hideLabelsSideBar .mainContent.routerView {
-  inset-inline-start: 60px;
+  --main-inline-offset: 60px;
 }
 
 .banner {
@@ -104,15 +118,18 @@
 
 @media only screen and (width <= 680px) {
   .mainContent.routerView {
+    --main-inline-offset: 0px;
+
     inset-inline-start: 0;
     inset-block-end: 60px;
     padding-block: 18px 8px;
     padding-inline: 8px;
+    background-image: none;
   }
 
   .isSideNavOpen .mainContent.routerView,
   .hideLabelsSideBar .mainContent.routerView {
-    inset-inline-start: 0;
+    --main-inline-offset: 0px;
   }
 
   .banner {
