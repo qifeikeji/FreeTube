@@ -200,8 +200,8 @@
             <img
               v-if="channel.thumbnail != null"
               class="channelThumbnail"
-              height="35"
-              width="35"
+              height="26"
+              width="26"
               loading="lazy"
               :src="channel.thumbnail"
               :alt="isOpen ? '' : channel.name"
