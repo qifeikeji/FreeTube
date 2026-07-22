@@ -3,6 +3,7 @@
   /* stylelint-disable-next-line length-zero-no-unit -- unit required for calc() fallbacks */
   block-size: calc(100vh - var(--top-nav-height, 60px) - var(--window-titlebar-height, 0px));
   inline-size: 80px;
+
   /* Keep overflow on .inner so backdrop-filter can sample content behind the nav */
   overflow: visible;
   position: fixed;
