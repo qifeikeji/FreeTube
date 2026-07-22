@@ -869,7 +869,7 @@ function handleDragStart(event) {
 
 @media only screen and (width <= 680px) {
   .app > .mainContent.routerView {
-    --main-inline-offset: 0px;
+    --main-inline-offset: 0;
 
     padding-inline: 8px;
     background-image: none;

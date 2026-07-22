@@ -50,8 +50,7 @@
   inset-inline: 0;
   margin: 0;
   padding-block: 18px;
-  padding-inline-end: 1px;
-  padding-inline-start: var(--main-inline-offset);
+  padding-inline: var(--main-inline-offset) 1px;
   overflow: hidden auto;
   box-sizing: border-box;
   min-inline-size: 0;
@@ -118,7 +117,7 @@
 
 @media only screen and (width <= 680px) {
   .mainContent.routerView {
-    --main-inline-offset: 0px;
+    --main-inline-offset: 0;
 
     inset-inline-start: 0;
     inset-block-end: 60px;
@@ -129,7 +128,7 @@
 
   .isSideNavOpen .mainContent.routerView,
   .hideLabelsSideBar .mainContent.routerView {
-    --main-inline-offset: 0px;
+    --main-inline-offset: 0;
   }
 
   .banner {
