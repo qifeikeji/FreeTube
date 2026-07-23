@@ -11,18 +11,17 @@
   max-inline-size: none;
 }
 
-/* Keep channel header / tabs content centered like the old 85% card */
 .channelDetails :deep(.info),
 .channelDetails :deep(.infoTabs) {
   box-sizing: border-box;
   inline-size: 100%;
-  max-inline-size: 85%;
-  margin-inline: auto;
+  max-inline-size: none;
+  margin-inline: 0;
+  padding-inline: 10px;
 }
 
-/* Keep former ~85% content centered inside the full-width card */
 .card:not(.channelDetails) {
-  padding-inline: 7.5%;
+  padding-inline: 10px;
   box-sizing: border-box;
 }
 
@@ -64,7 +63,7 @@
   }
 
   .card:not(.channelDetails) {
-    padding-inline: 8px;
+    padding-inline: 10px;
   }
 }
 
