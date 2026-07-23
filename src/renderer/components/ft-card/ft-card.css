@@ -1,7 +1,7 @@
 .ft-card {
   background-color: var(--card-bg-color);
-  margin: 8px;
+  margin: 0;
   padding-block: 3px 16px;
-  padding-inline: 10px;
+  padding-inline: 0;
   box-shadow: 0 1px 2px rgb(0 0 0 / 10%);
 }

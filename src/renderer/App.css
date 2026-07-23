@@ -44,7 +44,7 @@
   inset-block: calc(var(--top-nav-height, 60px) + var(--window-titlebar-height, 0px)) 0;
   inset-inline: 80px 0;
   margin: 0;
-  padding-block: 18px;
+  padding-block: 0;
   padding-inline: 1px;
   overflow: hidden auto;
   box-sizing: border-box;
