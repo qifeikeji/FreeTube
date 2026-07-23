@@ -58,6 +58,24 @@
   align-items: center;
 }
 
+.subscriptionActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.editChannelButton {
+  margin: 5px;
+  margin-block-end: 10px;
+}
+
+.editChannelButton :deep(.btn) {
+  min-inline-size: 150px;
+  white-space: initial;
+  border-color: var(--primary-color);
+}
+
 .shareIcon {
   align-self: center;
 }

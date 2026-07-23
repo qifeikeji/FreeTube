@@ -206,7 +206,7 @@ it can be safely elided. This looks quite pleasant on this theme. */
   --ui-feed-tone-recent: #16602b;
   --ui-feed-tone-aging: #7a5600;
   --ui-feed-tone-stale: #961c23;
-  --side-nav-color: rgb(255 255 255 / 52%);
+  --side-nav-color: #f5f5f5;
   --side-nav-hover-color: rgb(0 0 0 / 8%);
   --side-nav-active-color: rgb(0 0 0 / 12%);
   --search-bar-color: #f5f5f5;
@@ -224,7 +224,7 @@ it can be safely elided. This looks quite pleasant on this theme. */
   --secondary-card-bg-color: rgb(0 0 0 / 75%);
   --scrollbar-color: #414141;
   --scrollbar-color-hover: #757575;
-  --side-nav-color: rgb(18 18 18 / 48%);
+  --side-nav-color: #262626;
   --side-nav-hover-color: rgb(255 255 255 / 8%);
   --side-nav-active-color: rgb(255 255 255 / 12%);
   --search-bar-color: #262626;

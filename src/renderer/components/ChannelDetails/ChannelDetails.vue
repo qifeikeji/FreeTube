@@ -56,13 +56,23 @@
             class="shareIcon"
           />
 
-          <FtSubscribeButton
-            v-if="!hideUnsubscribeButton && (!hasErrorMessage || isSubscribed)"
-            :channel-id="id"
-            :channel-name="name"
-            :channel-thumbnail="thumbnailUrl"
-            @subscribed="subscribed"
-          />
+          <div class="subscriptionActions">
+            <FtSubscribeButton
+              v-if="!hideUnsubscribeButton && (!hasErrorMessage || isSubscribed)"
+              :channel-id="id"
+              :channel-name="name"
+              :channel-thumbnail="thumbnailUrl"
+              @subscribed="subscribed"
+            />
+            <FtButton
+              v-if="isSubscribed && !hideUnsubscribeButton && subscription != null"
+              class="editChannelButton"
+              :label="$t('Channels.Edit Channel')"
+              background-color="var(--primary-color)"
+              text-color="var(--text-with-main-color)"
+              @click="openChannelEditPrompt"
+            />
+          </div>
         </div>
       </div>
 
@@ -249,17 +259,24 @@
       </FtFlexBox>
     </div>
   </FtCard>
+  <ChannelSubscriptionEditPrompt
+    :channel="editingChannel"
+    @save="saveChannelCustomization"
+    @cancel="closeChannelEditPrompt"
+  />
 </template>
 
 <script setup>
-import { computed, onBeforeUnmount, onMounted, useTemplateRef } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, useTemplateRef } from 'vue'
 
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import FtCard from '../ft-card/ft-card.vue'
 import FtFlexBox from '../ft-flex-box/ft-flex-box.vue'
 import FtShareButton from '../FtShareButton/FtShareButton.vue'
 import FtSubscribeButton from '../FtSubscribeButton/FtSubscribeButton.vue'
+import FtButton from '../FtButton/FtButton.vue'
 import FtInput from '../FtInput/FtInput.vue'
+import ChannelSubscriptionEditPrompt from '../SubscribedChannelCardMenu/ChannelSubscriptionEditPrompt.vue'
 
 import store from '../../store/index'
 
@@ -302,6 +319,10 @@ const props = defineProps({
     type: Boolean,
     default: false
   },
+  subscription: {
+    type: Object,
+    default: null
+  },
   visibleTabs: {
     type: Array,
     default: () => ([])
@@ -317,6 +338,41 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['change-tab', 'search', 'subscribed'])
+
+const editingChannel = ref(null)
+
+function openChannelEditPrompt() {
+  if (props.subscription == null) { return }
+  editingChannel.value = {
+    ...props.subscription,
+    id: props.id,
+    name: props.name ?? props.subscription.name,
+    thumbnail: props.thumbnailUrl ?? props.subscription.thumbnail,
+  }
+}
+
+function closeChannelEditPrompt() {
+  editingChannel.value = null
+}
+
+/**
+ * @param {{ notes: string, notesColor: string, highlightColor: string, highlighted: boolean, boldChannelName: boolean }} payload
+ */
+async function saveChannelCustomization(payload) {
+  const channel = editingChannel.value
+  if (channel == null) { return }
+
+  await store.dispatch('updateChannelSubscriptionCustomization', {
+    channelId: channel.id,
+    notes: payload.notes,
+    notesColor: payload.notesColor,
+    highlightColor: payload.highlightColor,
+    highlighted: payload.highlighted,
+    boldChannelName: payload.boldChannelName,
+  })
+
+  closeChannelEditPrompt()
+}
 
 /** @type {import('vue').ComputedRef<boolean>} */
 const hideChannelSubscriptions = computed(() => {

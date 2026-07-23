@@ -92,6 +92,15 @@
         :icon="['fas', 'palette']"
         @change="updateBaseTheme"
       />
+      <FtSlider
+        :label="$t('Settings.Theme Settings.Side Nav Darken Percent')"
+        :default-value="sideNavDarkenPercent"
+        :min-value="0"
+        :max-value="100"
+        :step="1"
+        value-extension="%"
+        @change="updateSideNavDarkenPercent"
+      />
     </FtFlexBox>
     <FtFlexBox class="themeColorRow">
       <FtSelect
@@ -213,6 +222,19 @@ const resolvedBaseTheme = computed(() => {
  */
 function updateBaseTheme(value) {
   store.dispatch('updateBaseTheme', value)
+}
+
+/** @type {import('vue').ComputedRef<number>} */
+const sideNavDarkenPercent = computed(() => {
+  const value = Number(store.getters.getSideNavDarkenPercent)
+  return Number.isFinite(value) ? value : 40
+})
+
+/**
+ * @param {number} value
+ */
+function updateSideNavDarkenPercent(value) {
+  store.dispatch('updateSideNavDarkenPercent', value)
 }
 
 /** @type {import('vue').ComputedRef<string>} */

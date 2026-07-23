@@ -34,10 +34,12 @@
 
 .moreOptionContainer {
   position: fixed;
-  background-color: var(--side-nav-color);
-  backdrop-filter: var(--ui-glass-blur-strong, blur(80px) saturate(200%));
-  /* stylelint-disable-next-line property-no-vendor-prefix */
-  -webkit-backdrop-filter: var(--ui-glass-blur-strong, blur(80px) saturate(200%));
+  background-color: color-mix(
+    in srgb,
+    var(--primary-color) calc(100% - var(--side-nav-darken-percent, 40%)),
+    #000 var(--side-nav-darken-percent, 40%)
+  );
+  color: var(--text-with-main-color);
   inset-block-end: 60px;
   inline-size: 70px;
   z-index: 0;

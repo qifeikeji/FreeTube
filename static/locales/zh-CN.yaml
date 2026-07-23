@@ -277,6 +277,7 @@ Settings:
       Everforest Light Low: Everforest Light （弱）
       Everforest Light Hard: Everforest Light （强）
       Catppuccin Latte: Catppuccin Latte
+    Side Nav Darken Percent: 侧栏变暗
     Main Color Theme:
       Main Color Theme: '主题色'
       Red: '红'
@@ -1039,6 +1040,7 @@ Channels:
   Empty: 你的频道列表当前为空。
   Unsubscribe Prompt: 你确定你要取消订阅 "{channelName}" 吗？
   Edit Channel Content: 编辑频道内容
+  Edit Channel: 编辑频道
   Channel Notes: 频道备注
   Channel Notes Placeholder: 输入备注（可选）
   Notes Color: 备注颜色

@@ -1,21 +1,21 @@
 .sideNav {
-  display: block !important;
+  display: block;
   /* stylelint-disable-next-line length-zero-no-unit -- unit required for calc() fallbacks */
   block-size: calc(100vh - var(--top-nav-height, 60px) - var(--window-titlebar-height, 0px));
   inline-size: 80px;
-
-  /* Keep overflow on .inner so backdrop-filter can sample content behind the nav */
-  overflow: visible;
+  overflow-x: hidden;
   position: fixed;
   inset-inline-start: 0;
   /* stylelint-disable-next-line length-zero-no-unit -- unit required for calc() fallbacks */
   inset-block-start: calc(var(--top-nav-height, 60px) + var(--window-titlebar-height, 0px));
   z-index: 3;
   box-shadow: 1px -1px 1px -1px var(--primary-shadow-color);
-  background-color: var(--side-nav-color, rgb(255 255 255 / 52%));
-  backdrop-filter: var(--ui-glass-blur-strong, blur(80px) saturate(200%));
-  /* stylelint-disable-next-line property-no-vendor-prefix */
-  -webkit-backdrop-filter: var(--ui-glass-blur-strong, blur(80px) saturate(200%));
+  background-color: color-mix(
+    in srgb,
+    var(--primary-color) calc(100% - var(--side-nav-darken-percent, 40%)),
+    #000 var(--side-nav-darken-percent, 40%)
+  );
+  color: var(--text-with-main-color);
   transition-property: inline-size;
   transition-duration: 150ms;
   transition-timing-function: ease-in-out;
@@ -82,39 +82,39 @@
 
 .navOption:hover,
 .navChannel:hover {
-  background-color: var(--side-nav-hover-color);
-  color: var(--side-nav-hover-text-color);
+  background-color: rgb(0 0 0 / 14%);
+  color: var(--text-with-main-color);
   transition: background 0.2s ease-in;
 }
 
 .navOption:active,
 .navChannel:active {
-  background-color: var(--side-nav-active-color);
-  color: var(--side-nav-active-text-color);
+  background-color: rgb(0 0 0 / 22%);
+  color: var(--text-with-main-color);
   transition: background 0.2s ease-in;
 }
 
 /* Current route: darker than hover */
 .navOption.router-link-active,
 .navChannel.router-link-active {
-  background-color: color-mix(in srgb, var(--side-nav-hover-color) 55%, #000 45%);
-  color: var(--side-nav-active-text-color, var(--side-nav-hover-text-color));
+  background-color: rgb(0 0 0 / 28%);
+  color: var(--text-with-main-color);
 }
 
 .navOption.router-link-active:hover,
 .navChannel.router-link-active:hover {
-  background-color: color-mix(in srgb, var(--side-nav-hover-color) 40%, #000 60%);
+  background-color: rgb(0 0 0 / 34%);
 }
 
-/* Light theme: match subscription video card tint */
+/* Light theme primary-based nav: keep the same dark overlays */
 :global(.light) .navOption.router-link-active,
 :global(.light) .navChannel.router-link-active {
-  background-color: rgb(0 0 0 / 10%);
+  background-color: rgb(0 0 0 / 28%);
 }
 
 :global(.light) .navOption.router-link-active:hover,
 :global(.light) .navChannel.router-link-active:hover {
-  background-color: rgb(0 0 0 / 14%);
+  background-color: rgb(0 0 0 / 34%);
 }
 
 .navIcon {
@@ -195,7 +195,13 @@
   inline-size: 98%;
   block-size: 1px;
   border: 0;
-  background-color: var(--primary-color);
+  background-color: color-mix(in srgb, var(--text-with-main-color) 45%, transparent);
+}
+
+.channelList {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .refreshIcon {

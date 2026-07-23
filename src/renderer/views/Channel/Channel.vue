@@ -15,6 +15,7 @@
       :show-share-menu="showShareMenu"
       :show-search-bar="showSearchBar"
       :is-subscribed="isSubscribed"
+      :subscription="subscriptionInfo"
       :visible-tabs="tabInfoValues"
       :current-tab="currentTab"
       :query="lastSearchQuery"

@@ -183,6 +183,7 @@ const state = {
   showAddedExternalPlayerCustomArgs: true,
   // UI layout
   sideNavWidthPx: 300,
+  sideNavDarkenPercent: 40,
   videoGridColumns: 0,
   videoGridMinColumnWidth: 300,
   videoCardBorderRadius: 14,

@@ -156,6 +156,8 @@ const hideLabelsSideBar = computed(() => store.getters.getHideLabelsSideBar)
 /** @type {import('vue').ComputedRef<number>} */
 const sideNavWidthPx = computed(() => store.getters.getSideNavWidthPx)
 /** @type {import('vue').ComputedRef<number>} */
+const sideNavDarkenPercent = computed(() => store.getters.getSideNavDarkenPercent)
+/** @type {import('vue').ComputedRef<number>} */
 const videoGridMinColumnWidth = computed(() => store.getters.getVideoGridMinColumnWidth)
 /** @type {import('vue').ComputedRef<number>} */
 const videoCardBorderRadius = computed(() => store.getters.getVideoCardBorderRadius)
@@ -181,11 +183,17 @@ const appStyle = computed(() => {
     ? Math.min(Math.max(thumbPadding, 0), 30)
     : 10
 
+  const darkenPercent = Math.round(Number(sideNavDarkenPercent.value))
+  const safeDarkenPercent = Number.isFinite(darkenPercent)
+    ? Math.min(Math.max(darkenPercent, 0), 100)
+    : 40
+
   // auto-fill + min(100%, minWidth): as many columns as fit, leftover width shared via 1fr.
   const gridTemplateColumns = `repeat(auto-fill, minmax(min(100%, ${safeMinColumnWidth}px), 1fr))`
 
   return {
     '--side-nav-open-width': `${safeWidth}px`,
+    '--side-nav-darken-percent': `${safeDarkenPercent}%`,
     '--video-grid-min-column': `${safeMinColumnWidth}px`,
     '--video-grid-template-columns': gridTemplateColumns,
     '--video-card-border-radius': `${safeBorderRadius}px`,
@@ -815,45 +823,13 @@ function handleDragStart(event) {
 
 <style src="./themes.css" />
 <style scoped src="./App.css" />
-<!-- Unscoped: glass side nav + under-nav paint must not be blocked by scoped selectors -->
+<!-- Unscoped: :has(.refreshPageShell) must match nested route roots -->
 <style>
-/* Full-bleed main content under the side nav (needed for frosted glass) */
-.app > .mainContent.routerView {
-  --main-inline-offset: 80px;
-
-  inset-inline: 0;
-  padding-inline-start: var(--main-inline-offset);
-  background-color: var(--bg-color);
-  background-image: linear-gradient(
-    to right,
-    color-mix(in srgb, var(--card-bg-color) 70%, var(--primary-color) 30%) 0 var(--main-inline-offset),
-    var(--bg-color) var(--main-inline-offset)
-  );
-}
-
-.app.isSideNavOpen > .mainContent.routerView {
-  --main-inline-offset: var(--side-nav-open-width, 200px);
-}
-
-.app.hideLabelsSideBar > .mainContent.routerView {
-  --main-inline-offset: 60px;
-}
-
-/* Frosted side nav — unscoped so it always applies over FtFlexBox root */
-.app > .sideNav {
-  background-color: var(--side-nav-color, rgb(255 255 255 / 52%)) !important;
-  backdrop-filter: var(--ui-glass-blur-strong, blur(80px) saturate(200%)) !important;
-  /* stylelint-disable-next-line property-no-vendor-prefix */
-  -webkit-backdrop-filter: var(--ui-glass-blur-strong, blur(80px) saturate(200%)) !important;
-}
-
 .app > .mainContent.routerView:has(.refreshPageShell) {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  padding-block: 0;
-  padding-inline-end: 0;
-  padding-inline-start: var(--main-inline-offset, 80px);
+  padding: 0;
 }
 
 .app > .mainContent.routerView:has(.refreshPageShell) > .banner-wrapper {
@@ -868,13 +844,6 @@ function handleDragStart(event) {
 }
 
 @media only screen and (width <= 680px) {
-  .app > .mainContent.routerView {
-    --main-inline-offset: 0;
-
-    padding-inline: 8px;
-    background-image: none;
-  }
-
   .app > .mainContent.routerView:has(.refreshPageShell) {
     padding: 0;
   }
