@@ -884,7 +884,7 @@ Video:
   Copy YouTube Link: Copy YouTube Link
   Copy Video Link: Copy Video Link
   Copy Channel Link: Copy Channel Link
-  Copy Channel Link @: Copy Channel Link @
+  Copy Channel Handle Link: "Copy Channel Link{'@'}"
   Copy Thumbnail Link: Copy Thumbnail Link
   Open YouTube Embedded Player: Open YouTube Embedded Player
   Copy YouTube Embedded Player Link: Copy YouTube Embedded Player Link

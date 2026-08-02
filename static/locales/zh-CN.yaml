@@ -728,7 +728,7 @@ Video:
   Copy YouTube Link: '复制YouTube链接'
   Copy Video Link: 复制视频链接
   Copy Channel Link: 复制频道链接
-  Copy Channel Link @: 复制频道链接@
+  Copy Channel Handle Link: "复制频道链接{'@'}"
   Copy Thumbnail Link: 复制缩略图链接
   Open YouTube Embedded Player: '打开YouTube内嵌播放器'
   Copy YouTube Embedded Player Link: '复制YouTube内嵌播放器链接'

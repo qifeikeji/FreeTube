@@ -325,7 +325,7 @@ export default defineComponent({
               value: 'copyYoutubeChannel'
             },
             {
-              label: this.$t('Video.Copy Channel Link @'),
+              label: this.$t('Video.Copy Channel Handle Link'),
               value: 'copyYoutubeChannelHandle'
             }
           )
@@ -462,7 +462,7 @@ export default defineComponent({
             value: 'copyYoutubeChannel'
           },
           {
-            label: this.$t('Video.Copy Channel Link @'),
+            label: this.$t('Video.Copy Channel Handle Link'),
             value: 'copyYoutubeChannelHandle'
           }
         )
