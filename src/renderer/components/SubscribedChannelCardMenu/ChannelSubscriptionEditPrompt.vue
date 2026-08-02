@@ -20,6 +20,13 @@
         >
           {{ channel.name }}
         </p>
+        <p
+          v-if="channelHandleUrl"
+          class="dialogChannelUrl"
+          dir="ltr"
+        >
+          {{ channelHandleUrl }}
+        </p>
       </div>
     </template>
     <div class="editForm">
@@ -145,6 +152,7 @@ import {
   channelAccentColors,
   normalizeBaseTheme,
 } from '../../helpers/colors'
+import { resolveYoutubeChannelHandleUrl } from '../../helpers/youtubeChannelHandle'
 import store from '../../store/index'
 
 const props = defineProps({
@@ -194,6 +202,7 @@ const draftNotesColor = ref(defaultNotesColor)
 const draftHighlightColor = ref(defaultHighlightColor)
 const draftHighlighted = ref(false)
 const draftBoldChannelName = ref(false)
+const channelHandleUrl = ref('')
 
 /**
  * @param {string} color
@@ -209,8 +218,34 @@ function normalizeStoredColor(color) {
   return match ? match.dark : ''
 }
 
+/**
+ * @param {object|null} channel
+ */
+async function loadChannelHandleUrl(channel) {
+  channelHandleUrl.value = ''
+  if (channel?.id == null) {
+    return
+  }
+
+  const expectedChannelId = channel.id
+  try {
+    const handleUrl = await resolveYoutubeChannelHandleUrl(channel.id)
+    if (props.channel?.id === expectedChannelId) {
+      channelHandleUrl.value = handleUrl ?? ''
+    }
+  } catch (error) {
+    console.error(error)
+    if (props.channel?.id === expectedChannelId) {
+      channelHandleUrl.value = ''
+    }
+  }
+}
+
 watch(() => props.channel, (channel) => {
-  if (channel == null) { return }
+  if (channel == null) {
+    channelHandleUrl.value = ''
+    return
+  }
 
   const rawNotes = channel.notes ?? channel.note ?? ''
   draftNotes.value = typeof rawNotes === 'string' ? rawNotes : ''
@@ -219,6 +254,7 @@ watch(() => props.channel, (channel) => {
   draftHighlightColor.value = normalizeStoredColor(channel.highlightColor ?? '')
   draftHighlighted.value = channel.highlighted === true
   draftBoldChannelName.value = channel.boldChannelName === true
+  loadChannelHandleUrl(channel)
 }, { immediate: true })
 
 /**
@@ -290,6 +326,15 @@ function cancel() {
   color: var(--ui-glass-text-muted, rgb(255 255 255 / 55%));
   font-size: 1rem;
   font-weight: 500;
+}
+
+.dialogChannelUrl {
+  margin: 6px 0 0;
+  color: var(--ui-glass-text-muted, rgb(255 255 255 / 55%));
+  font-size: 0.85rem;
+  font-weight: 400;
+  line-height: 1.35;
+  word-break: break-all;
 }
 
 .editForm {

@@ -728,6 +728,7 @@ Video:
   Copy YouTube Link: '复制YouTube链接'
   Copy Video Link: 复制视频链接
   Copy Channel Link: 复制频道链接
+  Copy Channel Link @: 复制频道链接@
   Copy Thumbnail Link: 复制缩略图链接
   Open YouTube Embedded Player: '打开YouTube内嵌播放器'
   Copy YouTube Embedded Player Link: '复制YouTube内嵌播放器链接'
@@ -885,6 +886,8 @@ Share:
   YouTube Embed URL copied to clipboard: '复制YouTube内嵌URL到剪贴板'
   Include Timestamp: 包含时间戳
   YouTube Channel URL copied to clipboard: YouTube频道URL已复制到剪贴板
+  YouTube Channel Handle URL copied to clipboard: YouTube频道@链接已复制到剪贴板
+  Channel handle URL unavailable: 该频道没有可用的@链接
   Invidious Channel URL copied to clipboard: Invidious频道URL已复制到剪贴板
   Share Channel: 分享频道
   Share Post: 分享帖子

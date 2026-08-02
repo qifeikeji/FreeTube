@@ -1,6 +1,7 @@
 import { defineComponent } from 'vue'
 import FtIconButton from '../FtIconButton/FtIconButton.vue'
 import FtGlassContextMenu from '../FtGlassContextMenu/FtGlassContextMenu.vue'
+import ChannelSubscriptionEditPrompt from '../SubscribedChannelCardMenu/ChannelSubscriptionEditPrompt.vue'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import { mapActions } from 'vuex'
 import {
@@ -14,6 +15,7 @@ import {
   deepCopy,
   debounce
 } from '../../helpers/utils'
+import { resolveYoutubeChannelHandleUrl } from '../../helpers/youtubeChannelHandle'
 import { normalizeBaseTheme, resolveChannelAccentColor } from '../../helpers/colors'
 import { deArrowData, deArrowThumbnail } from '../../helpers/sponsorblock'
 import thumbnailPlaceholder from '../../assets/img/thumbnail_placeholder.svg'
@@ -25,6 +27,7 @@ export default defineComponent({
     'ft-icon-button': FtIconButton,
     'ft-awesome-icon': FontAwesomeIcon,
     FtGlassContextMenu,
+    ChannelSubscriptionEditPrompt,
   },
   directives: {
     'safer-html': vSaferHtml
@@ -135,6 +138,7 @@ export default defineComponent({
       showDeArrowThumbnail: false,
       subscriptionContextMenuVisible: false,
       subscriptionContextMenuPosition: { x: 0, y: 0 },
+      editingSubscriptionChannel: null,
     }
   },
   computed: {
@@ -315,16 +319,29 @@ export default defineComponent({
         ]
 
         if (this.channelId !== null) {
-          options.push({
-            label: this.$t('Video.Copy Channel Link'),
-            value: 'copyYoutubeChannel'
-          })
+          options.push(
+            {
+              label: this.$t('Video.Copy Channel Link'),
+              value: 'copyYoutubeChannel'
+            },
+            {
+              label: this.$t('Video.Copy Channel Link @'),
+              value: 'copyYoutubeChannelHandle'
+            }
+          )
         }
 
         options.push({
           label: this.$t('Video.Copy Thumbnail Link'),
           value: 'copyThumbnail'
         })
+
+        if (this.subscriptionChannelCustomization != null) {
+          options.push({
+            label: this.$t('Channels.Edit Channel Content'),
+            value: 'editChannelContent'
+          })
+        }
 
         return options
       }
@@ -439,16 +456,29 @@ export default defineComponent({
       ]
 
       if (this.channelId !== null) {
-        items.push({
-          label: this.$t('Video.Copy Channel Link'),
-          value: 'copyYoutubeChannel'
-        })
+        items.push(
+          {
+            label: this.$t('Video.Copy Channel Link'),
+            value: 'copyYoutubeChannel'
+          },
+          {
+            label: this.$t('Video.Copy Channel Link @'),
+            value: 'copyYoutubeChannelHandle'
+          }
+        )
       }
 
       items.push({
         label: this.$t('Video.Copy Thumbnail Link'),
         value: 'copyThumbnail'
       })
+
+      if (this.subscriptionChannelCustomization != null) {
+        items.push({
+          label: this.$t('Channels.Edit Channel Content'),
+          value: 'editChannelContent'
+        })
+      }
 
       return items
     },
@@ -811,6 +841,12 @@ export default defineComponent({
         case 'copyYoutubeChannel':
           copyToClipboard(this.youtubeChannelUrl, { messageOnSuccess: this.$t('Share.YouTube Channel URL copied to clipboard') })
           break
+        case 'copyYoutubeChannelHandle':
+          this.copyYoutubeChannelHandleLink()
+          break
+        case 'editChannelContent':
+          this.openChannelEditPrompt()
+          break
         case 'openYoutubeChannel':
           openExternalLink(this.youtubeChannelUrl)
           break
@@ -850,6 +886,62 @@ export default defineComponent({
     handleSubscriptionContextMenuSelect: function (option) {
       this.closeSubscriptionContextMenu()
       this.handleOptionsClick(option)
+    },
+
+    copyYoutubeChannelHandleLink: async function () {
+      try {
+        const handleUrl = await resolveYoutubeChannelHandleUrl(this.channelId, {
+          authorUrl: this.data?.authorUrl
+        })
+        if (handleUrl == null) {
+          showToast(this.$t('Share.Channel handle URL unavailable'))
+          return
+        }
+
+        await copyToClipboard(handleUrl, {
+          messageOnSuccess: this.$t('Share.YouTube Channel Handle URL copied to clipboard')
+        })
+      } catch (error) {
+        console.error(error)
+        showToast(this.$t('Share.Channel handle URL unavailable'))
+      }
+    },
+
+    openChannelEditPrompt: function () {
+      if (this.subscriptionChannelCustomization == null) {
+        return
+      }
+
+      this.editingSubscriptionChannel = {
+        ...this.subscriptionChannelCustomization,
+        id: this.channelId,
+        name: this.channelName ?? this.subscriptionChannelCustomization.name,
+      }
+    },
+
+    closeChannelEditPrompt: function () {
+      this.editingSubscriptionChannel = null
+    },
+
+    /**
+     * @param {{ notes: string, notesColor: string, highlightColor: string, highlighted: boolean, boldChannelName: boolean }} payload
+     */
+    saveChannelCustomization: async function (payload) {
+      const channel = this.editingSubscriptionChannel
+      if (channel == null) {
+        return
+      }
+
+      await this.updateChannelSubscriptionCustomization({
+        channelId: channel.id,
+        notes: payload.notes,
+        notesColor: payload.notesColor,
+        highlightColor: payload.highlightColor,
+        highlighted: payload.highlighted,
+        boldChannelName: payload.boldChannelName,
+      })
+
+      this.closeChannelEditPrompt()
     },
 
     parseVideoData: function () {
@@ -1047,6 +1139,7 @@ export default defineComponent({
       'updateHistory',
       'removeFromHistory',
       'updateChannelsHidden',
+      'updateChannelSubscriptionCustomization',
       'showAddToPlaylistPromptForManyVideos',
       'addVideo',
       'removeVideo',

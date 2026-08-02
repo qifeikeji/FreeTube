@@ -294,6 +294,11 @@
       @select="handleSubscriptionContextMenuSelect"
       @close="closeSubscriptionContextMenu"
     />
+    <ChannelSubscriptionEditPrompt
+      :channel="editingSubscriptionChannel"
+      @save="saveChannelCustomization"
+      @cancel="closeChannelEditPrompt"
+    />
   </div>
 </template>
 

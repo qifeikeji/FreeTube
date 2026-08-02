@@ -7,6 +7,34 @@ import { UnsupportedPlayerActions } from '../../constants'
 // https://support.google.com/youtube/answer/11585688#change_handle
 export const CHANNEL_HANDLE_REGEX = /^@[\w.-]{3,30}$/
 
+/**
+ * Extract a YouTube channel handle (without @) from a URL or path.
+ * Accepts forms like `/@NanouASMR`, `https://www.youtube.com/@NanouASMR`, or `@NanouASMR`.
+ * @param {string|null|undefined} urlOrPath
+ * @returns {string|null}
+ */
+export function extractYoutubeChannelHandle(urlOrPath) {
+  if (typeof urlOrPath !== 'string' || urlOrPath.length === 0) {
+    return null
+  }
+
+  if (CHANNEL_HANDLE_REGEX.test(urlOrPath)) {
+    return urlOrPath.slice(1)
+  }
+
+  const match = urlOrPath.match(/\/@([\w.-]{3,30})(?:\/|$|\?|#)/)
+  return match?.[1] ?? null
+}
+
+/**
+ * @param {string} handle handle with or without leading @
+ * @returns {string}
+ */
+export function youtubeChannelHandleUrl(handle) {
+  const normalized = handle.startsWith('@') ? handle.slice(1) : handle
+  return `https://www.youtube.com/@${normalized}`
+}
+
 const PUBLISHED_TEXT_REGEX = /(\d+)\s?([a-z]+)/i
 
 /**
