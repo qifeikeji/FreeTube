@@ -48,6 +48,13 @@
           :compact="true"
           @change="updateHideToTrayOnMinimize"
         />
+        <FtToggleSwitch
+          :label="t('Settings.General Settings.Prefer Original Titles')"
+          :default-value="preferOriginalTitles"
+          :compact="true"
+          :tooltip="t('Tooltips.General Settings.Prefer Original Titles')"
+          @change="updatePreferOriginalTitles"
+        />
       </div>
     </div>
     <div class="switchGrid">
@@ -345,6 +352,16 @@ const hideToTrayOnMinimize = computed(() => store.getters.getHideToTrayOnMinimiz
  */
 function updateHideToTrayOnMinimize(value) {
   store.dispatch('updateHideToTrayOnMinimize', value)
+}
+
+/** @type {import('vue').ComputedRef<boolean>} */
+const preferOriginalTitles = computed(() => store.getters.getPreferOriginalTitles)
+
+/**
+ * @param {boolean} value
+ */
+function updatePreferOriginalTitles(value) {
+  store.dispatch('updatePreferOriginalTitles', value)
 }
 
 /** @type {import('vue').ComputedRef<boolean>} */

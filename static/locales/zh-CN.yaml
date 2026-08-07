@@ -209,6 +209,7 @@ Settings:
     Enable Search Suggestions: '允许搜索建议'
     Default Landing Page: '默认加载页面'
     Locale Preference: '地域偏好'
+    Prefer Original Titles: 保留原语言标题
     Preferred API Backend:
       Preferred API Backend: '首选API后端'
       Local API: '本地API'
@@ -995,6 +996,7 @@ Tooltips:
     Fallback to Non-Preferred Backend on Failure: 当您的首选API有问题时，FreeTube将自动尝试使用您的非首选API 作为后备方案。
     Preferred API Backend: 选择FreeTube 要用于取得数据的后端。本地API 是内置提取器。Invidious API需要Invidious服务器才能连接。
     Region for Trending: 热门区域让您挑选您想要显示哪个国家的热门视频。
+    Prefer Original Titles: 保持 YouTube 视频标题为原语言（例如中文），而不是被自动翻译成英文。通过 YouTube oEmbed 获取原标题，原理与浏览器插件 “YouTube No Title Translate” 相同。
     External Link Handling: "选择单击一个无法在 FreeTube 中打开的链接时触发的默认操作。\n默认情况下，FreeTube 将在您的默认浏览器中打开所点击链接。\n"
     Open Deep Links In New Window: 在新窗口由浏览器的重定向扩展或命令行变量传递到 FreeTube 的 URL。
     Video Grid Columns: 设为 0 表示自动列数；否则网格视图使用固定列数。

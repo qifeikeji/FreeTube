@@ -18,6 +18,7 @@ import {
 import { resolveYoutubeChannelHandleUrl } from '../../helpers/youtubeChannelHandle'
 import { normalizeBaseTheme, resolveChannelAccentColor } from '../../helpers/colors'
 import { deArrowData, deArrowThumbnail } from '../../helpers/sponsorblock'
+import { getOriginalTitle } from '../../helpers/originalTitle'
 import thumbnailPlaceholder from '../../assets/img/thumbnail_placeholder.svg'
 import { vSaferHtml } from '../../directives/vSaferHtml.js'
 
@@ -557,6 +558,8 @@ export default defineComponent({
       let title
       if (this.showDeArrowTitle && this.deArrowCache?.title) {
         title = this.deArrowCache.title
+      } else if (this.preferOriginalTitles && this.originalTitleCache?.title) {
+        title = this.originalTitleCache.title
       } else {
         title = this.title
       }
@@ -665,6 +668,9 @@ export default defineComponent({
     useDeArrowThumbnails: function () {
       return this.$store.getters.getUseDeArrowThumbnails
     },
+    preferOriginalTitles: function () {
+      return this.$store.getters.getPreferOriginalTitles
+    },
     deArrowChangedContent: function () {
       return (this.useDeArrowThumbnails && this.deArrowCache?.thumbnail) ||
         (this.useDeArrowTitles && this.deArrowCache?.title &&
@@ -680,6 +686,10 @@ export default defineComponent({
     deArrowCache: function () {
       return this.$store.getters.getDeArrowCache[this.id]
     },
+
+    originalTitleCache: function () {
+      return this.$store.getters.getOriginalTitleCache[this.id]
+    },
   },
   watch: {
     showAddToPlaylistPrompt(value) {
@@ -688,6 +698,11 @@ export default defineComponent({
 
       if (this.addToPlaylistPromptCloseCallback == null) { return }
       this.addToPlaylistPromptCloseCallback()
+    },
+    preferOriginalTitles: function (enabled) {
+      if (enabled) {
+        this.fetchOriginalTitle()
+      }
     },
   },
   created: function () {
@@ -706,6 +721,10 @@ export default defineComponent({
       }
 
       this.debounceGetDeArrowThumbnail()
+    }
+
+    if (this.preferOriginalTitles) {
+      this.fetchOriginalTitle()
     }
   },
   methods: {
@@ -735,6 +754,17 @@ export default defineComponent({
         deArrowCacheClone.thumbnail = thumbnail
         this.$store.commit('addThumbnailToDeArrowCache', deArrowCacheClone)
       }
+    },
+    fetchOriginalTitle: async function () {
+      if (!this.preferOriginalTitles || !this.id || this.data?.isRSS) {
+        return
+      }
+
+      if (this.originalTitleCache !== undefined) {
+        return
+      }
+
+      await getOriginalTitle(this.id)
     },
     fetchDeArrowData: async function() {
       const videoId = this.id

@@ -300,6 +300,7 @@ Settings:
       Tooltip: Load additional pages and comments automatically.
     Default Landing Page: Default Landing Page
     Locale Preference: Locale Preference
+    Prefer Original Titles: Prefer Original Titles
     System Default: System Default
     Preferred API Backend:
       Preferred API Backend: Preferred API Backend
@@ -1092,6 +1093,9 @@ Tooltips:
       calls.
     Region for Trending: The region of trends allows you to pick which country's trending
       videos you want to have displayed.
+    Prefer Original Titles: Keep YouTube video titles in their original language (for example Chinese)
+      instead of the auto-translated English titles. Uses YouTube's oEmbed API, like the
+      "YouTube No Title Translate" browser extension.
     External Link Handling: |
       Choose the default behavior when a link, which cannot be opened in FreeTube, is clicked.
       By default FreeTube will open the clicked link in your default browser.

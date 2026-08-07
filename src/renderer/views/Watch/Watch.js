@@ -40,6 +40,7 @@ import {
 } from '../../helpers/api/invidious'
 import { sortCaptions } from '../../helpers/player/utils'
 import { MANIFEST_TYPE_SABR } from '../../helpers/player/SabrManifestParser'
+import { getOriginalTitle } from '../../helpers/originalTitle'
 
 /**
  * @typedef {{
@@ -260,6 +261,9 @@ export default defineComponent({
     },
     hideChapters: function () {
       return this.$store.getters.getHideChapters
+    },
+    preferOriginalTitles: function () {
+      return this.$store.getters.getPreferOriginalTitles
     },
     channelsHidden() {
       return JSON.parse(this.$store.getters.getChannelsHidden).map((ch) => {
@@ -506,8 +510,13 @@ export default defineComponent({
           return
         }
 
-        // extract localised title first and fall back to the not localised one
-        this.videoTitle = result.primary_info?.title.text?.trim() ?? result.basic_info.title?.trim()
+        // Prefer the non-localised title when "prefer original titles" is enabled.
+        // Otherwise extract localised title first and fall back to the not localised one.
+        if (this.preferOriginalTitles) {
+          this.videoTitle = result.basic_info.title?.trim() ?? result.primary_info?.title.text?.trim() ?? ''
+        } else {
+          this.videoTitle = result.primary_info?.title.text?.trim() ?? result.basic_info.title?.trim()
+        }
         this.videoViewCount = result.basic_info.view_count ?? (result.primary_info.view_count ? extractNumberFromString(result.primary_info.view_count.text) : null)
         this.license = result.secondary_info.metadata.rows.find(element => element.title?.text === 'License')?.contents[0]?.text
 
@@ -917,6 +926,7 @@ export default defineComponent({
 
         this.isLoading = false
         this.updateTitle()
+        this.applyOriginalTitleIfEnabled()
       } catch (err) {
         console.error(err)
         if (this.backendPreference === 'local' && this.backendFallback && !err.toString().includes('private') && !err.toString().includes('unavailable')) {
@@ -1105,6 +1115,7 @@ export default defineComponent({
           }
 
           this.updateTitle()
+          this.applyOriginalTitleIfEnabled()
 
           this.isLoading = false
         })
@@ -1880,6 +1891,28 @@ export default defineComponent({
 
     updateTitle: function () {
       this.setAppTitle(this.videoTitle)
+    },
+
+    /**
+     * Replace the watch-page title with the original-language title from oEmbed
+     * (same approach as the YouTube No Title Translate browser extension).
+     */
+    applyOriginalTitleIfEnabled: async function () {
+      if (!this.preferOriginalTitles || !this.videoId) {
+        return
+      }
+
+      const expectedId = this.videoId
+
+      try {
+        const originalTitle = await getOriginalTitle(expectedId)
+        if (originalTitle && this.videoId === expectedId && this.videoTitle !== originalTitle) {
+          this.videoTitle = originalTitle
+          this.updateTitle()
+        }
+      } catch (error) {
+        console.error(error)
+      }
     },
 
     isHiddenVideo: function (forbiddenTitles, channelsHidden, video) {

@@ -20,6 +20,7 @@ const state = {
   },
   cachedPlaylist: null,
   deArrowCache: {},
+  originalTitleCache: {},
   showProgressBar: false,
   showAddToPlaylistPrompt: false,
   showCreatePlaylistPrompt: false,
@@ -73,6 +74,10 @@ const getters = {
 
   getDeArrowCache: (state) => {
     return state.deArrowCache
+  },
+
+  getOriginalTitleCache: (state) => {
+    return state.originalTitleCache
   },
 
   getPopularCache(state) {
@@ -642,6 +647,17 @@ const mutations = {
 
   addThumbnailToDeArrowCache (state, payload) {
     state.deArrowCache[payload.videoId] = payload
+  },
+
+  addVideoToOriginalTitleCache (state, payload) {
+    if (state.originalTitleCache[payload.videoId] !== undefined) {
+      return
+    }
+
+    state.originalTitleCache = {
+      ...state.originalTitleCache,
+      [payload.videoId]: payload
+    }
   },
 
   removeFromSessionSearchHistory (state, query) {
