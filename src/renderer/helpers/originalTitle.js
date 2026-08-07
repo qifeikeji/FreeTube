@@ -57,15 +57,14 @@ export async function getOriginalTitle(videoId) {
   }
 
   const request = (async () => {
-    let title = null
     try {
-      title = await fetchOEmbedTitle(videoId)
+      const title = await fetchOEmbedTitle(videoId)
+      store.commit('addVideoToOriginalTitleCache', { videoId, title })
+      return title
     } catch {
-      title = null
+      store.commit('addVideoToOriginalTitleCache', { videoId, title: null })
+      return null
     }
-
-    store.commit('addVideoToOriginalTitleCache', { videoId, title })
-    return title
   })()
 
   pendingRequests.set(videoId, request)

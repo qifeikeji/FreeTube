@@ -116,7 +116,10 @@
         class="themeColorPicker"
         :title="$t('Settings.Theme Settings.Pick Custom Color')"
       >
-        <span class="themeColorPickerSwatch" :style="{ backgroundColor: displayedMainColor }" />
+        <span
+          class="themeColorPickerSwatch"
+          :style="{ backgroundColor: displayedMainColor }"
+        />
         <input
           type="color"
           class="themeColorPickerInput"
@@ -138,7 +141,10 @@
         class="themeColorPicker"
         :title="$t('Settings.Theme Settings.Pick Custom Color')"
       >
-        <span class="themeColorPickerSwatch" :style="{ backgroundColor: displayedSecColor }" />
+        <span
+          class="themeColorPickerSwatch"
+          :style="{ backgroundColor: displayedSecColor }"
+        />
         <input
           type="color"
           class="themeColorPickerInput"
