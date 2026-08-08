@@ -1,3 +1,6 @@
+// Web build is disabled (Local API / Electron only).
+// The package.json pack:web / dev:web scripts exit with an error;
+// this config is retained only for reference and should not be used.
 const path = require('path')
 const fs = require('fs')
 const webpack = require('webpack')

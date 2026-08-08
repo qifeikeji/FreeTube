@@ -28,7 +28,7 @@
     "clean": "node _scripts/clean.mjs",
     "debug": "node _scripts/dev-runner.js --remote-debug",
     "dev": "node _scripts/dev-runner.js",
-    "dev:web": "node _scripts/dev-runner.js --web",
+    "dev:web": "echo \"Web build is disabled (Local API / Electron only)\" && exit 1",
     "get-instances": "node _scripts/getInstances.js",
     "get-regions": "node _scripts/getRegions.mjs",
     "lint-all": "pnpm run \"/^(lint|lint-json)$/\"",
@@ -44,7 +44,7 @@
     "pack:main": "webpack --mode=production --config-node-env=production --config _scripts/webpack.main.config.js",
     "pack:renderer": "webpack --mode=production --config-node-env=production --config _scripts/webpack.renderer.config.js",
     "pack:preload": "webpack --mode=production --config-node-env=production --config _scripts/webpack.preload.config.js",
-    "pack:web": "webpack --mode=production --config-node-env=production --config _scripts/webpack.web.config.js",
+    "pack:web": "echo \"Web build is disabled (Local API / Electron only)\" && exit 1",
     "pack:botGuardScript": "webpack --config _scripts/webpack.botGuardScript.config.js",
     "checkforbadtemplates": "node _scripts/findMissingTemplates.mjs",
     "ci": "pnpm install --frozen-lockfile"

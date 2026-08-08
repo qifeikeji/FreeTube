@@ -73,28 +73,6 @@
         </p>
       </router-link>
       <router-link
-        v-if="!hidePopularVideos && (backendFallback || backendPreference === 'invidious')"
-        class="navOption mobileHidden"
-        role="button"
-        to="/popular"
-        :title="$t('Most Popular')"
-      >
-        <div
-          class="thumbnailContainer"
-        >
-          <FontAwesomeIcon
-            :icon="['fas', 'users']"
-            class="navIcon"
-            :class="applyNavIconExpand"
-          />
-        </div>
-        <p
-          class="navLabel"
-        >
-          {{ $t("Most Popular") }}
-        </p>
-      </router-link>
-      <router-link
         v-if="!hidePlaylists"
         class="navOption mobileShow"
         role="button"
@@ -291,11 +269,6 @@ const activeSubscriptions = computed(() => {
   }
 
   return subscriptions
-})
-
-/** @type {import('vue').ComputedRef<boolean>} */
-const hidePopularVideos = computed(() => {
-  return store.getters.getHidePopularVideos
 })
 
 /** @type {import('vue').ComputedRef<boolean>} */

@@ -307,7 +307,8 @@ export default defineComponent({
     },
 
     showInvidiousShareOptions: function () {
-      return this.backendPreference === 'invidious' || this.$store.getters.getBackendFallback
+      // Invidious backend is disabled — never show Invidious share options
+      return false
     },
 
     dropdownOptions: function () {

@@ -32,6 +32,8 @@
           :src="thumbnail"
           class="thumbnailImage"
           alt=""
+          loading="lazy"
+          decoding="async"
           :style="{filter: blurThumbnailsStyle}"
         >
       </router-link>

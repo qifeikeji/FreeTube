@@ -11,14 +11,6 @@
           @change="updateCheckForUpdates"
         />
         <FtToggleSwitch
-          v-if="SUPPORTS_LOCAL_API"
-          :label="t('Settings.General Settings.Fallback to Non-Preferred Backend on Failure')"
-          :default-value="backendFallback"
-          :compact="true"
-          :tooltip="t('Tooltips.General Settings.Fallback to Non-Preferred Backend on Failure')"
-          @change="updateBackendFallback"
-        />
-        <FtToggleSwitch
           :label="t('Settings.General Settings.Auto Load Next Page.Label')"
           :default-value="generalAutoLoadMorePaginatedItemsEnabled"
           :compact="true"
@@ -58,15 +50,6 @@
       </div>
     </div>
     <div class="switchGrid">
-      <FtSelect
-        :placeholder="t('Settings.General Settings.Preferred API Backend.Preferred API Backend')"
-        :value="backendPreference"
-        :select-names="backendNames"
-        :select-values="BACKEND_VALUES"
-        :tooltip="t('Tooltips.General Settings.Preferred API Backend')"
-        :icon="['fas', 'server']"
-        @change="updateBackendPreference"
-      />
       <FtSelect
         :placeholder="t('Settings.General Settings.Default Landing Page')"
         :value="landingPage"
@@ -164,59 +147,11 @@
         @change="updateExternalLinkHandling"
       />
     </div>
-    <div
-      v-if="backendPreference === 'invidious' || backendFallback"
-    >
-      <FtFlexBox class="settingsFlexStart460px">
-        <FtInput
-          :placeholder="t('Settings.General Settings.Current Invidious Instance')"
-          :show-action-button="false"
-          :show-label="true"
-          :value="currentInvidiousInstance"
-          :data-list="invidiousInstancesList"
-          :tooltip="t('Tooltips.General Settings.Invidious Instance')"
-          @input="handleInvidiousInstanceInput"
-        />
-      </FtFlexBox>
-      <FtFlexBox>
-        <div>
-          <a
-            href="https://api.invidious.io"
-          >
-            {{ t('Settings.General Settings.View all Invidious instance information') }}
-          </a>
-        </div>
-      </FtFlexBox>
-      <p
-        v-if="defaultInvidiousInstance !== ''"
-        class="center"
-      >
-        {{ t('Settings.General Settings.The currently set default instance is {instance}', { instance: defaultInvidiousInstance }) }}
-      </p>
-      <template v-else>
-        <p class="center">
-          {{ t('Settings.General Settings.No default instance has been set') }}
-        </p>
-        <p class="center">
-          {{ t('Settings.General Settings.Current instance will be randomized on startup') }}
-        </p>
-      </template>
-      <FtFlexBox>
-        <FtButton
-          :label="t('Settings.General Settings.Set Current Instance as Default')"
-          @click="handleSetDefaultInstanceClick"
-        />
-        <FtButton
-          :label="t('Settings.General Settings.Clear Default Instance')"
-          @click="handleClearDefaultInstanceClick"
-        />
-      </FtFlexBox>
-    </div>
   </FtSettingsSection>
 </template>
 
 <script setup>
-import { computed, onBeforeUnmount } from 'vue'
+import { computed } from 'vue'
 import { useI18n } from '../../composables/use-i18n-polyfill'
 import { useRouter } from 'vue-router'
 
@@ -224,17 +159,14 @@ import FtSettingsSection from '../FtSettingsSection/FtSettingsSection.vue'
 import FtSelect from '../FtSelect/FtSelect.vue'
 import FtInput from '../FtInput/FtInput.vue'
 import FtToggleSwitch from '../FtToggleSwitch/FtToggleSwitch.vue'
-import FtFlexBox from '../ft-flex-box/ft-flex-box.vue'
-import FtButton from '../FtButton/FtButton.vue'
 
 import store from '../../store/index'
 
 import allLocales from '../../../../static/locales/activeLocales.json'
-import { debounce, randomArrayItem, showToast } from '../../helpers/utils'
+import { debounce } from '../../helpers/utils'
 import { translateWindowTitle } from '../../helpers/strings'
 
 const USING_ELECTRON = !!process.env.IS_ELECTRON
-const SUPPORTS_LOCAL_API = !!process.env.SUPPORTS_LOCAL_API
 const IS_MAC = process.platform === 'darwin'
 
 const { t } = useI18n()
@@ -323,16 +255,6 @@ function updateCheckForUpdates(value) {
 }
 
 /** @type {import('vue').ComputedRef<boolean>} */
-const backendFallback = computed(() => store.getters.getBackendFallback)
-
-/**
- * @param {boolean} value
- */
-function updateBackendFallback(value) {
-  store.dispatch('updateBackendFallback', value)
-}
-
-/** @type {import('vue').ComputedRef<boolean>} */
 const generalAutoLoadMorePaginatedItemsEnabled = computed(() => {
   return store.getters.getGeneralAutoLoadMorePaginatedItemsEnabled
 })
@@ -384,38 +306,8 @@ function updateOpenDeepLinksInNewWindow(value) {
   store.dispatch('updateOpenDeepLinksInNewWindow', value)
 }
 
-const BACKEND_VALUES = process.env.SUPPORTS_LOCAL_API
-  ? ['invidious', 'local']
-  : ['invidious']
-
-const backendNames = computed(() => {
-  if (process.env.SUPPORTS_LOCAL_API) {
-    return [
-      t('Settings.General Settings.Preferred API Backend.Invidious API'),
-      t('Settings.General Settings.Preferred API Backend.Local API')
-    ]
-  } else {
-    return [
-      t('Settings.General Settings.Preferred API Backend.Invidious API')
-    ]
-  }
-})
-
-/** @type {import('vue').ComputedRef<'local' | 'invidious'>} */
-const backendPreference = computed(() => store.getters.getBackendPreference)
-
-/**
- * @param {'local' | 'invidious'} value
- */
-function updateBackendPreference(value) {
-  store.dispatch('updateBackendPreference', value)
-}
-
 /** @type {import('vue').ComputedRef<boolean>} */
 const hidePlaylists = computed(() => store.getters.getHidePlaylists)
-
-/** @type {import('vue').ComputedRef<boolean>} */
-const hidePopularVideos = computed(() => store.getters.getHidePopularVideos)
 
 /** @type {import('vue').ComputedRef<boolean>} */
 const hideTrendingVideos = computed(() => store.getters.getHideTrendingVideos)
@@ -423,7 +315,6 @@ const hideTrendingVideos = computed(() => store.getters.getHideTrendingVideos)
 const INCLUDED_DEFAULT_PAGE_NAMES = [
   'subscriptions',
   'subscribedChannels',
-  'popular',
   'userPlaylists',
   'history',
   'settings',
@@ -433,16 +324,12 @@ const INCLUDED_DEFAULT_PAGE_NAMES = [
 const defaultPages = computed(() => {
   let includedPageNames = INCLUDED_DEFAULT_PAGE_NAMES
 
-  if (hideTrendingVideos.value || !backendFallback.value || backendPreference.value !== 'local') {
+  if (hideTrendingVideos.value) {
     includedPageNames = includedPageNames.filter((pageName) => pageName !== 'trending')
   }
 
   if (hidePlaylists.value) {
     includedPageNames = includedPageNames.filter((pageName) => pageName !== 'userPlaylists')
-  }
-
-  if (!(!hidePopularVideos.value && (backendFallback.value || backendPreference.value === 'invidious'))) {
-    includedPageNames = includedPageNames.filter((pageName) => pageName !== 'popular')
   }
 
   return router.getRoutes().filter((route) => includedPageNames.includes(route.name))
@@ -455,11 +342,11 @@ const defaultPageValues = computed(() => {
   return defaultPages.value.map((route) => route.path.slice(1))
 })
 
-/** @type {import('vue').ComputedRef<'subscriptions' | 'subscribedChannels' | 'popular' | 'userPlaylists' | 'history' | 'settings' | 'trending'>} */
+/** @type {import('vue').ComputedRef<'subscriptions' | 'subscribedChannels' | 'userPlaylists' | 'history' | 'settings' | 'trending'>} */
 const landingPage = computed(() => store.getters.getLandingPage)
 
 /**
- * @param {'subscriptions' | 'subscribedChannels' | 'popular' | 'userPlaylists' | 'history' | 'settings' | 'trending'} value
+ * @param {'subscriptions' | 'subscribedChannels' | 'userPlaylists' | 'history' | 'settings' | 'trending'} value
  */
 function updateLandingPage(value) {
   store.dispatch('updateLandingPage', value)
@@ -560,58 +447,6 @@ const externalLinkHandling = computed(() => store.getters.getExternalLinkHandlin
  */
 function updateExternalLinkHandling(value) {
   store.dispatch('updateExternalLinkHandling', value)
-}
-
-/** @type {import('vue').ComputedRef<string[]>} */
-const invidiousInstancesList = computed(() => store.getters.getInvidiousInstancesList)
-
-/** @type {import('vue').ComputedRef<string>} */
-const currentInvidiousInstance = computed(() => store.getters.getCurrentInvidiousInstance)
-
-onBeforeUnmount(() => {
-  if (currentInvidiousInstance.value === '') {
-    // FIXME: If we call an action from here, there's no guarantee it will finish
-    // before the component is destroyed, which could bring up some problems
-    // Since I can't see any way to await it (because lifecycle hooks must be
-    // synchronous), unfortunately, we have to copy/paste the logic
-    // from the `setRandomCurrentInvidiousInstance` action onto here
-    // Fix when we migrate to Pinia
-    const instanceList = invidiousInstancesList.value
-    store.commit('setCurrentInvidiousInstance', randomArrayItem(instanceList))
-  }
-})
-
-const setCurrentInvidiousInstanceBounce = debounce((/** @type {string} */instance) => {
-  store.commit('setCurrentInvidiousInstance', instance)
-}, 500)
-
-/**
- * @param {string} input
- */
-function handleInvidiousInstanceInput(input) {
-  let instance = input
-  // If NOT something like https:// (1-2 slashes), remove trailing slash
-  if (!/^https?:\/{1,2}$/.test(input)) {
-    instance = input.replace(/\/$/, '')
-  }
-
-  setCurrentInvidiousInstanceBounce(instance)
-}
-
-/** @type {import('vue').ComputedRef<string>} */
-const defaultInvidiousInstance = computed(() => store.getters.getDefaultInvidiousInstance)
-
-function handleSetDefaultInstanceClick() {
-  const instance = currentInvidiousInstance.value
-  store.dispatch('updateDefaultInvidiousInstance', instance)
-
-  const message = t('Default Invidious instance has been set to {instance}', { instance })
-  showToast(message)
-}
-
-function handleClearDefaultInstanceClick() {
-  store.dispatch('updateDefaultInvidiousInstance', '')
-  showToast(t('Default Invidious instance has been cleared'))
 }
 </script>
 

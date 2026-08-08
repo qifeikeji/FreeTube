@@ -105,6 +105,14 @@ async function createInnertube({ withPlayer = false, location = undefined, safet
   })
 }
 
+/**
+ * Lightweight Innertube session for batch subscription scrapes.
+ * Callers should create one per refresh and pass it into channel fetch helpers.
+ */
+export async function createLightInnertubeSession() {
+  return await createInnertube()
+}
+
 /** @type {Innertube | null} */
 let searchSuggestionsSession = null
 
@@ -716,9 +724,10 @@ export async function getLocalChannel(id) {
 
 /**
  * @param {string} id
+ * @param {{ innertube?: import('youtubei.js').Innertube | null }} [options]
  */
-export async function getLocalChannelVideos(id) {
-  const innertube = await createInnertube()
+export async function getLocalChannelVideos(id, { innertube: existingInnertube = null } = {}) {
+  const innertube = existingInnertube ?? await createInnertube()
 
   try {
     const response = await innertube.actions.execute('/browse', {
@@ -764,20 +773,23 @@ export async function getLocalChannelVideos(id) {
       videos
     }
   } catch (error) {
-    console.error(error)
     if (error instanceof Utils.ChannelError) {
+      // Terminated / removed channels are common in large subscription lists
+      console.warn(`[Local API] Skipping channel ${id}: ${error.message}`)
       return null
-    } else {
-      throw error
     }
+
+    console.error(error)
+    throw error
   }
 }
 
 /**
  * @param {string} id
+ * @param {{ innertube?: import('youtubei.js').Innertube | null }} [options]
  */
-export async function getLocalChannelLiveStreams(id) {
-  const innertube = await createInnertube()
+export async function getLocalChannelLiveStreams(id, { innertube: existingInnertube = null } = {}) {
+  const innertube = existingInnertube ?? await createInnertube()
 
   try {
     const response = await innertube.actions.execute('/browse', {
@@ -819,17 +831,18 @@ export async function getLocalChannelLiveStreams(id) {
       videos
     }
   } catch (error) {
-    console.error(error)
     if (error instanceof Utils.ChannelError) {
+      console.warn(`[Local API] Skipping channel ${id}: ${error.message}`)
       return null
-    } else {
-      throw error
     }
+
+    console.error(error)
+    throw error
   }
 }
 
-export async function getLocalChannelCommunity(id) {
-  const innertube = await createInnertube()
+export async function getLocalChannelCommunity(id, { innertube: existingInnertube = null } = {}) {
+  const innertube = existingInnertube ?? await createInnertube()
 
   try {
     const response = await innertube.actions.execute('/browse', {
@@ -849,12 +862,13 @@ export async function getLocalChannelCommunity(id) {
       return []
     }
   } catch (error) {
-    console.error(error)
     if (error instanceof Utils.ChannelError) {
+      console.warn(`[Local API] Skipping channel ${id}: ${error.message}`)
       return null
-    } else {
-      throw error
     }
+
+    console.error(error)
+    throw error
   }
 }
 
@@ -1625,7 +1639,7 @@ function parseLockupView(lockupView, channelId = undefined, channelName = undefi
       if (thumbnailBottomOverlayView) {
         if (thumbnailBottomOverlayView.badges.some(badge => badge.badge_style === 'THUMBNAIL_OVERLAY_BADGE_STYLE_LIVE')) {
           liveNow = true
-        } else if (thumbnailBottomOverlayView.badges.some(badge => badge.text.toLowerCase() === 'upcoming')) {
+        } else if (thumbnailBottomOverlayView.badges.some(badge => badge.text?.toLowerCase() === 'upcoming')) {
           isUpcoming = true
 
           for (const row of lockupView.metadata.metadata.metadata_rows) {
@@ -1636,7 +1650,7 @@ function parseLockupView(lockupView, channelId = undefined, channelName = undefi
             }
           }
         } else {
-          const durationBadge = thumbnailBottomOverlayView.badges.find(badge => /^[\d:]+$/.test(badge.text))
+          const durationBadge = thumbnailBottomOverlayView.badges.find(badge => typeof badge.text === 'string' && /^[\d:]+$/.test(badge.text))
 
           if (durationBadge) {
             lengthSeconds = Utils.timeToSeconds(durationBadge.text)

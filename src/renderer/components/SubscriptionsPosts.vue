@@ -22,8 +22,11 @@ import SubscriptionsTabUi from './SubscriptionsTabUi/SubscriptionsTabUi.vue'
 import store from '../store/index'
 
 import { copyToClipboard, getRelativeTimeFromDate, getOldestSubscriptionCacheRefreshAtMs, showToast } from '../helpers/utils'
-import { getLocalChannelCommunity } from '../helpers/api/local'
-import { invidiousGetCommunityPosts } from '../helpers/api/invidious'
+import { mapWithConcurrency } from '../helpers/concurrency'
+import { isChannelDead, markChannelDead } from '../helpers/deadChannels'
+import { createLightInnertubeSession, getLocalChannelCommunity } from '../helpers/api/local'
+
+const SUBSCRIPTION_FETCH_CONCURRENCY = 6
 
 const { t } = useI18n()
 
@@ -35,12 +38,6 @@ const attemptedFetch = ref(false)
 const lastRemoteRefreshSuccessTimestamp = ref(null)
 
 let alreadyLoadedRemotely = false
-
-/** @type {import('vue').ComputedRef<'local' | 'invidious'>} */
-const backendPreference = computed(() => store.getters.getBackendPreference)
-
-/** @type {import('vue').ComputedRef<'local' | 'invidious'>} */
-const backendFallback = computed(() => store.getters.getBackendFallback)
 
 /** @type {import('vue').ComputedRef<boolean>} */
 const subscriptionCacheReady = computed(() => store.getters.getSubscriptionCacheReady)
@@ -192,65 +189,81 @@ async function loadPostsForSubscriptionsFromRemote() {
   errorChannels.value = []
   const subscriptionUpdates = []
 
-  const postListFromRemote = (await Promise.all(channelsToLoadFromRemote.map(async (channel) => {
-    let posts
-    if (!process.env.SUPPORTS_LOCAL_API || backendPreference.value === 'invidious') {
-      posts = await getChannelPostsInvidious(channel)
-    } else {
-      posts = await getChannelPostsLocal(channel)
-    }
+  /** @type {import('youtubei.js').Innertube | null} */
+  let sharedInnertube = await createLightInnertubeSession()
 
-    channelCount++
-    const percentageComplete = (channelCount / channelsToLoadFromRemote.length) * 100
-    store.commit('setProgressBarPercentage', percentageComplete)
+  try {
+    const postListFromRemote = (await mapWithConcurrency(
+      channelsToLoadFromRemote,
+      SUBSCRIPTION_FETCH_CONCURRENCY,
+      async (channel) => {
+        if (isChannelDead(channel.id)) {
+          errorChannels.value.push(channel)
+          channelCount++
+          store.commit('setProgressBarPercentage', (channelCount / channelsToLoadFromRemote.length) * 100)
+          return []
+        }
 
-    store.dispatch('updateSubscriptionPostsCacheByChannel', {
-      channelId: channel.id,
-      posts
+        let posts = await getChannelPostsLocal(channel, sharedInnertube)
+
+        channelCount++
+        store.commit('setProgressBarPercentage', (channelCount / channelsToLoadFromRemote.length) * 100)
+
+        store.dispatch('updateSubscriptionPostsCacheByChannel', {
+          channelId: channel.id,
+          posts
+        })
+
+        if (posts.length > 0) {
+          const post = posts.find(post => post.authorId === channel.id)
+
+          if (post) {
+            const name = post.author
+            let thumbnailUrl = post.authorThumbnails?.[0]?.url
+
+            if (name || thumbnailUrl) {
+              if (thumbnailUrl?.startsWith('//')) {
+                thumbnailUrl = 'https:' + thumbnailUrl
+              }
+
+              subscriptionUpdates.push({
+                channelId: channel.id,
+                channelName: name,
+                channelThumbnailUrl: thumbnailUrl
+              })
+            }
+          }
+        }
+
+        posts = posts.filter(post => !forbiddenTitles.value.some(text => post.author.toLowerCase().includes(text)))
+        return posts
+      }
+    )).flat()
+
+    postListFromRemote.sort((a, b) => {
+      return b.publishedTime - a.publishedTime
     })
 
-    if (posts.length > 0) {
-      const post = posts.find(post => post.authorId === channel.id)
-
-      if (post) {
-        const name = post.author
-        let thumbnailUrl = post.authorThumbnails?.[0]?.url
-
-        if (name || thumbnailUrl) {
-          if (thumbnailUrl?.startsWith('//')) {
-            thumbnailUrl = 'https:' + thumbnailUrl
-          }
-
-          subscriptionUpdates.push({
-            channelId: channel.id,
-            channelName: name,
-            channelThumbnailUrl: thumbnailUrl
-          })
-        }
-      }
-    }
-
-    posts = posts.filter(post => !forbiddenTitles.value.some(text => post.author.toLowerCase().includes(text)))
-    return posts
-  }))).flat()
-
-  postListFromRemote.sort((a, b) => {
-    return b.publishedTime - a.publishedTime
-  })
-
-  postList.value = postListFromRemote
-  isLoading.value = false
-  store.commit('setShowProgressBar', false)
-  lastRemoteRefreshSuccessTimestamp.value = Date.now()
-
-  store.dispatch('batchUpdateSubscriptionDetails', subscriptionUpdates)
+    postList.value = postListFromRemote
+  } finally {
+    sharedInnertube = null
+    isLoading.value = false
+    store.commit('setShowProgressBar', false)
+    lastRemoteRefreshSuccessTimestamp.value = Date.now()
+    store.dispatch('batchUpdateSubscriptionDetails', subscriptionUpdates)
+  }
 }
 
-async function getChannelPostsLocal(channel) {
+/**
+ * @param {object} channel
+ * @param {import('youtubei.js').Innertube | null} [innertube]
+ */
+async function getChannelPostsLocal(channel, innertube = null) {
   try {
-    const entries = await getLocalChannelCommunity(channel.id)
+    const entries = await getLocalChannelCommunity(channel.id, { innertube })
 
     if (entries === null) {
+      markChannelDead(channel.id, 'channel_error')
       errorChannels.value.push(channel)
       return []
     }
@@ -263,33 +276,7 @@ async function getChannelPostsLocal(channel) {
       copyToClipboard(err)
     })
 
-    if (backendPreference.value === 'local' && backendFallback.value) {
-      showToast(t('Falling back to Invidious API'))
-      return await getChannelPostsInvidious(channel)
-    }
-
     return []
-  }
-}
-
-async function getChannelPostsInvidious(channel) {
-  try {
-    const result = await invidiousGetCommunityPosts(channel.id)
-
-    return result.posts
-  } catch (err) {
-    console.error(err)
-    const errorMessage = t('Invidious API Error (Click to copy)')
-    showToast(`${errorMessage}: ${err}`, 10000, () => {
-      copyToClipboard(err)
-    })
-
-    if (process.env.SUPPORTS_LOCAL_API && backendPreference.value === 'invidious' && backendFallback.value) {
-      showToast(t('Falling back to Local API'))
-      return await getChannelPostsLocal(channel)
-    } else {
-      return []
-    }
   }
 }
 </script>

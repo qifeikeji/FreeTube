@@ -197,7 +197,8 @@ const currentInvidiousInstanceUrl = computed(() => {
 })
 
 const showInvidiousOptions = computed(() => {
-  return store.getters.getBackendPreference === 'invidious' || store.getters.getBackendFallback
+  // Invidious backend is disabled — never show Invidious share options
+  return false
 })
 
 const selectedUserPlaylist = computed(() => {

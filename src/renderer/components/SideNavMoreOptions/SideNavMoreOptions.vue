@@ -76,27 +76,6 @@
         </p>
       </router-link>
       <router-link
-        v-if="popularVisible"
-        class="navOption"
-        :title="$t('Most Popular')"
-        :aria-label="hideLabelsSideBar ? $t('Most Popular') : null"
-        to="/popular"
-        @click="closeMenu"
-      >
-        <FontAwesomeIcon
-          :icon="['fas', 'users']"
-          class="navIcon"
-          :class="applyNavIconExpand"
-        />
-        <p
-          v-if="!hideLabelsSideBar"
-          id="mostPopularNavLabel"
-          class="navLabel"
-        >
-          {{ $t("Most Popular") }}
-        </p>
-      </router-link>
-      <router-link
         class="navOption"
         :title="$t('About.About')"
         :aria-label="hideLabelsSideBar ? $t('About.About') : null"
@@ -216,12 +195,6 @@ const trendingVisible = computed(() => {
 /** @type {import('vue').ComputedRef<boolean>} */
 const hideLabelsSideBar = computed(() => {
   return store.getters.getHideLabelsSideBar
-})
-
-/** @type {import('vue').ComputedRef<boolean>} */
-const popularVisible = computed(() => {
-  return !store.getters.getHidePopularVideos &&
-    (store.getters.getBackendFallback || store.getters.getBackendPreference === 'invidious')
 })
 
 const applyNavIconExpand = computed(() => {

@@ -5,14 +5,6 @@
     <div class="switchColumnGrid">
       <div class="switchColumn">
         <FtToggleSwitch
-          :label="t('Settings.Player Settings.Proxy Videos Through Invidious')"
-          :compact="true"
-          :default-value="showProxyVideosAsDisabled ? false : proxyVideos"
-          :disabled="showProxyVideosAsDisabled"
-          :tooltip="t('Tooltips.Player Settings.Proxy Videos Through Invidious')"
-          @change="updateProxyVideos"
-        />
-        <FtToggleSwitch
           :label="t('Settings.Player Settings.Turn on Subtitles by Default')"
           :compact="true"
           :default-value="enableSubtitlesByDefault"
@@ -277,20 +269,6 @@ const { t } = useI18n()
 
 /** @type {boolean} */
 const USING_ELECTRON = process.env.IS_ELECTRON
-
-/** @type {import('vue').ComputedRef<boolean>} */
-const proxyVideos = computed(() => store.getters.getProxyVideos)
-
-const showProxyVideosAsDisabled = computed(() => {
-  return store.getters.getBackendPreference !== 'invidious' && !store.getters.getBackendFallback
-})
-
-/**
- * @param {boolean} value
- */
-function updateProxyVideos(value) {
-  store.dispatch('updateProxyVideos', value)
-}
 
 /** @type {import('vue').ComputedRef<boolean>} */
 const enableSubtitlesByDefault = computed(() => store.getters.getEnableSubtitlesByDefault)

@@ -3,7 +3,6 @@ import Subscriptions from '../views/Subscriptions/Subscriptions.vue'
 import SubscribedChannels from '../views/SubscribedChannels/SubscribedChannels.vue'
 import ProfileSettings from '../views/ProfileSettings/ProfileSettings.vue'
 import Trending from '../views/Trending/Trending.vue'
-import Popular from '../views/Popular/Popular.vue'
 import UserPlaylists from '../views/UserPlaylists/UserPlaylists.vue'
 import History from '../views/History/History.vue'
 import Settings from '../views/Settings/Settings.vue'
@@ -54,11 +53,7 @@ const router = createRouter({
       : []),
     {
       path: '/popular',
-      name: 'popular',
-      meta: {
-        title: 'Most Popular'
-      },
-      component: Popular
+      redirect: '/trending'
     },
     {
       path: '/userplaylists',

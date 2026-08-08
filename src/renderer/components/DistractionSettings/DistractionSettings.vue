@@ -103,13 +103,6 @@
           :default-value="hideTrendingVideos"
           @change="updateHideTrendingVideos"
         />
-        <FtToggleSwitch
-          :label="t('Settings.Distraction Free Settings.Hide Popular Videos')"
-          :compact="true"
-          :disabled="disableHidePopularVideos"
-          :default-value="disableHidePopularVideos || hidePopularVideos"
-          @change="updateHidePopularVideos"
-        />
       </div>
       <div class="switchColumn">
         <FtToggleSwitch
@@ -378,18 +371,6 @@ const disableHideTrendingVideos = computed(() => backendPreference.value !== 'lo
  */
 function updateHideTrendingVideos(value) {
   store.dispatch('updateHideTrendingVideos', value)
-}
-
-/** @type {import('vue').ComputedRef<boolean>} */
-const hidePopularVideos = computed(() => store.getters.getHidePopularVideos)
-
-const disableHidePopularVideos = computed(() => backendPreference.value !== 'invidious' && !backendFallback.value)
-
-/**
- * @param {boolean} value
- */
-function updateHidePopularVideos(value) {
-  store.dispatch('updateHidePopularVideos', value)
 }
 
 /** @type {import('vue').ComputedRef<boolean>} */

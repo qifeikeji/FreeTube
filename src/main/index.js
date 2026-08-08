@@ -589,6 +589,13 @@ function runApp() {
         requestHeaders['Sec-Fetch-Site'] = 'same-origin'
         requestHeaders['Sec-Fetch-Mode'] = 'same-origin'
         requestHeaders['X-Youtube-Bootstrap-Logged-In'] = 'false'
+      } else if (url.startsWith('https://www.youtube.com/oembed') || url.startsWith('https://youtube.com/oembed')) {
+        // oEmbed rejects app:// / Electron origins with 401 without YouTube referer/origin
+        requestHeaders.Referer = 'https://www.youtube.com/'
+        requestHeaders.Origin = 'https://www.youtube.com'
+        requestHeaders['Sec-Fetch-Site'] = 'same-origin'
+        requestHeaders['Sec-Fetch-Mode'] = 'cors'
+        requestHeaders['Sec-Fetch-Dest'] = 'empty'
       } else if (url === 'https://www.youtube.com/sw.js_data' || url.startsWith('https://www.youtube.com/api/timedtext')) {
         requestHeaders.Referer = 'https://www.youtube.com/sw.js'
         requestHeaders['Sec-Fetch-Site'] = 'same-origin'

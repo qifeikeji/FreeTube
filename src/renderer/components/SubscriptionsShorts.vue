@@ -27,7 +27,10 @@ import {
   getOldestSubscriptionCacheRefreshAtMs,
   showToast
 } from '../helpers/utils'
-import { invidiousFetch } from '../helpers/api/invidious'
+import { mapWithConcurrency } from '../helpers/concurrency'
+import { isChannelDead, markChannelDead } from '../helpers/deadChannels'
+
+const SUBSCRIPTION_FETCH_CONCURRENCY = 6
 
 const { t } = useI18n()
 
@@ -39,15 +42,6 @@ const attemptedFetch = ref(false)
 const lastRemoteRefreshSuccessTimestamp = ref(null)
 
 let alreadyLoadedRemotely = false
-
-/** @type {import('vue').ComputedRef<'local' | 'invidious'>} */
-const backendPreference = computed(() => store.getters.getBackendPreference)
-
-/** @type {import('vue').ComputedRef<'local' | 'invidious'>} */
-const backendFallback = computed(() => store.getters.getBackendFallback)
-
-/** @type {import('vue').ComputedRef<string>} */
-const currentInvidiousInstanceUrl = computed(() => store.getters.getCurrentInvidiousInstanceUrl)
 
 /** @type {import('vue').ComputedRef<boolean>} */
 const subscriptionCacheReady = computed(() => store.getters.getSubscriptionCacheReady)
@@ -189,45 +183,54 @@ async function loadVideosForSubscriptionsFromRemote() {
   errorChannels.value = []
   const subscriptionUpdates = []
 
-  const videoListFromRemote = (await Promise.all(channelsToLoadFromRemote.map(async (channel) => {
-    let videos, name
+  try {
+    const videoListFromRemote = (await mapWithConcurrency(
+      channelsToLoadFromRemote,
+      SUBSCRIPTION_FETCH_CONCURRENCY,
+      async (channel) => {
+        if (isChannelDead(channel.id)) {
+          errorChannels.value.push(channel)
+          channelCount++
+          store.commit('setProgressBarPercentage', (channelCount / channelsToLoadFromRemote.length) * 100)
+          return []
+        }
 
-    if (!process.env.SUPPORTS_LOCAL_API || backendPreference.value === 'invidious') {
-      ({ videos, name } = await getChannelShortsInvidious(channel))
-    } else {
-      ({ videos, name } = await getChannelShortsLocal(channel))
-    }
+        const { videos, name } = await getChannelShortsLocalRSS(channel)
 
-    channelCount++
-    const percentageComplete = (channelCount / channelsToLoadFromRemote.length) * 100
-    store.commit('setProgressBarPercentage', percentageComplete)
+        channelCount++
+        store.commit('setProgressBarPercentage', (channelCount / channelsToLoadFromRemote.length) * 100)
 
-    if (videos != null) {
-      store.dispatch('updateSubscriptionShortsCacheByChannel', {
-        channelId: channel.id,
-        videos: videos
-      })
-    }
+        if (videos != null) {
+          store.dispatch('updateSubscriptionShortsCacheByChannel', {
+            channelId: channel.id,
+            videos: videos
+          })
+        }
 
-    if (name) {
-      subscriptionUpdates.push({
-        channelId: channel.id,
-        channelName: name
-      })
-    }
+        if (name) {
+          subscriptionUpdates.push({
+            channelId: channel.id,
+            channelName: name
+          })
+        }
 
-    return videos ?? []
-  }))).flat()
+        return videos ?? []
+      }
+    )).flat()
 
-  videoList.value = updateVideoListAfterProcessing(videoListFromRemote)
-  isLoading.value = false
-  store.commit('setShowProgressBar', false)
-  lastRemoteRefreshSuccessTimestamp.value = Date.now()
-
-  store.dispatch('batchUpdateSubscriptionDetails', subscriptionUpdates)
+    videoList.value = updateVideoListAfterProcessing(videoListFromRemote)
+  } finally {
+    isLoading.value = false
+    store.commit('setShowProgressBar', false)
+    lastRemoteRefreshSuccessTimestamp.value = Date.now()
+    store.dispatch('batchUpdateSubscriptionDetails', subscriptionUpdates)
+  }
 }
 
-async function getChannelShortsLocal(channel, failedAttempts = 0) {
+/**
+ * @param {object} channel
+ */
+async function getChannelShortsLocalRSS(channel) {
   const playlistId = getChannelPlaylistId(channel.id, 'shorts', 'newest')
   const feedUrl = `https://www.youtube.com/feeds/videos.xml?playlist_id=${playlistId}`
 
@@ -249,6 +252,7 @@ async function getChannelShortsLocal(channel, failedAttempts = 0) {
       })
 
       if (response2.status === 404) {
+        markChannelDead(channel.id, 'rss_404')
         errorChannels.value.push(channel)
       }
 
@@ -265,68 +269,8 @@ async function getChannelShortsLocal(channel, failedAttempts = 0) {
       copyToClipboard(error)
     })
 
-    switch (failedAttempts) {
-      case 0:
-        if (backendFallback.value) {
-          showToast(t('Falling back to Invidious API'))
-          return await getChannelShortsInvidious(channel, failedAttempts + 1)
-        } else {
-          return {
-            videos: []
-          }
-        }
-      default:
-        return {
-          videos: []
-        }
-    }
-  }
-}
-
-async function getChannelShortsInvidious(channel, failedAttempts = 0) {
-  const playlistId = getChannelPlaylistId(channel.id, 'shorts', 'newest')
-  const feedUrl = `${currentInvidiousInstanceUrl.value}/feed/playlist/${playlistId}`
-
-  try {
-    const response = await invidiousFetch(feedUrl)
-
-    if (response.status === 404) {
-      // playlists don't exist if the channel was terminated but also if it doesn't have the tab,
-      // so we need to check the channel feed too before deciding it errored, as that only 404s if the channel was terminated
-
-      const response2 = await fetch(`${currentInvidiousInstanceUrl.value}/feed/channel/${channel.id}`, {
-        method: 'GET'
-      })
-
-      if (response2.status === 404) {
-        errorChannels.value.push(channel)
-      }
-
-      return { videos: [] }
-    }
-
-    return await parseYouTubeRSSFeed(await response.text(), channel.id)
-  } catch (error) {
-    console.error(error)
-    const errorMessage = t('Invidious API Error (Click to copy)')
-    showToast(`${errorMessage}: ${error}`, 10000, () => {
-      copyToClipboard(error)
-    })
-
-    switch (failedAttempts) {
-      case 0:
-        if (process.env.SUPPORTS_LOCAL_API && backendFallback.value) {
-          showToast(t('Falling back to Local API'))
-          return await getChannelShortsLocal(channel, failedAttempts + 1)
-        } else {
-          return {
-            videos: []
-          }
-        }
-      default:
-        return {
-          videos: []
-        }
+    return {
+      videos: []
     }
   }
 }

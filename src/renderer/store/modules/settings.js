@@ -151,8 +151,9 @@ const defaultSideEffectsTriggerId = settingId =>
 const state = {
   autoplayPlaylists: true,
   autoplayVideos: true,
+  // Local API only — Invidious backend is disabled for this Electron build
   backendFallback: false,
-  backendPreference: !process.env.SUPPORTS_LOCAL_API ? 'invidious' : 'local',
+  backendPreference: 'local',
   barColor: false,
   checkForUpdates: true,
   baseTheme: 'dark',
@@ -246,7 +247,7 @@ const state = {
   proxyProtocol: 'socks5',
   // JSON array: [{ id, protocol, hostname, port, selected }]
   proxyList: '[]',
-  proxyVideos: !process.env.SUPPORTS_LOCAL_API,
+  proxyVideos: false,
   region: 'US',
   rememberHistory: true,
   rememberSearchHistory: true,
@@ -435,6 +436,11 @@ const customState = {
 }
 
 const customGetters = {
+  // Force Local API only — ignore persisted Invidious preference / fallback / proxy
+  getBackendPreference: () => 'local',
+  getBackendFallback: () => false,
+  getProxyVideos: () => false,
+
   getExternalPlayer: (state, getters, rootState, rootGetters) => {
     return rootGetters.getActiveProfile?.externalPlayerSettings?.player ?? state.externalPlayer
   },
@@ -485,6 +491,24 @@ const customActions = {
         if (!alreadyTriggeredSideEffects.includes(_id)) {
           dispatch(defaultSideEffectsTriggerId(_id), state[_id])
         }
+      }
+
+      // Migrate / force Local API only (persists so DB matches getters)
+      const forcedLocalSettings = []
+      if (state.backendPreference !== 'local') {
+        forcedLocalSettings.push(dispatch('updateBackendPreference', 'local'))
+      }
+      if (state.backendFallback !== false) {
+        forcedLocalSettings.push(dispatch('updateBackendFallback', false))
+      }
+      if (state.proxyVideos !== false) {
+        forcedLocalSettings.push(dispatch('updateProxyVideos', false))
+      }
+      if (state.landingPage === 'popular') {
+        forcedLocalSettings.push(dispatch('updateLandingPage', 'trending'))
+      }
+      if (forcedLocalSettings.length > 0) {
+        await Promise.all(forcedLocalSettings)
       }
     } catch (errMessage) {
       console.error(errMessage)

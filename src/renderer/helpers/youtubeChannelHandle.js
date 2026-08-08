@@ -1,17 +1,5 @@
 import { extractYoutubeChannelHandle, youtubeChannelHandleUrl } from './utils'
-import { invidiousGetChannelInfo } from './api/invidious'
 import { getLocalChannel } from './api/local'
-import store from '../store/index'
-
-/**
- * @param {string} channelId
- * @returns {Promise<string|null>}
- */
-async function resolveFromInvidious(channelId) {
-  const channelInfo = await invidiousGetChannelInfo(channelId)
-  const handle = extractYoutubeChannelHandle(channelInfo.authorUrl)
-  return handle != null ? youtubeChannelHandleUrl(handle) : null
-}
 
 /**
  * @param {string} channelId
@@ -31,6 +19,7 @@ async function resolveFromLocal(channelId) {
 
 /**
  * Resolve a YouTube channel @handle URL for the given channel.
+ * Local API only — Invidious backend is disabled.
  * @param {string|null|undefined} channelId
  * @param {{ authorUrl?: string|null }} [options]
  * @returns {Promise<string|null>}
@@ -45,47 +34,10 @@ export async function resolveYoutubeChannelHandleUrl(channelId, { authorUrl = nu
     return null
   }
 
-  const backendPreference = store.getters.getBackendPreference
-  const backendFallback = store.getters.getBackendFallback
-  const preferInvidious = !process.env.SUPPORTS_LOCAL_API || backendPreference === 'invidious'
-
-  if (preferInvidious) {
-    try {
-      const handleUrl = await resolveFromInvidious(channelId)
-      if (handleUrl != null) {
-        return handleUrl
-      }
-    } catch (error) {
-      console.error(error)
-    }
-
-    if (process.env.SUPPORTS_LOCAL_API && backendFallback) {
-      try {
-        return await resolveFromLocal(channelId)
-      } catch (error) {
-        console.error(error)
-      }
-    }
-
-    return null
-  }
-
   try {
-    const handleUrl = await resolveFromLocal(channelId)
-    if (handleUrl != null) {
-      return handleUrl
-    }
+    return await resolveFromLocal(channelId)
   } catch (error) {
     console.error(error)
+    return null
   }
-
-  if (backendFallback) {
-    try {
-      return await resolveFromInvidious(channelId)
-    } catch (error) {
-      console.error(error)
-    }
-  }
-
-  return null
 }

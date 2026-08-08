@@ -221,26 +221,12 @@ const showProgressBar = computed(() => store.getters.getShowProgressBar)
 
 const landingPage = computed(() => '/' + store.getters.getLandingPage)
 
-/** @type {import('vue').ComputedRef<string>} */
-const defaultInvidiousInstance = computed(() => store.getters.getDefaultInvidiousInstance)
-
 const dataReady = ref(false)
 
 onMounted(async () => {
   await store.dispatch('grabUserSettings')
 
   updateTheme()
-
-  await store.dispatch('fetchInvidiousInstancesFromFile')
-  if (defaultInvidiousInstance.value === '') {
-    await store.dispatch('setRandomCurrentInvidiousInstance')
-  }
-
-  store.dispatch('fetchInvidiousInstances').then(() => {
-    if (defaultInvidiousInstance.value === '') {
-      store.dispatch('setRandomCurrentInvidiousInstance')
-    }
-  })
 
   store.dispatch('grabAllProfiles', t('Profile.All Channels')).then(() => {
     store.dispatch('grabHistory')
