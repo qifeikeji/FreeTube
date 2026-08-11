@@ -339,17 +339,18 @@ export default defineComponent({
           )
         }
 
-        options.push({
-          label: this.$t('Video.Copy Thumbnail Link'),
-          value: 'copyThumbnail',
-          icon: ['fas', 'copy']
-        })
-
-        options.push({
-          label: this.$t('Video.View Video Description'),
-          value: 'viewVideoDescription',
-          icon: ['fas', 'align-left']
-        })
+        options.push(
+          {
+            label: this.$t('Video.Copy Thumbnail Link'),
+            value: 'copyThumbnail',
+            icon: ['fas', 'copy']
+          },
+          {
+            label: this.$t('Video.View Video Description'),
+            value: 'viewVideoDescription',
+            icon: ['fas', 'align-left']
+          }
+        )
 
         if (this.subscriptionChannelCustomization != null) {
           options.push({
@@ -487,17 +488,18 @@ export default defineComponent({
         )
       }
 
-      items.push({
-        label: this.$t('Video.Copy Thumbnail Link'),
-        value: 'copyThumbnail',
-        icon: ['fas', 'copy']
-      })
-
-      items.push({
-        label: this.$t('Video.View Video Description'),
-        value: 'viewVideoDescription',
-        icon: ['fas', 'align-left']
-      })
+      items.push(
+        {
+          label: this.$t('Video.Copy Thumbnail Link'),
+          value: 'copyThumbnail',
+          icon: ['fas', 'copy']
+        },
+        {
+          label: this.$t('Video.View Video Description'),
+          value: 'viewVideoDescription',
+          icon: ['fas', 'align-left']
+        }
+      )
 
       if (this.subscriptionChannelCustomization != null) {
         items.push({
