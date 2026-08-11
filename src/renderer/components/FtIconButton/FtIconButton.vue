@@ -60,7 +60,15 @@
               @keydown.enter="handleDropdownClick(option.value)"
               @keydown.space="handleDropdownClick(option.value)"
             >
-              {{ option.type === 'divider' ? '' : option.label }}
+              <template v-if="option.type !== 'divider'">
+                <FontAwesomeIcon
+                  v-if="option.icon"
+                  :icon="option.icon"
+                  class="optionIcon"
+                  fixed-width
+                />
+                <span class="optionLabel">{{ option.label }}</span>
+              </template>
             </li>
           </ul>
         </slot>
@@ -96,19 +104,28 @@
               :class="{
                 listItemDivider: option.type === 'divider',
                 listItem: option.type !== 'divider',
-                active: option.active
+                active: option.active,
+                hasIcon: option.icon != null
               }"
               @click="handleDropdownClick(option.value)"
               @keydown.enter="handleDropdownClick(option.value)"
               @keydown.space="handleDropdownClick(option.value)"
             >
-              <div class="checkmarkColumn">
+              <template v-if="option.type !== 'divider'">
+                <div class="checkmarkColumn">
+                  <FontAwesomeIcon
+                    v-if="option.active"
+                    :icon="['fas', 'check']"
+                  />
+                </div>
                 <FontAwesomeIcon
-                  v-if="option.active"
-                  :icon="['fas', 'check']"
+                  v-if="option.icon"
+                  :icon="option.icon"
+                  class="optionIcon"
+                  fixed-width
                 />
-              </div>
-              {{ option.type === 'divider' ? '' : option.label }}
+                <span class="optionLabel">{{ option.label }}</span>
+              </template>
             </li>
           </ul>
         </slot>

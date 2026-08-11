@@ -204,8 +204,23 @@ export default defineComponent({
       return this.$route.name === 'subscriptions' || this.$route.name === 'default'
     },
 
+    /**
+     * Compact glass right-click / overflow menus shared by subscription-style video cards
+     * on subscriptions, history, channel, playlist, and watch pages.
+     */
+    useGlassVideoCardMenus: function () {
+      const routeName = this.$route.name
+      return routeName === 'subscriptions' ||
+        routeName === 'default' ||
+        routeName === 'history' ||
+        routeName === 'channel' ||
+        routeName === 'playlist' ||
+        routeName === 'watch'
+    },
+
     subscriptionChannelCustomization: function () {
-      if (!this.inSubscriptions || this.channelId == null) {
+      // Edit-channel entry is available on any glass-menu video card when the channel is subscribed.
+      if (!this.useGlassVideoCardMenus || this.channelId == null) {
         return null
       }
 
@@ -214,11 +229,11 @@ export default defineComponent({
     },
 
     highlightedSubscriptionChannelName: function () {
-      return this.subscriptionChannelCustomization?.highlighted === true
+      return this.inSubscriptions && this.subscriptionChannelCustomization?.highlighted === true
     },
 
     boldSubscriptionChannelName: function () {
-      return this.subscriptionChannelCustomization?.boldChannelName === true
+      return this.inSubscriptions && this.subscriptionChannelCustomization?.boldChannelName === true
     },
 
     subscriptionChannelNameStyle: function () {
@@ -315,7 +330,7 @@ export default defineComponent({
     },
 
     dropdownOptions: function () {
-      if (this.inSubscriptions) {
+      if (this.useGlassVideoCardMenus) {
         const options = [
           {
             label: this.$t('Video.Copy Video Link'),
@@ -440,7 +455,7 @@ export default defineComponent({
         }
       }
 
-      if (this.channelId !== null && !this.inSubscriptions) {
+      if (this.channelId !== null && !this.useGlassVideoCardMenus) {
         const hiddenChannels = JSON.parse(this.$store.getters.getChannelsHidden)
         const channelShouldBeHidden = hiddenChannels.some(c => c.name === this.channelId)
 
@@ -930,7 +945,7 @@ export default defineComponent({
     },
 
     handleSubscriptionContextMenu: function (event) {
-      if (!this.inSubscriptions) {
+      if (!this.useGlassVideoCardMenus) {
         return
       }
 

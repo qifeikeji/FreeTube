@@ -150,9 +150,20 @@
     backdrop-filter: blur(18px) saturate(140%);
     /* stylelint-disable-next-line property-no-vendor-prefix */
     -webkit-backdrop-filter: blur(18px) saturate(140%);
+    text-align: start;
+    font-size: 14px;
+
+    .list {
+      padding-block: 6px;
+    }
 
     .listItem {
+      display: flex;
+      align-items: center;
+      gap: 10px;
       color: rgb(255 255 255 / 90%);
+      padding-block: 10px;
+      padding-inline: 14px;
 
       &:hover,
       &:focus-visible,
@@ -166,6 +177,26 @@
         background-color: rgb(255 255 255 / 16%);
         color: #fff;
       }
+    }
+
+    .checkmarkColumn {
+      display: none;
+    }
+
+    .optionIcon {
+      flex-shrink: 0;
+      font-size: 13px;
+      opacity: 0.88;
+    }
+
+    .optionLabel {
+      flex: 1;
+      min-inline-size: 0;
+    }
+
+    .listItem:hover .optionIcon,
+    .listItem:focus-visible .optionIcon {
+      opacity: 1;
     }
 
     .listItemDivider {
@@ -215,6 +246,12 @@
     transition: background 0.2s ease-out;
     white-space: nowrap;
 
+    &.hasIcon {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
     &:hover,
     &:focus-visible,
     &.pressed,
@@ -235,6 +272,15 @@
       color: var(--side-nav-active-text-color);
       transition: background 0.1s ease-in;
     }
+  }
+
+  .optionIcon {
+    flex-shrink: 0;
+  }
+
+  .optionLabel {
+    flex: 1;
+    min-inline-size: 0;
   }
 
   .listItemDivider {

@@ -259,7 +259,7 @@
           :size="16"
           :use-shadow="false"
           dropdown-position-x="left"
-          :glass="inSubscriptions"
+          :glass="useGlassVideoCardMenus"
           :dropdown-options="dropdownOptions"
           @click="handleOptionsClick"
         />

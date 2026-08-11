@@ -104,6 +104,7 @@ const router = createRouter({
     },
     {
       path: '/playlist/:id',
+      name: 'playlist',
       meta: {
         title: 'Playlist'
       },
@@ -111,6 +112,7 @@ const router = createRouter({
     },
     {
       path: '/channel/:id/:currentTab?',
+      name: 'channel',
       meta: {
         title: 'Channel'
       },
@@ -118,6 +120,7 @@ const router = createRouter({
     },
     {
       path: '/watch/:id',
+      name: 'watch',
       meta: {
         title: 'Watch'
       },
