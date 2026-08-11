@@ -49,6 +49,17 @@ const state = {
     sports: '',
     podcasts: ''
   },
+  /**
+   * Per-profile last successful remote refresh time (ms) for subscription feeds.
+   * Kept in session state so switching profiles / feed tabs does not lose "just refreshed".
+   * @type {{ videos: Record<string, number>, liveStreams: Record<string, number>, shorts: Record<string, number>, posts: Record<string, number> }}
+   */
+  lastSubscriptionRefreshTimestamp: {
+    videos: {},
+    liveStreams: {},
+    shorts: {},
+    posts: {},
+  },
   subscriptionFirstAutoFetchRunData: {
     videos: false,
     liveStreams: false,
@@ -162,6 +173,10 @@ const getters = {
 
   getLastPopularRefreshTimestamp(state) {
     return state.lastPopularRefreshTimestamp
+  },
+
+  getLastSubscriptionRefreshTimestamp(state) {
+    return state.lastSubscriptionRefreshTimestamp
   },
 
   getSubscriptionForVideosFirstAutoFetchRun(state) {
@@ -732,6 +747,14 @@ const mutations = {
 
   setLastPopularRefreshTimestamp (state, timestamp) {
     state.lastPopularRefreshTimestamp = timestamp
+  },
+
+  /**
+   * @param {typeof state} state
+   * @param {{ feed: 'videos' | 'liveStreams' | 'shorts' | 'posts', profileId: string, timestamp: number }} payload
+   */
+  setLastSubscriptionRefreshTimestamp (state, { feed, profileId, timestamp }) {
+    state.lastSubscriptionRefreshTimestamp[feed][profileId] = timestamp
   },
 
   /**

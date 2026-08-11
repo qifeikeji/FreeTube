@@ -34,8 +34,6 @@ const isLoading = ref(true)
 const postList = shallowRef([])
 const errorChannels = ref([])
 const attemptedFetch = ref(false)
-/** @type {import('vue').Ref<number | null>} */
-const lastRemoteRefreshSuccessTimestamp = ref(null)
 
 let alreadyLoadedRemotely = false
 
@@ -46,6 +44,9 @@ const subscriptionCacheReady = computed(() => store.getters.getSubscriptionCache
 const fetchSubscriptionsAutomatically = computed(() => store.getters.getFetchSubscriptionsAutomatically)
 
 const activeSubscriptionList = computed(() => store.getters.getActiveProfile.subscriptions)
+
+/** @type {import('vue').ComputedRef<string>} */
+const activeProfileId = computed(() => store.getters.getActiveProfile._id)
 
 const cacheEntriesForAllActiveProfileChannels = computed(() => {
   const postsCache = store.getters.getPostsCache
@@ -76,8 +77,9 @@ const postCacheForAllActiveProfileChannelsPresent = computed(() => {
 })
 
 const lastPostsRefreshAtMs = computed(() => {
-  if (lastRemoteRefreshSuccessTimestamp.value != null) {
-    return lastRemoteRefreshSuccessTimestamp.value
+  const remoteAt = store.getters.getLastSubscriptionRefreshTimestamp.posts[activeProfileId.value]
+  if (remoteAt != null) {
+    return remoteAt
   }
 
   if (
@@ -98,15 +100,12 @@ const lastPostsRefreshTimestamp = computed(() => {
   return getRelativeTimeFromDate(at, true)
 })
 
-// Only reset when the subscribed channel set changes (profile switch / subscribe / unsubscribe).
-// Deep-watching the full list incorrectly cleared the refresh timestamp when channel
-// names/thumbnails were updated after a successful remote refresh.
+// Reload when the subscribed channel set changes (profile switch / subscribe / unsubscribe).
 const activeSubscriptionChannelIdsKey = computed(() => {
   return activeSubscriptionList.value.map((channel) => channel.id).join(',')
 })
 
 watch(activeSubscriptionChannelIdsKey, () => {
-  lastRemoteRefreshSuccessTimestamp.value = null
   isLoading.value = true
   loadPostsFromCacheSometimes()
 })
@@ -257,8 +256,12 @@ async function loadPostsForSubscriptionsFromRemote() {
     isLoading.value = false
     store.commit('setShowProgressBar', false)
     await store.dispatch('batchUpdateSubscriptionDetails', subscriptionUpdates)
-    // Record completion after metadata updates so the label tracks the refresh click, not oldest cache.
-    lastRemoteRefreshSuccessTimestamp.value = Date.now()
+    // Persist per-profile so switching profiles / feed tabs keeps the refresh-click time.
+    store.commit('setLastSubscriptionRefreshTimestamp', {
+      feed: 'posts',
+      profileId: activeProfileId.value,
+      timestamp: Date.now()
+    })
   }
 }
 
