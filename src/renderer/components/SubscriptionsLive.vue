@@ -106,11 +106,18 @@ const lastLiveRefreshTimestamp = computed(() => {
   return getRelativeTimeFromDate(at, true)
 })
 
-watch(activeSubscriptionList, () => {
+// Only reset when the subscribed channel set changes (profile switch / subscribe / unsubscribe).
+// Deep-watching the full list incorrectly cleared the refresh timestamp when channel
+// names/thumbnails were updated after a successful remote refresh.
+const activeSubscriptionChannelIdsKey = computed(() => {
+  return activeSubscriptionList.value.map((channel) => channel.id).join(',')
+})
+
+watch(activeSubscriptionChannelIdsKey, () => {
   lastRemoteRefreshSuccessTimestamp.value = null
   isLoading.value = true
   loadVideosFromCacheSometimes()
-}, { deep: true })
+})
 
 if (!subscriptionCacheReady.value) {
   watch(subscriptionCacheReady, () => {
@@ -250,8 +257,9 @@ async function loadVideosForSubscriptionsFromRemote() {
     sharedInnertube = null
     isLoading.value = false
     store.commit('setShowProgressBar', false)
+    await store.dispatch('batchUpdateSubscriptionDetails', subscriptionUpdates)
+    // Record completion after metadata updates so the label tracks the refresh click, not oldest cache.
     lastRemoteRefreshSuccessTimestamp.value = Date.now()
-    store.dispatch('batchUpdateSubscriptionDetails', subscriptionUpdates)
   }
 }
 

@@ -1144,21 +1144,22 @@ export function throttle(func, wait) {
 }
 
 /** Age in ms below which a feed refresh label is shown as recent (green). */
-export const FEED_REFRESH_LABEL_RECENT_MS = 30 * 60 * 1000
+export const FEED_REFRESH_LABEL_RECENT_MS = 60 * 60 * 1000
 
 /** Age in ms above which a feed refresh label is shown as stale (red). */
-export const FEED_REFRESH_LABEL_STALE_MS = 3 * 60 * 60 * 1000
+export const FEED_REFRESH_LABEL_STALE_MS = 7 * 60 * 60 * 1000
 
 /**
  * @param {number | null | undefined} lastRefreshAtMs
+ * @param {number} [nowMs]
  * @returns {'recent' | 'aging' | 'stale' | null}
  */
-export function getFeedRefreshLabelTone(lastRefreshAtMs) {
+export function getFeedRefreshLabelTone(lastRefreshAtMs, nowMs = Date.now()) {
   if (lastRefreshAtMs == null || !Number.isFinite(lastRefreshAtMs)) {
     return null
   }
 
-  const ageMs = Date.now() - lastRefreshAtMs
+  const ageMs = nowMs - lastRefreshAtMs
   if (ageMs <= FEED_REFRESH_LABEL_RECENT_MS) {
     return 'recent'
   }
