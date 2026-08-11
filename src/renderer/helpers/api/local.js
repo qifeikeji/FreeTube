@@ -113,6 +113,47 @@ export async function createLightInnertubeSession() {
   return await createInnertube()
 }
 
+/**
+ * Fetch a video's description without loading the full player stack.
+ * @param {string} videoId
+ * @returns {Promise<{ text: string, html: string }>}
+ */
+export async function getLocalVideoDescription(videoId) {
+  const innertube = await createInnertube()
+
+  try {
+    const info = await innertube.getInfo(videoId)
+
+    const text = info.basic_info?.short_description ??
+      info.secondary_info?.description?.text ??
+      ''
+
+    let html = ''
+    if (info.secondary_info?.description?.runs) {
+      try {
+        html = parseLocalTextRuns(info.secondary_info.description.runs)
+      } catch (error) {
+        console.error('Failed to extract the localised description, falling back to the plain text.', error)
+      }
+    }
+
+    return {
+      text: typeof text === 'string' ? text : '',
+      html
+    }
+  } catch (error) {
+    console.error('getInfo failed while loading description, falling back to getBasicInfo.', error)
+
+    const basic = await innertube.getBasicInfo(videoId)
+    const text = basic.basic_info?.short_description ?? ''
+
+    return {
+      text: typeof text === 'string' ? text : '',
+      html: ''
+    }
+  }
+}
+
 /** @type {Innertube | null} */
 let searchSuggestionsSession = null
 

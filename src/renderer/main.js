@@ -15,6 +15,7 @@ import { ObserveVisibility } from 'vue-observe-visibility'
 // Please keep the list of constants sorted by name
 // to avoid code conflict and duplicate entries
 import {
+  faAlignLeft,
   faAngleDown,
   faAngleLeft,
   faAngleUp,
@@ -140,6 +141,7 @@ import { FontAwesomeIcon, FontAwesomeLayers } from '@fortawesome/vue-fontawesome
 // to avoid code conflict and duplicate entries
 library.add(
   // solid icons
+  faAlignLeft,
   faAngleDown,
   faAngleLeft,
   faAngleUp,

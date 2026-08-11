@@ -18,7 +18,13 @@
         role="menuitem"
         @click="emit('select', item.value)"
       >
-        {{ item.label }}
+        <FontAwesomeIcon
+          v-if="item.icon"
+          :icon="item.icon"
+          class="menuItemIcon"
+          fixed-width
+        />
+        <span class="menuItemLabel">{{ item.label }}</span>
       </button>
     </div>
   </Teleport>
@@ -26,6 +32,7 @@
 
 <script setup>
 import { computed, onBeforeUnmount, onMounted, useTemplateRef, watch } from 'vue'
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 
 const props = defineProps({
   visible: {
@@ -121,7 +128,9 @@ onBeforeUnmount(() => {
 }
 
 .menuItem {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 10px;
   inline-size: 100%;
   box-sizing: border-box;
   border: 0;
@@ -135,10 +144,26 @@ onBeforeUnmount(() => {
   cursor: pointer;
 }
 
+.menuItemIcon {
+  flex-shrink: 0;
+  font-size: 13px;
+  opacity: 0.88;
+}
+
+.menuItemLabel {
+  flex: 1;
+  min-inline-size: 0;
+}
+
 .menuItem:hover,
 .menuItem:focus-visible {
   background-color: rgb(255 255 255 / 10%);
   color: #fff;
+}
+
+.menuItem:hover .menuItemIcon,
+.menuItem:focus-visible .menuItemIcon {
+  opacity: 1;
 }
 
 .menuItem.destructive {

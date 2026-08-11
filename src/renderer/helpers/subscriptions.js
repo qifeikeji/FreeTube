@@ -92,6 +92,7 @@ async function parseRSSEntry(entry, channelId, channelName) {
     // querySelector doesn't support xml namespaces so we have to use getElementsByTagName here
     videoId: entry.getElementsByTagName('yt:videoId')[0].textContent,
     title: entry.querySelector('title').textContent,
+    description: entry.getElementsByTagName('media:description')[0]?.textContent ?? '',
     published: Date.parse(entry.querySelector('published').textContent),
     viewCount,
     type: 'video',

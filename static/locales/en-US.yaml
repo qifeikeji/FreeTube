@@ -887,6 +887,8 @@ Video:
   Copy Channel Link: Copy Channel Link
   Copy Channel Handle Link: "Copy Channel Link{'@'}"
   Copy Thumbnail Link: Copy Thumbnail Link
+  View Video Description: View Video Description
+  No Video Description: No description available
   Open YouTube Embedded Player: Open YouTube Embedded Player
   Copy YouTube Embedded Player Link: Copy YouTube Embedded Player Link
   Open in Invidious: Open in Invidious
@@ -1042,6 +1044,7 @@ Share:
   YouTube Channel Handle URL copied to clipboard: YouTube channel @ handle URL copied to clipboard
   Channel handle URL unavailable: This channel does not have an @ handle URL
   Thumbnail URL copied to clipboard: Thumbnail URL copied to clipboard
+  Video Description copied to clipboard: Video description copied to clipboard
 Clipboard:
   Copy failed: Copy to clipboard failed
   Cannot access clipboard without a secure connection: Cannot access clipboard without a secure connection

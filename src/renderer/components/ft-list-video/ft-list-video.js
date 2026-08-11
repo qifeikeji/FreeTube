@@ -2,6 +2,7 @@ import { defineComponent } from 'vue'
 import FtIconButton from '../FtIconButton/FtIconButton.vue'
 import FtGlassContextMenu from '../FtGlassContextMenu/FtGlassContextMenu.vue'
 import ChannelSubscriptionEditPrompt from '../SubscribedChannelCardMenu/ChannelSubscriptionEditPrompt.vue'
+import VideoDescriptionPrompt from '../SubscribedChannelCardMenu/VideoDescriptionPrompt.vue'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import { mapActions } from 'vuex'
 import {
@@ -29,6 +30,7 @@ export default defineComponent({
     'ft-awesome-icon': FontAwesomeIcon,
     FtGlassContextMenu,
     ChannelSubscriptionEditPrompt,
+    VideoDescriptionPrompt,
   },
   directives: {
     'safer-html': vSaferHtml
@@ -140,6 +142,7 @@ export default defineComponent({
       subscriptionContextMenuVisible: false,
       subscriptionContextMenuPosition: { x: 0, y: 0 },
       editingSubscriptionChannel: null,
+      viewingVideoDescription: null,
     }
   },
   computed: {
@@ -316,7 +319,8 @@ export default defineComponent({
         const options = [
           {
             label: this.$t('Video.Copy Video Link'),
-            value: 'copyYoutube'
+            value: 'copyYoutube',
+            icon: ['fas', 'copy']
           }
         ]
 
@@ -324,24 +328,34 @@ export default defineComponent({
           options.push(
             {
               label: this.$t('Video.Copy Channel Link'),
-              value: 'copyYoutubeChannel'
+              value: 'copyYoutubeChannel',
+              icon: ['fas', 'copy']
             },
             {
               label: this.$t('Video.Copy Channel Handle Link'),
-              value: 'copyYoutubeChannelHandle'
+              value: 'copyYoutubeChannelHandle',
+              icon: ['fas', 'copy']
             }
           )
         }
 
         options.push({
           label: this.$t('Video.Copy Thumbnail Link'),
-          value: 'copyThumbnail'
+          value: 'copyThumbnail',
+          icon: ['fas', 'copy']
+        })
+
+        options.push({
+          label: this.$t('Video.View Video Description'),
+          value: 'viewVideoDescription',
+          icon: ['fas', 'align-left']
         })
 
         if (this.subscriptionChannelCustomization != null) {
           options.push({
             label: this.$t('Channels.Edit Channel Content'),
-            value: 'editChannelContent'
+            value: 'editChannelContent',
+            icon: ['fas', 'edit']
           })
         }
 
@@ -453,7 +467,8 @@ export default defineComponent({
       const items = [
         {
           label: this.$t('Video.Copy Video Link'),
-          value: 'copyYoutube'
+          value: 'copyYoutube',
+          icon: ['fas', 'copy']
         }
       ]
 
@@ -461,24 +476,34 @@ export default defineComponent({
         items.push(
           {
             label: this.$t('Video.Copy Channel Link'),
-            value: 'copyYoutubeChannel'
+            value: 'copyYoutubeChannel',
+            icon: ['fas', 'copy']
           },
           {
             label: this.$t('Video.Copy Channel Handle Link'),
-            value: 'copyYoutubeChannelHandle'
+            value: 'copyYoutubeChannelHandle',
+            icon: ['fas', 'copy']
           }
         )
       }
 
       items.push({
         label: this.$t('Video.Copy Thumbnail Link'),
-        value: 'copyThumbnail'
+        value: 'copyThumbnail',
+        icon: ['fas', 'copy']
+      })
+
+      items.push({
+        label: this.$t('Video.View Video Description'),
+        value: 'viewVideoDescription',
+        icon: ['fas', 'align-left']
       })
 
       if (this.subscriptionChannelCustomization != null) {
         items.push({
           label: this.$t('Channels.Edit Channel Content'),
-          value: 'editChannelContent'
+          value: 'editChannelContent',
+          icon: ['fas', 'edit']
         })
       }
 
@@ -878,6 +903,9 @@ export default defineComponent({
         case 'editChannelContent':
           this.openChannelEditPrompt()
           break
+        case 'viewVideoDescription':
+          this.openVideoDescriptionPrompt()
+          break
         case 'openYoutubeChannel':
           openExternalLink(this.youtubeChannelUrl)
           break
@@ -952,6 +980,18 @@ export default defineComponent({
 
     closeChannelEditPrompt: function () {
       this.editingSubscriptionChannel = null
+    },
+
+    openVideoDescriptionPrompt: function () {
+      this.viewingVideoDescription = {
+        videoId: this.id,
+        title: this.title,
+        description: this.data?.description ?? this.description ?? ''
+      }
+    },
+
+    closeVideoDescriptionPrompt: function () {
+      this.viewingVideoDescription = null
     },
 
     /**

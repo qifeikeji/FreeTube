@@ -36,7 +36,8 @@ const menuItems = computed(() => {
   const items = [
     {
       label: t('Channels.Edit Channel Content'),
-      value: 'edit'
+      value: 'edit',
+      icon: ['fas', 'edit']
     }
   ]
 
@@ -44,7 +45,8 @@ const menuItems = computed(() => {
     items.push({
       label: t('Channel.Unsubscribe'),
       value: 'unsubscribe',
-      destructive: true
+      destructive: true,
+      icon: ['fas', 'trash']
     })
   }
 

@@ -731,6 +731,8 @@ Video:
   Copy Channel Link: 复制频道链接
   Copy Channel Handle Link: "复制频道链接{'@'}"
   Copy Thumbnail Link: 复制缩略图链接
+  View Video Description: 查看视频描述
+  No Video Description: 暂无视频描述
   Open YouTube Embedded Player: '打开YouTube内嵌播放器'
   Copy YouTube Embedded Player Link: '复制YouTube内嵌播放器链接'
   Open in Invidious: '在Invidious中打开'
@@ -893,6 +895,7 @@ Share:
   Share Channel: 分享频道
   Share Post: 分享帖子
   Thumbnail URL copied to clipboard: 缩略图链接已复制到剪贴板
+  Video Description copied to clipboard: 视频描述已复制到剪贴板
 Mini Player: '迷你播放器'
 Comments:
   Comments: '评论'

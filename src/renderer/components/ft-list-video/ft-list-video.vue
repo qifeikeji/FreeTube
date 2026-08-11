@@ -301,6 +301,10 @@
       @save="saveChannelCustomization"
       @cancel="closeChannelEditPrompt"
     />
+    <VideoDescriptionPrompt
+      :video="viewingVideoDescription"
+      @close="closeVideoDescriptionPrompt"
+    />
   </div>
 </template>
 
