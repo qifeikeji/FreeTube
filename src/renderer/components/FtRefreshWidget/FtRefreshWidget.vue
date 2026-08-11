@@ -91,11 +91,10 @@ const refreshFeedButtonTitle = computed(() => {
 
 const formattedLastRefreshTimestamp = computed(() => {
   // Depend on nowMs so the relative label advances while the page stays open.
-  const now = nowMs.value
+  // getRelativeTimeFromDate reads Date.now(); the tick keeps this computed fresh.
+  const ageBasis = nowMs.value
 
-  if (props.lastRefreshAtMs != null && Number.isFinite(props.lastRefreshAtMs)) {
-    // getRelativeTimeFromDate uses Date.now(); keep the displayed age aligned with nowMs.
-    void now
+  if (props.lastRefreshAtMs != null && Number.isFinite(props.lastRefreshAtMs) && ageBasis > 0) {
     return getRelativeTimeFromDate(props.lastRefreshAtMs, true)
   }
 
